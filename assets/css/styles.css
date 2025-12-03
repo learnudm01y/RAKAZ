@@ -1054,10 +1054,9 @@ body[dir="ltr"] .hero-text {
 .products-container {
     display: flex;
     gap: 25px;
-    overflow-x: auto;
+    overflow-x: scroll;
     overflow-y: hidden;
     scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
     padding: 5px;
 }
 
@@ -1070,8 +1069,6 @@ body[dir="ltr"] .hero-text {
     max-width: 350px;
     width: 350px;
     flex-shrink: 0;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
 }
 
 .product-card * {
@@ -1090,9 +1087,6 @@ body[dir="ltr"] .hero-text {
     margin-bottom: 15px;
     overflow: hidden;
     text-decoration: none;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    user-select: none;
 }
 
 .product-image-wrapper * {
@@ -1803,7 +1797,6 @@ body[dir="ltr"] .hero-text {
         justify-content: flex-start;
         padding: 12px 0;
         gap: 25px;
-        -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
     }
     
