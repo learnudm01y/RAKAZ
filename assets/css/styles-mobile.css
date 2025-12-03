@@ -755,7 +755,7 @@
     
     .products-container {
         gap: 12px !important;
-        padding-bottom: 10px !important;
+        padding: 5px 0 !important;
     }
     
     .section-title {
@@ -901,7 +901,6 @@
     /* Unified product image size */
     .product-image-wrapper {
         aspect-ratio: 3/4 !important;
-        height: 320px !important;
         width: 240px !important;
     }
     

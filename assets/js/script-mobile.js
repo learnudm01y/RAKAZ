@@ -409,60 +409,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Swipe gesture for product sliders on mobile
-    function initSwipeGestures() {
-        const sliders = document.querySelectorAll('.products-container');
-        
-        sliders.forEach(slider => {
-            let startX = 0;
-            let scrollLeft = 0;
-            let isDragging = false;
-            let velocity = 0;
-            let lastX = 0;
-            let lastTime = Date.now();
-            
-            slider.addEventListener('touchstart', function(e) {
-                isDragging = true;
-                startX = e.touches[0].pageX - slider.offsetLeft;
-                scrollLeft = slider.scrollLeft;
-                velocity = 0;
-                lastX = e.touches[0].pageX;
-                lastTime = Date.now();
-                
-                slider.style.scrollBehavior = 'auto';
-            }, { passive: true });
-            
-            slider.addEventListener('touchmove', function(e) {
-                if (!isDragging) return;
-                
-                const x = e.touches[0].pageX - slider.offsetLeft;
-                const walk = (x - startX) * 1.5; // Multiplier for faster scrolling
-                slider.scrollLeft = scrollLeft - walk;
-                
-                // Calculate velocity for momentum
-                const now = Date.now();
-                const timeDiff = now - lastTime;
-                if (timeDiff > 0) {
-                    velocity = (e.touches[0].pageX - lastX) / timeDiff;
-                }
-                lastX = e.touches[0].pageX;
-                lastTime = now;
-            }, { passive: true });
-            
-            slider.addEventListener('touchend', function() {
-                isDragging = false;
-                
-                // Apply momentum scrolling
-                if (Math.abs(velocity) > 0.5) {
-                    const momentum = velocity * 200;
-                    slider.scrollLeft -= momentum;
-                }
-                
-                slider.style.scrollBehavior = 'smooth';
-            }, { passive: true });
-        });
-    }
-    
     // Optimize images for mobile
     function optimizeImagesForMobile() {
         if (window.innerWidth < 768) {
@@ -586,7 +532,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (window.innerWidth <= 1024) {
             createMobileSidebar();
             initMobileMenu();
-            initSwipeGestures();
             optimizeImagesForMobile();
             preventDoubleTapZoom();
             handleMobileSearch();
