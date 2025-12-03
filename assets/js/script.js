@@ -152,14 +152,14 @@ document.addEventListener('DOMContentLoaded', function() {
         container.addEventListener('scroll', updateButtons, { passive: true });
         updateButtons();
         
-        // Touch support for mobile devices
-        let startX = 0;
-        let scrollLeft = 0;
+        // Smooth touch support - 1:1 movement with finger
         let isDown = false;
+        let startX;
+        let scrollLeft;
         
         container.addEventListener('touchstart', (e) => {
             isDown = true;
-            startX = e.touches[0].pageX - container.offsetLeft;
+            startX = e.touches[0].pageX;
             scrollLeft = container.scrollLeft;
         }, { passive: true });
         
@@ -169,11 +169,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         container.addEventListener('touchmove', (e) => {
             if (!isDown) return;
-            e.preventDefault();
-            const x = e.touches[0].pageX - container.offsetLeft;
-            const walk = (x - startX) * 2;
-            container.scrollLeft = scrollLeft - walk;
-        });
+            const x = e.touches[0].pageX;
+            const walk = startX - x; // 1:1 ratio - exact finger movement
+            container.scrollLeft = scrollLeft + walk;
+        }, { passive: true });
     });
     
     // Wishlist functionality

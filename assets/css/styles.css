@@ -1055,7 +1055,7 @@ body[dir="ltr"] .hero-text {
     display: flex;
     gap: 25px;
     overflow-x: auto;
-    scroll-behavior: smooth;
+    overflow-y: hidden;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
     padding: 5px;

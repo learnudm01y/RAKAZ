@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const header = document.createElement('div');
             header.className = 'mobile-sidebar-header';
             const logoImg = document.querySelector('.logo-image');
-            const logoSrc = logoImg ? logoImg.src : 'assets/images/logo.png';
+            const logoSrc = logoImg ? logoImg.src : 'assets/images/logo-_1_.svg';
             header.innerHTML = `
                 <div class="mobile-sidebar-logo">
                     <img src="${logoSrc}" alt="Logo" style="height: 40px;">

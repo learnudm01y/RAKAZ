@@ -752,6 +752,7 @@
     .products-container {
         gap: 12px !important;
         padding-bottom: 10px !important;
+        -webkit-overflow-scrolling: touch !important;
     }
     
     .section-title {
