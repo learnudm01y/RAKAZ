@@ -4,6 +4,18 @@
 
 /* Mobile Landscape & Small Tablets (600px - 767px) */
 @media (max-width: 767px) {
+    /* Disable all active/focus/hover effects on touch devices */
+    * {
+        -webkit-tap-highlight-color: transparent !important;
+    }
+    
+    a:active, button:active, .product-card:active, 
+    .product-image-wrapper:active, img:active {
+        transform: none !important;
+        opacity: 1 !important;
+        background: transparent !important;
+    }
+    
     /* Mobile Sidebar Menu */
     .mobile-menu-overlay {
         display: block;
@@ -872,6 +884,24 @@
         max-width: 240px !important;
         width: 240px !important;
         flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+    
+    .product-card,
+    .product-card *,
+    .product-image-wrapper,
+    .product-image-wrapper * {
+        -webkit-tap-highlight-color: transparent !important;
+        -webkit-touch-callout: none !important;
+        user-select: none !important;
+        transition: none !important;
+        transform: none !important;
+    }
+    
+    .product-card:active,
+    .product-image-wrapper:active {
+        transform: none !important;
+        opacity: 1 !important;
     }
     
     /* Hide secondary product image on mobile */

@@ -234,10 +234,7 @@ select.form-select option:focus {
     transition: box-shadow 0.3s ease;
 }
 
-.product-card:hover,
-.wishlist-item:hover {
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-}
+
 
 /* No image zoom on hover */
 .product-card img,
