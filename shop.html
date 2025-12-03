@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>المتجر - ركاز</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/shared-components.css">
+    <link rel="stylesheet" href="assets/css/custom-select.css">
+    <link rel="stylesheet" href="assets/css/cart-sidebar.css">
+    <link rel="stylesheet" href="assets/css/shop-redesign.css">
+    <link rel="stylesheet" href="assets/css/styles-mobile.css">
+    <link rel="stylesheet" href="assets/css/styles-tablet.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="assets/js/custom-select.js" defer></script>
+    <script src="assets/js/shared-components.js" defer></script>
+    <script src="assets/js/cart-sidebar.js" defer></script>
+    <script src="assets/js/script.js" defer></script>
+    <script src="assets/js/script-mobile.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body dir="rtl">
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-sidebar-overlay" id="cartOverlay"></div>
+        <div class="cart-sidebar-content">
+            <div class="cart-sidebar-header">
+                <h2 class="cart-sidebar-title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                    حقيبة التسوق
+                </h2>
+                <button class="cart-sidebar-close" id="cartClose">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="cart-sidebar-items" id="cartItems">
+                <div class="cart-empty" id="cartEmpty">
+                    <svg class="cart-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                    <p>حقيبتك فارغة</p>
+                    <span>ابدأ بإضافة بعض المنتجات الرائعة!</span>
+                </div>
+            </div>
+            
+            <div class="cart-sidebar-footer" id="cartFooter">
+                <div class="cart-subtotal">
+                    <span>المجموع الفرعي:</span>
+                    <span class="cart-subtotal-amount" id="cartSubtotal">0 درهم</span>
+                </div>
+                <p class="cart-shipping-note">الشحن والضرائب يتم حسابها عند الدفع</p>
+                <a href="checkout.html" class="cart-checkout-btn">إتمام الشراء</a>
+                <a href="cart.html" class="cart-view-btn">عرض الحقيبة</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="header-container">
+            <!-- Top Row -->
+            <div class="header-top">
+                <div class="header-right">
+                    <div class="currency-selector">
+                        <img src="https://flagcdn.com/ae.svg" alt="UAE" class="flag-icon" id="selected-currency-flag">
+                        <span id="selected-currency">UAE</span>
+                        <svg class="arrow-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                        <div class="currency-dropdown">
+                            <div class="currency-option" data-currency="UAE" data-flag="https://flagcdn.com/ae.svg">
+                                <img src="https://flagcdn.com/ae.svg" alt="UAE"> UAE
+                            </div>
+                            <div class="currency-option" data-currency="SAR" data-flag="https://flagcdn.com/sa.svg">
+                                <img src="https://flagcdn.com/sa.svg" alt="KSA"> KSA
+                            </div>
+                            <div class="currency-option" data-currency="KWD" data-flag="https://flagcdn.com/kw.svg">
+                                <img src="https://flagcdn.com/kw.svg" alt="Kuwait"> Kuwait
+                            </div>
+                        </div>
+                    </div>
+                    <span class="divider">|</span>
+                    <button class="lang-toggle" onclick="toggleLanguage()">
+                        <span class="ar-text">English</span>
+                        <span class="en-text">العربية</span>
+                    </button>
+                </div>
+
+                <div class="header-center">
+                    <div class="search-box">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <input type="text" placeholder="ابحث عن مصمم أو منتج">
+                    </div>
+                </div>
+
+                <div class="header-left">
+                    <a href="wishlist.html" class="header-link">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                        <span>المفضلة</span>
+                        <span class="badge">0</span>
+                    </a>
+                    <a href="#" class="header-link" id="cartToggle">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <span>الحقيبة</span>
+                        <span class="badge" id="cartBadge">0</span>
+                    </a>
+                    <a href="index.html" class="logo mobile-logo-between">
+                        <img src="assets/images/logo.png" alt="Logo" class="logo-image">
+                    </a>
+                    <a href="#" class="header-link header-search-btn">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <span>بحث</span>
+                    </a>
+                    <a href="#" class="header-link mobile-menu-btn">
+                        <svg class="icon menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                        <span>القائمة</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Logo -->
+            <div class="logo-container">
+                <a href="index.html" class="logo">
+                    <img src="assets/images/logo.png" alt="Logo" class="logo-image">
+                </a>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="main-nav">
+                <a href="#" class="nav-link cyber-sale">
+                    <span class="ar-text">تفصيل حسب الطلب</span>
+                    <span class="en-text">MADE-TO-MEASURE</span>
+                </a>
+                <a href="shop.html" class="nav-link">
+                    <span class="ar-text">المتجر</span>
+                    <span class="en-text">SHOP</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Shop Page Content -->
+    <main class="shop-page">
+        <div class="shop-container">
+            <!-- Mobile Filter Toggle -->
+            <button class="mobile-filter-toggle" id="mobileFilterToggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="4" y1="6" x2="20" y2="6"></line>
+                    <line x1="4" y1="12" x2="20" y2="12"></line>
+                    <line x1="4" y1="18" x2="20" y2="18"></line>
+                </svg>
+                <span>الفلاتر</span>
+            </button>
+
+            <!-- Mobile View Toggle (Only visible on mobile) -->
+            <div class="mobile-view-toggle">
+                <button class="mobile-view-btn active" data-mobile-view="two">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="8" height="18"></rect>
+                        <rect x="13" y="3" width="8" height="18"></rect>
+                    </svg>
+                    <span>منتجين</span>
+                </button>
+                <button class="mobile-view-btn" data-mobile-view="one">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18"></rect>
+                    </svg>
+                    <span>منتج واحد</span>
+                </button>
+            </div>
+
+            <!-- Sidebar Filters -->
+            <aside class="shop-sidebar" id="shopSidebar">
+                <div class="sidebar-header">
+                    <h2>الفلاتر</h2>
+                    <button class="sidebar-close" id="sidebarClose">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- مقاس العلابيس (Clothing Size) -->
+                <div class="filter-section">
+                    <h3 class="filter-title">مقاس العلابيس</h3>
+                    <div class="size-grid">
+                        <label class="size-checkbox">
+                            <input type="checkbox" name="size" value="XXS">
+                            <span class="size-label">
+                                <span class="size-value">XXS</span>
+                                <span class="size-count">(24)</span>
+                            </span>
+                        </label>
+                        <label class="size-checkbox">
+                            <input type="checkbox" name="size" value="XS">
+                            <span class="size-label">
+                                <span class="size-value">XS</span>
+                                <span class="size-count">(214)</span>
+                            </span>
+                        </label>
+                        <label class="size-checkbox">
+                            <input type="checkbox" name="size" value="S">
+                            <span class="size-label">
+                                <span class="size-value">S</span>
+                                <span class="size-count">(1331)</span>
+                            </span>
+                        </label>
+                        <label class="size-checkbox">
+                            <input type="checkbox" name="size" value="M">
+                            <span class="size-label">
+                                <span class="size-value">M</span>
+                                <span class="size-count">(1329)</span>
+                            </span>
+                        </label>
+                        <label class="size-checkbox">
+                            <input type="checkbox" name="size" value="L">
+                            <span class="size-label">
+                                <span class="size-value">L</span>
+                                <span class="size-count">(1323)</span>
+                            </span>
+                        </label>
+                        <label class="size-checkbox">
+                            <input type="checkbox" name="size" value="XL">
+                            <span class="size-label">
+                                <span class="size-value">XL</span>
+                                <span class="size-count">(1211)</span>
+                            </span>
+                        </label>
+                        <label class="size-checkbox">
+                            <input type="checkbox" name="size" value="XXL">
+                            <span class="size-label">
+                                <span class="size-value">XXL</span>
+                                <span class="size-count">(764)</span>
+                            </span>
+                        </label>
+                        <label class="size-checkbox">
+                            <input type="checkbox" name="size" value="XXXL">
+                            <span class="size-label">
+                                <span class="size-value">XXXL</span>
+                                <span class="size-count">(52)</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- مقاس الحذاء (Shoe Size) -->
+                <div class="filter-section">
+                    <h3 class="filter-title">مقاس الحذاء</h3>
+                    <div class="shoe-size-selector">
+                        <select class="shoe-size-dropdown">
+                            <option value="">EU</option>
+                            <option value="36">36 (3)</option>
+                            <option value="37">37 (4)</option>
+                            <option value="37.5">37.5 (5)</option>
+                            <option value="38">38 (4)</option>
+                            <option value="38.5">38.5 (10)</option>
+                            <option value="39">39 (15)</option>
+                            <option value="39.5">39.5 (1)</option>
+                            <option value="40">40 (212)</option>
+                            <option value="40.5">40.5 (66)</option>
+                            <option value="41">41 (279)</option>
+                            <option value="41.5">41.5 (39)</option>
+                            <option value="42">42 (391)</option>
+                            <option value="42.5">42.5 (85)</option>
+                            <option value="43">43 (365)</option>
+                            <option value="43.5">43.5 (28)</option>
+                            <option value="44">44 (291)</option>
+                            <option value="44.5">44.5 (21)</option>
+                            <option value="45">45 (189)</option>
+                        </select>
+                        <div class="shoe-size-scroll">
+                            <label class="shoe-size-checkbox">
+                                <input type="checkbox" name="shoe-size" value="36">
+                                <span class="shoe-label">
+                                    <span class="shoe-count">(3)</span>
+                                    <span class="shoe-value">36</span>
+                                </span>
+                            </label>
+                            <label class="shoe-size-checkbox">
+                                <input type="checkbox" name="shoe-size" value="37">
+                                <span class="shoe-label">
+                                    <span class="shoe-count">(4)</span>
+                                    <span class="shoe-value">37</span>
+                                </span>
+                            </label>
+                            <label class="shoe-size-checkbox">
+                                <input type="checkbox" name="shoe-size" value="37.5">
+                                <span class="shoe-label">
+                                    <span class="shoe-count">(5)</span>
+                                    <span class="shoe-value">37.5</span>
+                                </span>
+                            </label>
+                            <label class="shoe-size-checkbox">
+                                <input type="checkbox" name="shoe-size" value="38">
+                                <span class="shoe-label">
+                                    <span class="shoe-count">(4)</span>
+                                    <span class="shoe-value">38</span>
+                                </span>
+                            </label>
+                            <label class="shoe-size-checkbox">
+                                <input type="checkbox" name="shoe-size" value="38.5">
+                                <span class="shoe-label">
+                                    <span class="shoe-count">(10)</span>
+                                    <span class="shoe-value">38.5</span>
+                                </span>
+                            </label>
+                            <label class="shoe-size-checkbox">
+                                <input type="checkbox" name="shoe-size" value="39">
+                                <span class="shoe-label">
+                                    <span class="shoe-count">(15)</span>
+                                    <span class="shoe-value">39</span>
+                                </span>
+                            </label>
+                            <label class="shoe-size-checkbox">
+                                <input type="checkbox" name="shoe-size" value="39.5">
+                                <span class="shoe-label">
+                                    <span class="shoe-count">(1)</span>
+                                    <span class="shoe-value">39.5</span>
+                                </span>
+                            </label>
+                            <label class="shoe-size-checkbox">
+                                <input type="checkbox" name="shoe-size" value="40">
+                                <span class="shoe-label">
+                                    <span class="shoe-count">(212)</span>
+                                    <span class="shoe-value">40</span>
+                                </span>
+                            </label>
+                            <label class="shoe-size-checkbox">
+                                <input type="checkbox" name="shoe-size" value="40.5">
+                                <span class="shoe-label">
+                                    <span class="shoe-count">(66)</span>
+                                    <span class="shoe-value">40.5</span>
+                                </span>
+                            </label>
+                            <label class="shoe-size-checkbox">
+                                <input type="checkbox" name="shoe-size" value="41">
+                                <span class="shoe-label">
+                                    <span class="shoe-count">(279)</span>
+                                    <span class="shoe-value">41</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- اللون (Color) -->
+                <div class="filter-section">
+                    <h3 class="filter-title">اللون</h3>
+                    <div class="color-scroll">
+                        <label class="color-checkbox">
+                            <input type="checkbox" name="color" value="black">
+                            <span class="color-label">
+                                <span class="color-circle" style="background-color: #000000;"></span>
+                                <span class="color-name">أسود</span>
+                                <span class="color-count">(760)</span>
+                            </span>
+                        </label>
+                        <label class="color-checkbox">
+                            <input type="checkbox" name="color" value="blue">
+                            <span class="color-label">
+                                <span class="color-circle" style="background-color: #4A90E2;"></span>
+                                <span class="color-name">أزرق</span>
+                                <span class="color-count">(484)</span>
+                            </span>
+                        </label>
+                        <label class="color-checkbox">
+                            <input type="checkbox" name="color" value="gray">
+                            <span class="color-label">
+                                <span class="color-circle" style="background-color: #808080;"></span>
+                                <span class="color-name">رمادي</span>
+                                <span class="color-count">(290)</span>
+                            </span>
+                        </label>
+                        <label class="color-checkbox">
+                            <input type="checkbox" name="color" value="green">
+                            <span class="color-label">
+                                <span class="color-circle" style="background-color: #7ED321;"></span>
+                                <span class="color-name">أخضر</span>
+                                <span class="color-count">(263)</span>
+                            </span>
+                        </label>
+                        <label class="color-checkbox">
+                            <input type="checkbox" name="color" value="beige">
+                            <span class="color-label">
+                                <span class="color-circle" style="background-color: #D4C5B9;"></span>
+                                <span class="color-name">لون محايد</span>
+                                <span class="color-count">(250)</span>
+                            </span>
+                        </label>
+                        <label class="color-checkbox">
+                            <input type="checkbox" name="color" value="purple">
+                            <span class="color-label">
+                                <span class="color-circle" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></span>
+                                <span class="color-name">ملون</span>
+                                <span class="color-count">(247)</span>
+                            </span>
+                        </label>
+                        <label class="color-checkbox">
+                            <input type="checkbox" name="color" value="brown">
+                            <span class="color-label">
+                                <span class="color-circle" style="background-color: #8B4513;"></span>
+                                <span class="color-name">بني</span>
+                                <span class="color-count">(211)</span>
+                            </span>
+                        </label>
+                        <label class="color-checkbox">
+                            <input type="checkbox" name="color" value="metallic">
+                            <span class="color-label">
+                                <span class="color-circle" style="background-color: #C0C0C0;"></span>
+                                <span class="color-name">عديم اللون</span>
+                                <span class="color-count">(167)</span>
+                            </span>
+                        </label>
+                        <label class="color-checkbox">
+                            <input type="checkbox" name="color" value="white">
+                            <span class="color-label">
+                                <span class="color-circle" style="background-color: #FFFFFF; border: 1px solid #ddd;"></span>
+                                <span class="color-name">أبيض</span>
+                                <span class="color-count">(159)</span>
+                            </span>
+                        </label>
+                        <label class="color-checkbox">
+                            <input type="checkbox" name="color" value="red">
+                            <span class="color-label">
+                                <span class="color-circle" style="background-color: #E53935;"></span>
+                                <span class="color-name">أحمر</span>
+                                <span class="color-count">(55)</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- السعر (Price) -->
+                <div class="filter-section">
+                    <h3 class="filter-title">السعر</h3>
+                    <div class="price-range-wrapper">
+                        <div class="price-display">
+                            <div class="price-box">
+                                <label>الكمية الأدنى</label>
+                                <div class="price-input-wrapper">
+                                    <input type="number" id="minPrice" value="60" min="0" max="28050">
+                                    <span class="currency">AED</span>
+                                </div>
+                            </div>
+                            <div class="price-box">
+                                <label>الكمية الأقصى</label>
+                                <div class="price-input-wrapper">
+                                    <input type="number" id="maxPrice" value="28050" min="0" max="28050">
+                                    <span class="currency">AED</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- استخدام (Apply Button) -->
+                <div class="filter-section">
+                    <button class="apply-filters-btn">استخدام</button>
+                </div>
+            </aside>
+
+            <!-- Products Grid -->
+            <section class="shop-content">
+                <div class="shop-header">
+                    <div class="shop-results">
+                        <h1>التصنيفات</h1>
+                        <p class="results-count">7 منتجات متاحة</p>
+                    </div>
+                    <div class="shop-controls">
+                        <select class="sort-select">
+                            <option value="featured">مميز</option>
+                            <option value="price-low">السعر: من الأقل للأعلى</option>
+                            <option value="price-high">السعر: من الأعلى للأقل</option>
+                            <option value="newest">الأحدث</option>
+                        </select>
+                        <div class="view-controls">
+                            <button class="view-btn" data-view="grid-2">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="7" height="7"></rect>
+                                    <rect x="14" y="3" width="7" height="7"></rect>
+                                    <rect x="3" y="14" width="7" height="7"></rect>
+                                    <rect x="14" y="14" width="7" height="7"></rect>
+                                </svg>
+                            </button>
+                            <button class="view-btn active" data-view="grid-3">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="5" height="5"></rect>
+                                    <rect x="10" y="3" width="5" height="5"></rect>
+                                    <rect x="17" y="3" width="5" height="5"></rect>
+                                    <rect x="3" y="10" width="5" height="5"></rect>
+                                    <rect x="10" y="10" width="5" height="5"></rect>
+                                    <rect x="17" y="10" width="5" height="5"></rect>
+                                </svg>
+                            </button>
+                            <button class="view-btn" data-view="grid-4">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="4" height="4"></rect>
+                                    <rect x="9" y="3" width="4" height="4"></rect>
+                                    <rect x="15" y="3" width="4" height="4"></rect>
+                                    <rect x="21" y="3" width="4" height="4"></rect>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="products-grid" data-view="grid-3">
+                    <!-- Product 1: كندورة إماراتية -->
+                    <div class="product-card">
+                        <a href="#" class="product-image-wrapper">
+                            <img src="assets/images/New folder/2_fa42623b-b79c-423e-be3d-a63ede9ff974.jpg" alt="كندورة إماراتية" class="product-image-primary">
+                            <img src="assets/images/New folder/3_36dc3051-f361-4a0a-bfd5-3c984f283a01.jpg" alt="كندورة إماراتية" class="product-image-secondary">
+                            <button class="wishlist-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                </svg>
+                            </button>
+                            <span class="badge new-season">موسم جديد</span>
+                        </a>
+                        <div class="product-info">
+                            <p class="product-brand">ركاز</p>
+                            <h3 class="product-name">كندورة إماراتية فاخرة</h3>
+                            <p class="product-price">850 د.إ</p>
+                            <div class="size-selector">
+                                <button class="size-arrow prev">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M15 19l-7-7 7-7"/>
+                                    </svg>
+                                </button>
+                                <div class="size-options-wrapper">
+                                    <button class="size-option" data-size="S">S</button>
+                                    <button class="size-option" data-size="M">M</button>
+                                    <button class="size-option" data-size="L">L</button>
+                                    <button class="size-option" data-size="XL">XL</button>
+                                    <button class="size-option" data-size="XXL">XXL</button>
+                                </div>
+                                <button class="size-arrow next">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button class="add-to-cart-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                                إضافة للسلة
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product 2: كندورة سعودية -->
+                    <div class="product-card">
+                        <a href="#" class="product-image-wrapper">
+                            <img src="assets/images/New folder/3_5d1a45bd-0fb0-46aa-9bf1-0251f1e8a513.jpg" alt="كندورة سعودية" class="product-image-primary">
+                            <img src="assets/images/New folder/3_70b1a53a-2b15-4598-8e56-eb5b979e18fd.jpg" alt="كندورة سعودية" class="product-image-secondary">
+                            <button class="wishlist-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                </svg>
+                            </button>
+                            <span class="badge new-season">موسم جديد</span>
+                        </a>
+                        <div class="product-info">
+                            <p class="product-brand">ركاز</p>
+                            <h3 class="product-name">كندورة سعودية كلاسيكية</h3>
+                            <p class="product-price">780 د.إ</p>
+                            <div class="size-selector">
+                                <button class="size-arrow prev">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M15 19l-7-7 7-7"/>
+                                    </svg>
+                                </button>
+                                <div class="size-options-wrapper">
+                                    <button class="size-option" data-size="S">S</button>
+                                    <button class="size-option" data-size="M">M</button>
+                                    <button class="size-option" data-size="L">L</button>
+                                    <button class="size-option" data-size="XL">XL</button>
+                                </div>
+                                <button class="size-arrow next">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button class="add-to-cart-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                                إضافة للسلة
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product 3: شماغ أحمر -->
+                    <div class="product-card">
+                        <a href="#" class="product-image-wrapper">
+                            <img src="assets/images/New folder/3_a0c29748-9d72-43bc-8fbd-9704da8d885f.jpg" alt="شماغ أحمر" class="product-image-primary">
+                            <img src="assets/images/New folder/3_ac5cf230-1e12-4c93-9db4-bfb900263827.jpg" alt="شماغ أحمر" class="product-image-secondary">
+                            <button class="wishlist-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                </svg>
+                            </button>
+                        </a>
+                        <div class="product-info">
+                            <p class="product-brand">ركاز</p>
+                            <h3 class="product-name">شماغ أحمر فاخر</h3>
+                            <p class="product-price">320 د.إ</p>
+                            <div class="size-selector">
+                                <button class="size-arrow prev">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M15 19l-7-7 7-7"/>
+                                    </svg>
+                                </button>
+                                <div class="size-options-wrapper">
+                                    <button class="size-option" data-size="موحد">موحد</button>
+                                </div>
+                                <button class="size-arrow next">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button class="add-to-cart-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                                إضافة للسلة
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product 4: شماغ أبيض -->
+                    <div class="product-card">
+                        <a href="#" class="product-image-wrapper">
+                            <img src="assets/images/New folder/3_c079fc2f-cb5e-4337-a2fb-d4055f9dd23c.jpg" alt="شماغ أبيض" class="product-image-primary">
+                            <img src="assets/images/New folder/3_c379f95c-dc6b-4058-b6d4-962885eec798.jpg" alt="شماغ أبيض" class="product-image-secondary">
+                            <button class="wishlist-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                </svg>
+                            </button>
+                        </a>
+                        <div class="product-info">
+                            <p class="product-brand">ركاز</p>
+                            <h3 class="product-name">شماغ أبيض كلاسيكي</h3>
+                            <p class="product-price">280 د.إ</p>
+                            <div class="size-selector">
+                                <button class="size-arrow prev">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M15 19l-7-7 7-7"/>
+                                    </svg>
+                                </button>
+                                <div class="size-options-wrapper">
+                                    <button class="size-option" data-size="موحد">موحد</button>
+                                </div>
+                                <button class="size-arrow next">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button class="add-to-cart-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                                إضافة للسلة
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product 5: فانيلة قطن -->
+                    <div class="product-card">
+                        <a href="#" class="product-image-wrapper">
+                            <img src="assets/images/New folder/51.jpg" alt="فانيلة قطن" class="product-image-primary">
+                            <img src="assets/images/New folder/Updated_10943a34-f761-4c6b-b807-a21f83974ed1.jpg" alt="فانيلة قطن" class="product-image-secondary">
+                            <button class="wishlist-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                </svg>
+                            </button>
+                        </a>
+                        <div class="product-info">
+                            <p class="product-brand">ركاز</p>
+                            <h3 class="product-name">فانيلة قطن ناعمة</h3>
+                            <p class="product-price">180 د.إ</p>
+                            <div class="size-selector">
+                                <button class="size-arrow prev">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M15 19l-7-7 7-7"/>
+                                    </svg>
+                                </button>
+                                <div class="size-options-wrapper">
+                                    <button class="size-option" data-size="S">S</button>
+                                    <button class="size-option" data-size="M">M</button>
+                                    <button class="size-option" data-size="L">L</button>
+                                    <button class="size-option" data-size="XL">XL</button>
+                                </div>
+                                <button class="size-arrow next">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button class="add-to-cart-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                                إضافة للسلة
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product 6: سروال تقليدي -->
+                    <div class="product-card">
+                        <a href="#" class="product-image-wrapper">
+                            <img src="assets/images/New folder/2847-1.jpg" alt="سروال تقليدي" class="product-image-primary">
+                            <img src="assets/images/New folder/Emirati_Gold_Edition_White.jpg" alt="سروال تقليدي" class="product-image-secondary">
+                            <button class="wishlist-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                </svg>
+                            </button>
+                        </a>
+                        <div class="product-info">
+                            <p class="product-brand">ركاز</p>
+                            <h3 class="product-name">سروال تقليدي مريح</h3>
+                            <p class="product-price">420 د.إ</p>
+                            <div class="size-selector">
+                                <button class="size-arrow prev">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M15 19l-7-7 7-7"/>
+                                    </svg>
+                                </button>
+                                <div class="size-options-wrapper">
+                                    <button class="size-option" data-size="S">S</button>
+                                    <button class="size-option" data-size="M">M</button>
+                                    <button class="size-option" data-size="L">L</button>
+                                    <button class="size-option" data-size="XL">XL</button>
+                                </div>
+                                <button class="size-arrow next">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button class="add-to-cart-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                                إضافة للسلة
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product 7: وزارة فاخرة -->
+                    <div class="product-card">
+                        <a href="#" class="product-image-wrapper">
+                            <img src="assets/images/New folder/Kuwaiti_blue_image_3_treated.jpg" alt="وزارة فاخرة" class="product-image-primary">
+                            <img src="assets/images/New folder/49.jpg" alt="وزارة فاخرة" class="product-image-secondary">
+                            <button class="wishlist-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                </svg>
+                            </button>
+                            <span class="badge new-season">موسم جديد</span>
+                        </a>
+                        <div class="product-info">
+                            <p class="product-brand">ركاز</p>
+                            <h3 class="product-name">وزارة فاخرة مطرزة</h3>
+                            <p class="product-price">680 د.إ</p>
+                            <div class="size-selector">
+                                <button class="size-arrow prev">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M15 19l-7-7 7-7"/>
+                                    </svg>
+                                </button>
+                                <div class="size-options-wrapper">
+                                    <button class="size-option" data-size="S">S</button>
+                                    <button class="size-option" data-size="M">M</button>
+                                    <button class="size-option" data-size="L">L</button>
+                                    <button class="size-option" data-size="XL">XL</button>
+                                </div>
+                                <button class="size-arrow next">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button class="add-to-cart-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                                إضافة للسلة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination">
+                    <button class="pagination-btn" disabled>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <button class="pagination-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-newsletter">
+            <h3 class="newsletter-title">اشترك في نشرتنا الإخبارية</h3>
+            <div class="newsletter-form">
+                <input type="email" placeholder="أدخل عنوان بريدك الإلكتروني هنا">
+                <button type="submit">اشترك</button>
+            </div>
+        </div>
+
+        <div class="footer-content">
+            <div class="footer-column">
+                <h4 class="footer-title">مجموعات الكندورة</h4>
+                <ul class="footer-links">
+                    <li><a href="#">كندورة كلاسيكية</a></li>
+                    <li><a href="#">كندورة فاخرة</a></li>
+                    <li><a href="#">كندورة الصيف</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4 class="footer-title">الفئات الرائجة</h4>
+                <ul class="footer-links">
+                    <li><a href="#">الكنادير الإماراتية</a></li>
+                    <li><a href="#">الكنادير السعودية</a></li>
+                    <li><a href="#">الكنادير الكويتية</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="footer-copyright">
+                <p>ركاز LLC. 2025. جميع الحقوق محفوظة</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Filter Toggle
+        const mobileFilterToggle = document.getElementById('mobileFilterToggle');
+        const shopSidebar = document.getElementById('shopSidebar');
+        const sidebarClose = document.getElementById('sidebarClose');
+
+        if (mobileFilterToggle) {
+            mobileFilterToggle.addEventListener('click', function() {
+                shopSidebar.classList.add('active');
+            });
+        }
+
+        if (sidebarClose) {
+            sidebarClose.addEventListener('click', function() {
+                shopSidebar.classList.remove('active');
+            });
+        }
+
+        // Close sidebar when clicking overlay
+        if (shopSidebar) {
+            shopSidebar.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    shopSidebar.classList.remove('active');
+                }
+            });
+        }
+
+        // Wishlist functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const wishlistButtons = document.querySelectorAll('.wishlist-btn');
+            wishlistButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.classList.toggle('active');
+                });
+            });
+
+            // View toggle
+            const viewButtons = document.querySelectorAll('.view-btn');
+            const productsGrid = document.querySelector('.products-grid');
+            
+            viewButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    viewButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const view = this.getAttribute('data-view');
+                    productsGrid.setAttribute('data-view', view);
+                });
+            });
+
+            // Mobile View Toggle (منتج واحد أو منتجين)
+            const mobileViewButtons = document.querySelectorAll('.mobile-view-btn');
+            
+            mobileViewButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    mobileViewButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const view = this.getAttribute('data-mobile-view');
+                    
+                    if (view === 'one') {
+                        // عرض منتج واحد - يملأ الشاشة
+                        productsGrid.setAttribute('data-view', 'list');
+                    } else {
+                        // عرض منتجين بجانب بعض
+                        productsGrid.setAttribute('data-view', 'grid-2');
+                    }
+                });
+            });
+
+            // Size selector
+            document.querySelectorAll('.size-option').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const wrapper = this.closest('.size-options-wrapper');
+                    wrapper.querySelectorAll('.size-option').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+
+            // Size arrows
+            document.querySelectorAll('.size-arrow').forEach(arrow => {
+                arrow.addEventListener('click', function() {
+                    const wrapper = this.parentElement.querySelector('.size-options-wrapper');
+                    const scrollAmount = 50;
+                    if (this.classList.contains('prev')) {
+                        wrapper.scrollLeft -= scrollAmount;
+                    } else {
+                        wrapper.scrollLeft += scrollAmount;
+                    }
+                });
+            });
+
+            // Add to Cart Button functionality
+            document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productCard = this.closest('.product-card');
+                    const productName = productCard.querySelector('.product-name').textContent;
+                    const productPrice = productCard.querySelector('.product-price').textContent;
+                    const selectedSize = productCard.querySelector('.size-option.selected');
+                    
+                    if (!selectedSize) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'اختر المقاس',
+                            text: 'الرجاء اختيار المقاس قبل الإضافة للسلة',
+                            confirmButtonText: 'حسناً',
+                            confirmButtonColor: '#1a1a1a'
+                        });
+                        return;
+                    }
+
+                    // Add visual feedback
+                    this.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> تمت الإضافة';
+                    this.style.background = '#4CAF50';
+                    
+                    setTimeout(() => {
+                        this.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> إضافة للسلة';
+                        this.style.background = '#1a1a1a';
+                    }, 2000);
+
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تمت الإضافة!',
+                        text: `تم إضافة ${productName} للسلة بنجاح`,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

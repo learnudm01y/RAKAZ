@@ -1,0 +1,243 @@
+/* ===================================
+   Error Pages (404) Styles
+   =================================== */
+
+.error-page {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    background: linear-gradient(135deg, #f5f5f5 0%, #fff 100%);
+}
+
+.error-container {
+    max-width: 600px;
+    text-align: center;
+}
+
+.error-content {
+    background: #fff;
+    padding: 60px 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.error-number {
+    font-size: 120px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1;
+    margin-bottom: 20px;
+    font-family: 'Playfair Display', serif;
+}
+
+.error-title {
+    font-size: 32px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 15px 0;
+}
+
+.error-description {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.6;
+    margin: 0 0 40px 0;
+}
+
+.error-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 40px;
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 14px 32px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: #1a1a1a;
+    color: #fff;
+    border: 2px solid #1a1a1a;
+}
+
+.btn-primary:hover {
+    background: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+    background: #fff;
+    color: #1a1a1a;
+    border: 2px solid #1a1a1a;
+}
+
+.btn-secondary:hover {
+    background: #f5f5f5;
+}
+
+.error-suggestions {
+    padding-top: 30px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.suggestions-title {
+    font-size: 14px;
+    color: #999;
+    margin: 0 0 15px 0;
+}
+
+.suggestions-links {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.suggestions-links a {
+    font-size: 14px;
+    color: #666;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.suggestions-links a:hover {
+    color: #1a1a1a;
+}
+
+/* Simple Header */
+.simple-header {
+    padding: 20px 0;
+    border-bottom: 1px solid #e5e5e5;
+    background: #fff;
+}
+
+.simple-header .header-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.simple-header .logo-image {
+    height: 50px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.header-icon {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1a1a1a;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.header-icon:hover {
+    transform: scale(1.1);
+}
+
+.header-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.header-icon .badge {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+}
+
+/* Simple Footer */
+.simple-footer {
+    padding: 30px 0;
+    background: #f5f5f5;
+    border-top: 1px solid #e5e5e5;
+    text-align: center;
+}
+
+.simple-footer .footer-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 30px;
+}
+
+.simple-footer p {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 15px 0;
+}
+
+.simple-footer .footer-links {
+    display: flex;
+    gap: 25px;
+    justify-content: center;
+}
+
+.simple-footer .footer-links a {
+    font-size: 14px;
+    color: #666;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.simple-footer .footer-links a:hover {
+    color: #1a1a1a;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .error-number {
+        font-size: 80px;
+    }
+
+    .error-title {
+        font-size: 24px;
+    }
+
+    .error-content {
+        padding: 40px 25px;
+    }
+
+    .error-actions {
+        flex-direction: column;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+    }
+
+    .suggestions-links {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

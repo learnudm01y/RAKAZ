@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>سياسة الخصوصية - ركاز</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/shared-components.css">
+    <link rel="stylesheet" href="assets/css/custom-select.css">
+    <link rel="stylesheet" href="assets/css/cart-sidebar.css">
+    <link rel="stylesheet" href="assets/css/styles-mobile.css">
+    <link rel="stylesheet" href="assets/css/styles-tablet.css">
+    <script src="assets/js/custom-select.js" defer></script>
+    <script src="assets/js/shared-components.js" defer></script>
+    <script src="assets/js/cart-sidebar.js" defer></script>
+    <script src="assets/js/script.js" defer></script>
+    <script src="assets/js/script-mobile.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .privacy-page {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 40px;
+            background: #fff;
+        }
+
+        .privacy-header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #e5e5e5;
+        }
+
+        .privacy-header h1 {
+            font-size: 42px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 15px;
+        }
+
+        .privacy-header .update-date {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .privacy-content {
+            line-height: 1.8;
+        }
+
+        .privacy-section {
+            margin-bottom: 40px;
+        }
+
+        .privacy-section h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+            padding-top: 10px;
+        }
+
+        .privacy-section h3 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #333;
+            margin: 25px 0 15px 0;
+        }
+
+        .privacy-section p {
+            font-size: 16px;
+            color: #444;
+            margin-bottom: 15px;
+            line-height: 1.9;
+        }
+
+        .privacy-section ul {
+            margin: 15px 0;
+            padding-right: 30px;
+        }
+
+        .privacy-section ul li {
+            font-size: 16px;
+            color: #444;
+            margin-bottom: 12px;
+            line-height: 1.8;
+        }
+
+        .privacy-section strong {
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+
+        .contact-info {
+            background: #f9f9f9;
+            padding: 30px;
+            margin-top: 40px;
+        }
+
+        .contact-info h3 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+        }
+
+        .contact-info p {
+            font-size: 16px;
+            color: #444;
+            margin-bottom: 10px;
+        }
+
+        .contact-info a {
+            color: #1a1a1a;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .privacy-page {
+                padding: 40px 20px;
+            }
+
+            .privacy-header h1 {
+                font-size: 32px;
+            }
+
+            .privacy-section h2 {
+                font-size: 24px;
+            }
+
+            .privacy-section h3 {
+                font-size: 20px;
+            }
+
+            .privacy-section p,
+            .privacy-section ul li {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body dir="rtl">
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-sidebar-overlay" id="cartOverlay"></div>
+        <div class="cart-sidebar-content">
+            <div class="cart-sidebar-header">
+                <h2 class="cart-sidebar-title">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                    حقيبة التسوق
+                </h2>
+                <button class="cart-sidebar-close" id="cartClose">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="cart-sidebar-items" id="cartItems">
+                <div class="cart-empty" id="cartEmpty">
+                    <svg class="cart-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                    <p>حقيبتك فارغة</p>
+                    <span>ابدأ بإضافة بعض المنتجات الرائعة!</span>
+                </div>
+            </div>
+            
+            <div class="cart-sidebar-footer" id="cartFooter">
+                <div class="cart-subtotal">
+                    <span>المجموع الفرعي:</span>
+                    <span class="cart-subtotal-amount" id="cartSubtotal">0 درهم</span>
+                </div>
+                <p class="cart-shipping-note">الشحن والضرائب يتم حسابها عند الدفع</p>
+                <a href="checkout.html" class="cart-checkout-btn">إتمام الشراء</a>
+                <a href="cart.html" class="cart-view-btn">عرض الحقيبة</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="header-container">
+            <!-- Top Row -->
+            <div class="header-top">
+                <div class="header-right">
+                    <div class="currency-selector">
+                        <img src="https://flagcdn.com/ae.svg" alt="UAE" class="flag-icon" id="selected-currency-flag">
+                        <span id="selected-currency">UAE</span>
+                        <svg class="arrow-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                        <div class="currency-dropdown">
+                            <div class="currency-option" data-currency="UAE" data-flag="https://flagcdn.com/ae.svg">
+                                <img src="https://flagcdn.com/ae.svg" alt="UAE"> UAE
+                            </div>
+                            <div class="currency-option" data-currency="SAR" data-flag="https://flagcdn.com/sa.svg">
+                                <img src="https://flagcdn.com/sa.svg" alt="KSA"> KSA
+                            </div>
+                            <div class="currency-option" data-currency="KWD" data-flag="https://flagcdn.com/kw.svg">
+                                <img src="https://flagcdn.com/kw.svg" alt="Kuwait"> Kuwait
+                            </div>
+                        </div>
+                    </div>
+                    <span class="divider">|</span>
+                    <button class="lang-toggle" onclick="toggleLanguage()">
+                        <span class="ar-text">English</span>
+                        <span class="en-text">العربية</span>
+                    </button>
+                </div>
+
+                <div class="header-center">
+                    <div class="search-box">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <input type="text" placeholder="ابحث عن مصمم أو منتج">
+                    </div>
+                </div>
+
+                <div class="header-left">
+                    <a href="wishlist.html" class="header-link">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                        <span>المفضلة</span>
+                        <span class="badge">0</span>
+                    </a>
+                    <a href="#" class="header-link" id="cartToggle">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <span>الحقيبة</span>
+                        <span class="badge" id="cartBadge">0</span>
+                    </a>
+                    <a href="index.html" class="logo mobile-logo-between">
+                        <img src="assets/images/logo.png" alt="Logo" class="logo-image">
+                    </a>
+                    <a href="#" class="header-link header-search-btn">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <span>بحث</span>
+                    </a>
+                    <a href="#" class="header-link mobile-menu-btn">
+                        <svg class="icon menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                        <span>القائمة</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Logo -->
+            <div class="logo-container">
+                <a href="index.html" class="logo">
+                    <img src="assets/images/logo.png" alt="Logo" class="logo-image">
+                </a>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="main-nav">
+                <a href="#" class="nav-link cyber-sale">
+                    <span class="ar-text">تفصيل حسب الطلب</span>
+                    <span class="en-text">MADE-TO-MEASURE</span>
+                </a>
+                <a href="shop.html" class="nav-link">
+                    <span class="ar-text">المتجر</span>
+                    <span class="en-text">SHOP</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Privacy Policy Content -->
+    <main class="privacy-page">
+        <div class="privacy-header">
+            <h1>سياسة الخصوصية والكوكيز</h1>
+            <p class="update-date">آخر تحديث: 3 ديسمبر 2025</p>
+        </div>
+
+        <div class="privacy-content">
+            <div class="privacy-section">
+                <h2>مقدمة</h2>
+                <p>نحن في <strong>ركاز</strong> نلتزم بحماية خصوصيتك واحترام بياناتك الشخصية. توضح سياسة الخصوصية هذه كيفية جمعنا واستخدامنا وحمايتنا ومشاركتنا لمعلوماتك الشخصية عند استخدامك لموقعنا الإلكتروني وخدماتنا.</p>
+                <p>من خلال استخدام موقعنا، فإنك توافق على جمع واستخدام المعلومات وفقًا لهذه السياسة.</p>
+            </div>
+
+            <div class="privacy-section">
+                <h2>1. المعلومات التي نجمعها</h2>
+                
+                <h3>1.1 المعلومات الشخصية</h3>
+                <p>قد نجمع المعلومات التالية عندما تستخدم موقعنا:</p>
+                <ul>
+                    <li>الاسم الكامل</li>
+                    <li>عنوان البريد الإلكتروني</li>
+                    <li>رقم الهاتف</li>
+                    <li>عنوان التوصيل</li>
+                    <li>معلومات الدفع (يتم معالجتها بشكل آمن من خلال بوابات دفع موثوقة)</li>
+                    <li>تفضيلات التسوق وسجل الطلبات</li>
+                </ul>
+
+                <h3>1.2 المعلومات التقنية</h3>
+                <p>نجمع أيضًا معلومات تقنية تلقائيًا عند زيارتك لموقعنا:</p>
+                <ul>
+                    <li>عنوان IP</li>
+                    <li>نوع المتصفح وإصداره</li>
+                    <li>نظام التشغيل</li>
+                    <li>صفحات الموقع التي تزورها</li>
+                    <li>الوقت والتاريخ الذي تزور فيه الموقع</li>
+                    <li>مصدر الإحالة</li>
+                </ul>
+            </div>
+
+            <div class="privacy-section">
+                <h2>2. كيفية استخدام معلوماتك</h2>
+                <p>نستخدم المعلومات التي نجمعها للأغراض التالية:</p>
+                <ul>
+                    <li><strong>معالجة الطلبات:</strong> لمعالجة طلباتك وتوصيل المنتجات إليك</li>
+                    <li><strong>التواصل:</strong> للتواصل معك بشأن طلباتك والرد على استفساراتك</li>
+                    <li><strong>تحسين الخدمة:</strong> لتحسين موقعنا وخدماتنا بناءً على ملاحظاتك</li>
+                    <li><strong>التسويق:</strong> لإرسال عروض ترويجية وإعلانات (يمكنك إلغاء الاشتراك في أي وقت)</li>
+                    <li><strong>الأمان:</strong> لحماية موقعنا ومنع الاحتيال</li>
+                    <li><strong>الامتثال القانوني:</strong> للامتثال للالتزامات القانونية</li>
+                </ul>
+            </div>
+
+            <div class="privacy-section">
+                <h2>3. ملفات تعريف الارتباط (الكوكيز)</h2>
+                <p>نستخدم ملفات تعريف الارتباط وتقنيات مشابهة لتحسين تجربتك على موقعنا. الكوكيز هي ملفات صغيرة يتم تخزينها على جهازك عند زيارة الموقع.</p>
+
+                <h3>3.1 أنواع الكوكيز التي نستخدمها</h3>
+                <ul>
+                    <li><strong>كوكيز ضرورية:</strong> مطلوبة لتشغيل الموقع بشكل صحيح</li>
+                    <li><strong>كوكيز الأداء:</strong> تساعدنا على فهم كيفية تفاعل الزوار مع الموقع</li>
+                    <li><strong>كوكيز الوظائف:</strong> تتذكر تفضيلاتك واختياراتك</li>
+                    <li><strong>كوكيز التسويق:</strong> تُستخدم لعرض إعلانات ذات صلة بك</li>
+                </ul>
+
+                <h3>3.2 إدارة الكوكيز</h3>
+                <p>يمكنك التحكم في الكوكيز من خلال إعدادات المتصفح الخاص بك. ومع ذلك، قد يؤدي تعطيل بعض الكوكيز إلى التأثير على وظائف الموقع.</p>
+            </div>
+
+            <div class="privacy-section">
+                <h2>4. مشاركة معلوماتك</h2>
+                <p>نحن لا نبيع أو نؤجر معلوماتك الشخصية لأطراف ثالثة. قد نشارك معلوماتك فقط في الحالات التالية:</p>
+                <ul>
+                    <li><strong>مزودو الخدمات:</strong> شركات الشحن، معالجات الدفع، ومزودي الخدمات التقنية</li>
+                    <li><strong>الامتثال القانوني:</strong> عندما يُطلب منا ذلك بموجب القانون</li>
+                    <li><strong>حماية الحقوق:</strong> لحماية حقوقنا وممتلكاتنا وسلامة عملائنا</li>
+                </ul>
+            </div>
+
+            <div class="privacy-section">
+                <h2>5. أمان البيانات</h2>
+                <p>نتخذ تدابير أمنية مناسبة لحماية معلوماتك الشخصية من الوصول غير المصرح به أو التغيير أو الكشف أو التدمير. تشمل هذه التدابير:</p>
+                <ul>
+                    <li>تشفير SSL لحماية البيانات أثناء النقل</li>
+                    <li>تخزين آمن للبيانات في خوادم محمية</li>
+                    <li>الوصول المحدود إلى البيانات الشخصية</li>
+                    <li>مراجعات أمنية منتظمة</li>
+                </ul>
+            </div>
+
+            <div class="privacy-section">
+                <h2>6. حقوقك</h2>
+                <p>لديك الحقوق التالية فيما يتعلق بمعلوماتك الشخصية:</p>
+                <ul>
+                    <li><strong>الوصول:</strong> الحق في طلب نسخة من بياناتك الشخصية</li>
+                    <li><strong>التصحيح:</strong> الحق في تصحيح المعلومات غير الدقيقة</li>
+                    <li><strong>الحذف:</strong> الحق في طلب حذف بياناتك في ظروف معينة</li>
+                    <li><strong>الاعتراض:</strong> الحق في الاعتراض على معالجة بياناتك</li>
+                    <li><strong>نقل البيانات:</strong> الحق في الحصول على نسخة من بياناتك بتنسيق قابل للنقل</li>
+                    <li><strong>إلغاء الموافقة:</strong> الحق في سحب موافقتك في أي وقت</li>
+                </ul>
+                <p>لممارسة أي من هذه الحقوق، يرجى التواصل معنا عبر معلومات الاتصال أدناه.</p>
+            </div>
+
+            <div class="privacy-section">
+                <h2>7. الاحتفاظ بالبيانات</h2>
+                <p>نحتفظ بمعلوماتك الشخصية فقط طالما كان ذلك ضروريًا للأغراض المحددة في هذه السياسة، أو حسب ما يقتضيه القانون. عند انتهاء فترة الاحتفاظ، سيتم حذف بياناتك أو إخفاء هويتها بشكل آمن.</p>
+            </div>
+
+            <div class="privacy-section">
+                <h2>8. خصوصية الأطفال</h2>
+                <p>موقعنا غير موجه للأطفال دون سن 18 عامًا. نحن لا نجمع عن قصد معلومات شخصية من الأطفال. إذا علمنا أننا جمعنا معلومات من طفل دون موافقة الوالدين، سنتخذ خطوات لحذف هذه المعلومات.</p>
+            </div>
+
+            <div class="privacy-section">
+                <h2>9. الروابط الخارجية</h2>
+                <p>قد يحتوي موقعنا على روابط لمواقع خارجية. نحن غير مسؤولين عن ممارسات الخصوصية لهذه المواقع. ننصحك بمراجعة سياسات الخصوصية الخاصة بأي موقع تزوره.</p>
+            </div>
+
+            <div class="privacy-section">
+                <h2>10. التحديثات على هذه السياسة</h2>
+                <p>قد نقوم بتحديث سياسة الخصوصية هذه من وقت لآخر. سنقوم بإخطارك بأي تغييرات عن طريق نشر السياسة الجديدة على هذه الصفحة وتحديث تاريخ "آخر تحديث" في الأعلى.</p>
+                <p>ننصحك بمراجعة هذه الصفحة بشكل دوري للبقاء على اطلاع على أي تغييرات.</p>
+            </div>
+
+            <div class="contact-info">
+                <h3>تواصل معنا</h3>
+                <p>إذا كان لديك أي أسئلة أو استفسارات حول سياسة الخصوصية هذه، يرجى التواصل معنا:</p>
+                <p><strong>البريد الإلكتروني:</strong> <a href="mailto:privacy@rakaz.com">privacy@rakaz.com</a></p>
+                <p><strong>الهاتف:</strong> <a href="tel:+971-xxx-xxxx">+971-xxx-xxxx</a></p>
+                <p><strong>العنوان:</strong> دبي، الإمارات العربية المتحدة</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-newsletter">
+            <h3 class="newsletter-title">اشترك في نشرتنا الإخبارية</h3>
+            <div class="newsletter-form">
+                <input type="email" placeholder="أدخل عنوان بريدك الإلكتروني هنا">
+                <button type="submit">اشترك</button>
+            </div>
+        </div>
+
+        <div class="footer-content">
+            <div class="footer-column">
+                <h4 class="footer-title">مجموعات الكندورة</h4>
+                <ul class="footer-links">
+                    <li><a href="#">كندورة كلاسيكية</a></li>
+                    <li><a href="#">كندورة فاخرة</a></li>
+                    <li><a href="#">كندورة الصيف</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4 class="footer-title">الفئات الرائجة</h4>
+                <ul class="footer-links">
+                    <li><a href="#">الكنادير الإماراتية</a></li>
+                    <li><a href="#">الكنادير السعودية</a></li>
+                    <li><a href="#">الكنادير الكويتية</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4 class="footer-title">خدمة العملاء</h4>
+                <ul class="footer-links">
+                    <li><a href="contact.html">اتصل بنا</a></li>
+                    <li><a href="#">الشحن والتوصيل</a></li>
+                    <li><a href="#">الإرجاع والاستبدال</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4 class="footer-title">معلومات</h4>
+                <ul class="footer-links">
+                    <li><a href="about.html">من نحن</a></li>
+                    <li><a href="privacy-policy.html">سياسة الخصوصية والكوكيز</a></li>
+                    <li><a href="#">الشروط والأحكام</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="footer-copyright">
+                <p>ركاز LLC. 2025. جميع الحقوق محفوظة</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

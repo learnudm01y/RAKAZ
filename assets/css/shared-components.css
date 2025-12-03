@@ -1,0 +1,571 @@
+/* Shared Components CSS - للاستخدام في جميع صفحات الموقع */
+
+/* Select Dropdown Styling - تصميم القوائم المنسدلة */
+.custom-select,
+.option-select,
+select.form-select {
+    padding: 12px 15px;
+    border: 2px solid #333;
+    border-radius: 4px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+    color: #333;
+    text-align: right;
+    transition: all 0.2s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="10" viewBox="0 0 16 10"><path fill="%23333" d="M1 1l7 7 7-7" stroke="%23333" stroke-width="2" fill="none"/></svg>');
+    background-repeat: no-repeat;
+    background-position: left 15px center;
+    padding-left: 45px;
+    font-family: inherit;
+    font-weight: 500;
+    min-height: 50px;
+}
+
+.custom-select:hover,
+.option-select:hover,
+select.form-select:hover {
+    border-color: #555;
+    background-color: white;
+}
+
+.custom-select:focus,
+.option-select:focus,
+select.form-select:focus {
+    outline: none;
+    border-color: #333;
+    box-shadow: none;
+    background-color: white;
+}
+
+/* تصميم العناصر داخل القائمة - مطابق للصورة */
+.custom-select option,
+.option-select option,
+select.form-select option {
+    padding: 12px 15px;
+    background: white;
+    color: #333;
+    font-size: 14px;
+    border-bottom: 1px solid #e0e0e0;
+    min-height: 45px;
+    line-height: 1.5;
+}
+
+.custom-select option:last-child,
+.option-select option:last-child,
+select.form-select option:last-child {
+    border-bottom: none;
+}
+
+/* تصميم العنصر المحدد - رمادي بدلاً من أزرق */
+.custom-select option:checked,
+.option-select option:checked,
+select.form-select option:checked {
+    background: #f5f5f5 !important;
+    color: #333 !important;
+    font-weight: 500;
+}
+
+/* تصميم العنصر عند hover - رمادي فاتح مثل الصورة */
+.custom-select option:hover,
+.option-select option:hover,
+select.form-select option:hover {
+    background: #f0f0f0 !important;
+    color: #333 !important;
+}
+
+/* إزالة اللون الأزرق الافتراضي */
+.custom-select option:focus,
+.option-select option:focus,
+select.form-select option:focus {
+    background: #e8e8e8 !important;
+    color: #333 !important;
+    outline: none;
+}
+
+/* Sidebar Menu - القائمة الجانبية */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.sidebar-menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 350px;
+    max-width: 85%;
+    height: 100vh;
+    background: white;
+    z-index: 999;
+    overflow-y: auto;
+    transition: right 0.3s ease;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-menu.active {
+    right: 0;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.sidebar-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #333;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.sidebar-close:hover {
+    transform: rotate(90deg);
+}
+
+.sidebar-content {
+    padding: 0;
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-nav-item {
+    border-bottom: 1px solid #eee;
+}
+
+.sidebar-nav-link {
+    display: block;
+    padding: 16px 20px;
+    color: #333;
+    text-decoration: none;
+    font-size: 15px;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.sidebar-nav-link:hover {
+    background: #f8f8f8;
+    padding-right: 25px;
+}
+
+.sidebar-nav-link::after {
+    content: '‹';
+    position: absolute;
+    left: 20px;
+    font-size: 20px;
+    opacity: 0.5;
+}
+
+/* Button Styles - أنماط الأزرار */
+.btn-primary {
+    padding: 13px 30px;
+    background: #c9947a;
+    color: white;
+    border: none;
+    border-radius: 0;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: background 0.3s ease;
+    text-align: center;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.btn-primary:hover {
+    background: #b8856a;
+}
+
+.btn-secondary {
+    padding: 13px 30px;
+    background: white;
+    color: #333;
+    border: 1px solid #333;
+    border-radius: 0;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+    text-align: center;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.btn-secondary:hover {
+    background: #333;
+    color: white;
+}
+
+/* Card Hover Effects - تأثيرات البطاقات */
+.product-card,
+.wishlist-item {
+    transition: box-shadow 0.3s ease;
+}
+
+.product-card:hover,
+.wishlist-item:hover {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* No image zoom on hover */
+.product-card img,
+.wishlist-item img {
+    transition: none;
+}
+
+/* Input Fields - حقول الإدخال */
+.form-input {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 0;
+    font-size: 14px;
+    width: 100%;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.form-input:hover {
+    border-color: #666;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #333;
+    box-shadow: 0 0 0 1px #333;
+}
+
+/* Checkbox Styling */
+.custom-checkbox {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.custom-checkbox input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.checkbox-box {
+    width: 18px;
+    height: 18px;
+    border: 1px solid #ddd;
+    background: white;
+    margin-left: 10px;
+    transition: all 0.2s ease;
+}
+
+.custom-checkbox:hover .checkbox-box {
+    border-color: #666;
+}
+
+.custom-checkbox input[type="checkbox"]:checked ~ .checkbox-box {
+    background: #333;
+    border-color: #333;
+}
+
+.checkbox-box::after {
+    content: '';
+    position: absolute;
+    display: none;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.custom-checkbox input[type="checkbox"]:checked ~ .checkbox-box::after {
+    display: block;
+}
+
+/* Radio Button Styling */
+.custom-radio {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.custom-radio input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.radio-circle {
+    width: 18px;
+    height: 18px;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    background: white;
+    margin-left: 10px;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.custom-radio:hover .radio-circle {
+    border-color: #666;
+}
+
+.custom-radio input[type="radio"]:checked ~ .radio-circle {
+    border-color: #333;
+}
+
+.radio-circle::after {
+    content: '';
+    position: absolute;
+    display: none;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #333;
+}
+
+.custom-radio input[type="radio"]:checked ~ .radio-circle::after {
+    display: block;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #333;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Toast Notification */
+.toast-notification {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #333;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 0;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(100px);
+    transition: all 0.3s ease;
+}
+
+.toast-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar-menu {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .custom-select,
+    .option-select,
+    select.form-select {
+        font-size: 14px;
+        padding: 12px;
+        background-position: left 10px center;
+        padding-left: 35px;
+    }
+}
+
+/* تحسينات للمتصفحات المختلفة */
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Firefox specific */
+@-moz-document url-prefix() {
+    .custom-select,
+    .option-select,
+    select.form-select {
+        padding-right: 12px;
+    }
+    
+    .custom-select option,
+    .option-select option,
+    select.form-select option {
+        background-color: white;
+    }
+    
+    .custom-select option:checked,
+    .option-select option:checked,
+    select.form-select option:checked {
+        background-color: #e8e8e8 !important;
+        color: #333 !important;
+    }
+}
+
+/* Safari & Chrome specific */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+    .custom-select option:checked,
+    .option-select option:checked,
+    select.form-select option:checked {
+        background: linear-gradient(#e8e8e8, #e8e8e8);
+        background-color: #e8e8e8 !important;
+        color: #333 !important;
+    }
+}
+
+/* ========================================
+   Account Dropdown Menu
+   ======================================== */
+.account-dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.account-dropdown-wrapper .account-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.account-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 280px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    margin-top: 10px;
+}
+
+.account-dropdown-wrapper:hover .account-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.account-dropdown-content {
+    padding: 12px 0;
+}
+
+.account-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: #333;
+    text-decoration: none;
+    transition: background 0.2s ease;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.account-dropdown-item:hover {
+    background: #f5f5f5;
+}
+
+.account-dropdown-item svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2;
+    flex-shrink: 0;
+}
+
+.account-dropdown-item.account-login-btn {
+    background: #b8824a;
+    color: #ffffff;
+    margin: 0 12px 12px 12px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.account-dropdown-item.account-login-btn:hover {
+    background: #a67440;
+}
+
+.account-dropdown-item.account-register-btn {
+    background: #2c2c2c;
+    color: #ffffff;
+    margin: 0 12px 12px 12px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.account-dropdown-item.account-register-btn:hover {
+    background: #1a1a1a;
+}
+
+.account-dropdown-divider {
+    height: 1px;
+    background: #e0e0e0;
+    margin: 8px 12px;
+}
+
+.account-dropdown-text {
+    padding: 8px 20px;
+    font-size: 13px;
+    color: #666;
+    margin: 0;
+    text-align: center;
+}
+
+/* Hide on mobile - للشاشات الكبيرة فقط */
+@media (max-width: 1024px) {
+    .account-dropdown-wrapper {
+        display: none !important;
+    }
+}
