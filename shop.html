@@ -12,8 +12,417 @@
     <link rel="stylesheet" href="assets/css/custom-select.css">
     <link rel="stylesheet" href="assets/css/cart-sidebar.css">
     <link rel="stylesheet" href="assets/css/shop-redesign.css">
+    <link rel="stylesheet" href="assets/css/product-details.css">
     <link rel="stylesheet" href="assets/css/styles-mobile.css">
     <link rel="stylesheet" href="assets/css/styles-tablet.css">
+    <style>
+        /* Product Modal Styles */
+        .product-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+        }
+        
+        /* Ensure SweetAlert appears above modal */
+        .swal2-container {
+            z-index: 10000 !important;
+        }
+        
+        .product-modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+        
+        .product-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 1200px;
+            max-height: 90vh;
+            background: white;
+            border-radius: 12px;
+            overflow-y: auto;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+        }
+        
+        .product-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .product-modal-close:hover {
+            background: #f5f5f5;
+            transform: rotate(90deg);
+        }
+        
+        .product-modal-close svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .modal-product-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 40px;
+        }
+        
+        /* Gallery Styles */
+        .modal-product-gallery {
+            position: sticky;
+            top: 20px;
+        }
+        
+        .modal-main-image-wrapper {
+            width: 100%;
+            aspect-ratio: 1;
+            overflow: hidden;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #f8f8f8;
+        }
+        
+        .modal-main-product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .modal-thumbnails-wrapper {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+        }
+        
+        .modal-thumbnail {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-thumbnail:hover,
+        .modal-thumbnail.active {
+            border-color: #1a1a1a;
+        }
+        
+        /* Product Info Styles */
+        .modal-product-info-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .modal-product-meta-top .modal-season-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #1a1a1a;
+            color: white;
+            font-size: 12px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .modal-product-header {
+            border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 15px;
+        }
+        
+        .modal-product-title {
+            font-size: 14px;
+            color: #666;
+            margin: 0 0 8px 0;
+            font-weight: 500;
+        }
+        
+        .modal-product-subtitle {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+            color: #1a1a1a;
+        }
+        
+        .modal-product-price-section {
+            padding: 10px 0;
+        }
+        
+        .modal-current-price {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        
+        .modal-payment-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            padding: 15px 0;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        
+        .modal-payment-option {
+            display: flex;
+            align-items: center;
+        }
+        
+        .modal-payment-option .payment-icon {
+            height: 20px;
+        }
+        
+        .modal-payment-option .payment-text {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .modal-delivery-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: #f8f8f8;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .modal-delivery-info svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .modal-product-options {
+            padding: 20px 0;
+        }
+        
+        .modal-option-group {
+            margin-bottom: 20px;
+        }
+        
+        .modal-size-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .modal-option-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        
+        .modal-size-guide-link {
+            font-size: 13px;
+            color: #666;
+            text-decoration: underline;
+        }
+        
+        .modal-size-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .modal-size-btn {
+            padding: 12px 20px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-size-btn:hover {
+            border-color: #1a1a1a;
+        }
+        
+        .modal-size-btn.selected {
+            background: #1a1a1a;
+            color: white;
+            border-color: #1a1a1a;
+        }
+        
+        .modal-stock-notice {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 15px;
+            background: #f0f7ff;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #333;
+        }
+        
+        .modal-stock-notice svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .modal-product-actions {
+            display: flex;
+            gap: 15px;
+            padding: 20px 0;
+        }
+        
+        .modal-btn-add-to-bag {
+            flex: 1;
+            padding: 16px;
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-btn-add-to-bag:hover {
+            background: #333;
+        }
+        
+        .modal-btn-add-to-bag svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .modal-btn-add-to-wishlist {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-btn-add-to-wishlist:hover {
+            border-color: #1a1a1a;
+            background: #f8f8f8;
+        }
+        
+        .modal-btn-add-to-wishlist svg {
+            width: 22px;
+            height: 22px;
+        }
+        
+        .modal-product-tabs {
+            border-top: 1px solid #e5e5e5;
+            padding-top: 20px;
+        }
+        
+        .modal-tabs-header {
+            display: flex;
+            gap: 20px;
+            border-bottom: 1px solid #e5e5e5;
+            margin-bottom: 20px;
+        }
+        
+        .modal-tab-btn {
+            padding: 12px 0;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-tab-btn:hover {
+            color: #1a1a1a;
+        }
+        
+        .modal-tab-btn.active {
+            color: #1a1a1a;
+            border-bottom-color: #1a1a1a;
+        }
+        
+        .modal-tab-panel {
+            display: none;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #666;
+        }
+        
+        .modal-tab-panel.active {
+            display: block;
+        }
+        
+        .modal-tab-panel ul {
+            margin: 15px 0;
+            padding-right: 20px;
+        }
+        
+        .modal-tab-panel li {
+            margin: 8px 0;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .modal-product-details {
+                grid-template-columns: 1fr;
+                padding: 20px;
+                gap: 30px;
+            }
+            
+            .modal-product-gallery {
+                position: relative;
+                top: 0;
+            }
+            
+            .product-modal-content {
+                width: 95%;
+                max-height: 95vh;
+            }
+            
+            .modal-product-subtitle {
+                font-size: 20px;
+            }
+            
+            .modal-current-price {
+                font-size: 24px;
+            }
+        }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -66,6 +475,150 @@
                 <p class="cart-shipping-note">الشحن والضرائب يتم حسابها عند الدفع</p>
                 <a href="checkout.html" class="cart-checkout-btn">إتمام الشراء</a>
                 <a href="cart.html" class="cart-view-btn">عرض الحقيبة</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Details Modal -->
+    <div class="product-modal" id="productModal" style="display: none;">
+        <div class="product-modal-overlay"></div>
+        <div class="product-modal-content">
+            <button class="product-modal-close" id="productModalClose">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            
+            <div class="modal-product-details">
+                <!-- Product Gallery -->
+                <div class="modal-product-gallery">
+                    <div class="modal-main-image-wrapper">
+                        <img src="" alt="" class="modal-main-product-image" id="modalMainImage">
+                    </div>
+                    <div class="modal-thumbnail-gallery">
+                        <div class="modal-thumbnails-wrapper" id="modalThumbnails">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Info -->
+                <div class="modal-product-info-section">
+                    <!-- Season Badge -->
+                    <div class="modal-product-meta-top">
+                        <span class="modal-season-badge" id="modalSeasonBadge" style="display: none;">الموسم الجديد</span>
+                    </div>
+
+                    <!-- Brand & Title -->
+                    <div class="modal-product-header">
+                        <h1 class="modal-product-title" id="modalBrand">ركاز</h1>
+                        <h2 class="modal-product-subtitle" id="modalProductName"></h2>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="modal-product-price-section">
+                        <span class="modal-current-price" id="modalPrice"></span>
+                    </div>
+
+                    <!-- Payment Options -->
+                    <div class="modal-payment-options">
+                        <div class="modal-payment-option">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" class="payment-icon">
+                        </div>
+                        <div class="modal-payment-option">
+                            <span class="payment-text">تمرا</span>
+                        </div>
+                        <div class="modal-payment-option">
+                            <span class="payment-text">tabby</span>
+                        </div>
+                        <div class="modal-payment-option">
+                            <span class="payment-text">تتوفر أقساط بدون فوائد</span>
+                        </div>
+                    </div>
+
+                    <!-- Delivery Info -->
+                    <div class="modal-delivery-info">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="1" y="3" width="15" height="13"></rect>
+                            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                            <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                            <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                        </svg>
+                        <span>توصيل خلال ساعتين في نفس اليوم إلى أبي ظبي</span>
+                    </div>
+
+                    <!-- Size Selection -->
+                    <div class="modal-product-options">
+                        <div class="modal-option-group">
+                            <div class="modal-size-header">
+                                <label class="modal-option-label">اختيار المقاس</label>
+                                <a href="#" class="modal-size-guide-link">جدول المقاسات</a>
+                            </div>
+                            <div class="modal-size-buttons" id="modalSizeButtons">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stock & Delivery Notice -->
+                    <div class="modal-stock-notice">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <span>التحقق من الإمارات العربية المتحدة - التوصيل متوفر</span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="modal-product-actions">
+                        <button class="modal-btn-add-to-bag" id="modalAddToBag">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                                <line x1="3" y1="6" x2="21" y2="6"></line>
+                                <path d="M16 10a4 4 0 0 1-8 0"></path>
+                            </svg>
+                            إضافة إلى حقيبة التسوق
+                        </button>
+                        <button class="modal-btn-add-to-wishlist">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Product Details Tabs -->
+                    <div class="modal-product-tabs">
+                        <div class="modal-tabs-header">
+                            <button class="modal-tab-btn active" data-tab="modal-description">وصف المنتج</button>
+                            <button class="modal-tab-btn" data-tab="modal-shipping">التوصيل والإرجاع</button>
+                            <button class="modal-tab-btn" data-tab="modal-details">المقاسات والحجم</button>
+                        </div>
+                        <div class="modal-tabs-content">
+                            <div class="modal-tab-panel active" id="modal-description">
+                                <p id="modalDescription">منتج فاخر من ركاز مصنوع بعناية فائقة من أجود أنواع الأقمشة لراحتك وأناقتك.</p>
+                                <ul>
+                                    <li>مصنوع من أجود أنواع القطن</li>
+                                    <li>تصميم عصري وأنيق</li>
+                                    <li>مريح للاستخدام اليومي</li>
+                                </ul>
+                            </div>
+                            <div class="modal-tab-panel" id="modal-shipping">
+                                <p>نوفر شحن مجاني لجميع الطلبات داخل الإمارات.</p>
+                                <p>التوصيل خلال 2-3 أيام عمل، أو توصيل في نفس اليوم في دبي وأبوظبي.</p>
+                                <p>الإرجاع مجاني خلال 14 يوم من تاريخ الاستلام.</p>
+                            </div>
+                            <div class="modal-tab-panel" id="modal-details">
+                                <p>رمز المنتج: <span id="modalProductCode">RKZ-001</span></p>
+                                <ul>
+                                    <li>مصنوع من مواد عالية الجودة</li>
+                                    <li>تصميم تقليدي مع لمسة عصرية</li>
+                                    <li>متوفر بعدة مقاسات</li>
+                                    <li>مناسب لجميع المناسبات</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -578,7 +1131,7 @@
                                     <line x1="3" y1="6" x2="21" y2="6"></line>
                                     <path d="M16 10a4 4 0 0 1-8 0"></path>
                                 </svg>
-                                إضافة للسلة
+                                اختيار المنتج
                             </button>
                         </div>
                     </div>
@@ -623,7 +1176,7 @@
                                     <line x1="3" y1="6" x2="21" y2="6"></line>
                                     <path d="M16 10a4 4 0 0 1-8 0"></path>
                                 </svg>
-                                إضافة للسلة
+                                اختيار المنتج
                             </button>
                         </div>
                     </div>
@@ -664,7 +1217,7 @@
                                     <line x1="3" y1="6" x2="21" y2="6"></line>
                                     <path d="M16 10a4 4 0 0 1-8 0"></path>
                                 </svg>
-                                إضافة للسلة
+                                اختيار المنتج
                             </button>
                         </div>
                     </div>
@@ -705,7 +1258,7 @@
                                     <line x1="3" y1="6" x2="21" y2="6"></line>
                                     <path d="M16 10a4 4 0 0 1-8 0"></path>
                                 </svg>
-                                إضافة للسلة
+                                اختيار المنتج
                             </button>
                         </div>
                     </div>
@@ -749,7 +1302,7 @@
                                     <line x1="3" y1="6" x2="21" y2="6"></line>
                                     <path d="M16 10a4 4 0 0 1-8 0"></path>
                                 </svg>
-                                إضافة للسلة
+                                اختيار المنتج
                             </button>
                         </div>
                     </div>
@@ -793,7 +1346,7 @@
                                     <line x1="3" y1="6" x2="21" y2="6"></line>
                                     <path d="M16 10a4 4 0 0 1-8 0"></path>
                                 </svg>
-                                إضافة للسلة
+                                اختيار المنتج
                             </button>
                         </div>
                     </div>
@@ -838,7 +1391,7 @@
                                     <line x1="3" y1="6" x2="21" y2="6"></line>
                                     <path d="M16 10a4 4 0 0 1-8 0"></path>
                                 </svg>
-                                إضافة للسلة
+                                اختيار المنتج
                             </button>
                         </div>
                     </div>
@@ -992,43 +1545,160 @@
                 });
             });
 
-            // Add to Cart Button functionality
+            // Add to Cart Button functionality - Open Modal
             document.querySelectorAll('.add-to-cart-btn').forEach(button => {
                 button.addEventListener('click', function() {
                     const productCard = this.closest('.product-card');
                     const productName = productCard.querySelector('.product-name').textContent;
+                    const productBrand = productCard.querySelector('.product-brand').textContent;
                     const productPrice = productCard.querySelector('.product-price').textContent;
-                    const selectedSize = productCard.querySelector('.size-option.selected');
+                    const primaryImage = productCard.querySelector('.product-image-primary').src;
+                    const secondaryImage = productCard.querySelector('.product-image-secondary').src;
+                    const hasNewSeasonBadge = productCard.querySelector('.badge.new-season') !== null;
                     
-                    if (!selectedSize) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'اختر المقاس',
-                            text: 'الرجاء اختيار المقاس قبل الإضافة للسلة',
-                            confirmButtonText: 'حسناً',
-                            confirmButtonColor: '#1a1a1a'
-                        });
-                        return;
-                    }
-
-                    // Add visual feedback
-                    this.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> تمت الإضافة';
-                    this.style.background = '#4CAF50';
+                    // Get available sizes
+                    const sizes = [];
+                    productCard.querySelectorAll('.size-option').forEach(sizeBtn => {
+                        sizes.push(sizeBtn.getAttribute('data-size'));
+                    });
                     
-                    setTimeout(() => {
-                        this.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> إضافة للسلة';
-                        this.style.background = '#1a1a1a';
-                    }, 2000);
-
-                    // Show success message
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'تمت الإضافة!',
-                        text: `تم إضافة ${productName} للسلة بنجاح`,
-                        timer: 1500,
-                        showConfirmButton: false
+                    // Open modal with product data
+                    openProductModal({
+                        name: productName,
+                        brand: productBrand,
+                        price: productPrice,
+                        primaryImage: primaryImage,
+                        secondaryImage: secondaryImage,
+                        hasNewSeason: hasNewSeasonBadge,
+                        sizes: sizes
                     });
                 });
+            });
+
+            // Product Modal Functions
+            function openProductModal(product) {
+                const modal = document.getElementById('productModal');
+                const modalMainImage = document.getElementById('modalMainImage');
+                const modalBrand = document.getElementById('modalBrand');
+                const modalProductName = document.getElementById('modalProductName');
+                const modalPrice = document.getElementById('modalPrice');
+                const modalSeasonBadge = document.getElementById('modalSeasonBadge');
+                const modalThumbnails = document.getElementById('modalThumbnails');
+                const modalSizeButtons = document.getElementById('modalSizeButtons');
+                
+                // Set product data
+                modalMainImage.src = product.primaryImage;
+                modalMainImage.alt = product.name;
+                modalBrand.textContent = product.brand;
+                modalProductName.textContent = product.name;
+                modalPrice.textContent = product.price;
+                
+                // Show/hide season badge
+                if (product.hasNewSeason) {
+                    modalSeasonBadge.style.display = 'inline-block';
+                } else {
+                    modalSeasonBadge.style.display = 'none';
+                }
+                
+                // Add thumbnails
+                modalThumbnails.innerHTML = '';
+                const images = [product.primaryImage, product.secondaryImage];
+                images.forEach((img, index) => {
+                    const thumbnail = document.createElement('img');
+                    thumbnail.src = img;
+                    thumbnail.alt = `صورة ${index + 1}`;
+                    thumbnail.className = `modal-thumbnail ${index === 0 ? 'active' : ''}`;
+                    thumbnail.addEventListener('click', function() {
+                        modalMainImage.src = img;
+                        document.querySelectorAll('.modal-thumbnail').forEach(t => t.classList.remove('active'));
+                        this.classList.add('active');
+                    });
+                    modalThumbnails.appendChild(thumbnail);
+                });
+                
+                // Add size buttons
+                modalSizeButtons.innerHTML = '';
+                product.sizes.forEach(size => {
+                    const sizeBtn = document.createElement('button');
+                    sizeBtn.className = 'modal-size-btn';
+                    sizeBtn.textContent = size;
+                    sizeBtn.addEventListener('click', function() {
+                        document.querySelectorAll('.modal-size-btn').forEach(btn => btn.classList.remove('selected'));
+                        this.classList.add('selected');
+                    });
+                    modalSizeButtons.appendChild(sizeBtn);
+                });
+                
+                // Show modal
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+            
+            function closeProductModal() {
+                const modal = document.getElementById('productModal');
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+            
+            // Close modal button
+            document.getElementById('productModalClose').addEventListener('click', closeProductModal);
+            
+            // Close modal on overlay click
+            document.querySelector('.product-modal-overlay').addEventListener('click', closeProductModal);
+            
+            // Modal tabs functionality
+            document.querySelectorAll('.modal-tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetTab = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all tabs and panels
+                    document.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.modal-tab-panel').forEach(p => p.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding panel
+                    this.classList.add('active');
+                    document.getElementById(targetTab).classList.add('active');
+                });
+            });
+            
+            // Add to bag from modal
+            document.getElementById('modalAddToBag').addEventListener('click', function() {
+                const selectedSize = document.querySelector('.modal-size-btn.selected');
+                const productName = document.getElementById('modalProductName').textContent;
+                
+                if (!selectedSize) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'اختر المقاس',
+                        text: 'الرجاء اختيار المقاس أولاً',
+                        confirmButtonText: 'حسناً',
+                        confirmButtonColor: '#1a1a1a'
+                    });
+                    return;
+                }
+                
+                // Add visual feedback
+                this.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> تمت الإضافة';
+                this.style.background = '#4CAF50';
+                
+                setTimeout(() => {
+                    this.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> إضافة إلى حقيبة التسوق';
+                    this.style.background = '#1a1a1a';
+                }, 2000);
+                
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تمت الإضافة!',
+                    text: `تم إضافة ${productName} للسلة بنجاح`,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                
+                // Close modal after adding
+                setTimeout(() => {
+                    closeProductModal();
+                }, 1500);
             });
         });
     </script>
