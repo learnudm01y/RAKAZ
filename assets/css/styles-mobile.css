@@ -4,6 +4,11 @@
 
 /* Mobile Landscape & Small Tablets (600px - 767px) */
 @media (max-width: 767px) {
+    /* إخفاء أزرار التنقل على الموبايل */
+    .slider-btn {
+        display: none !important;
+    }
+    
     /* Disable all active/focus/hover effects on touch devices */
     * {
         -webkit-tap-highlight-color: transparent !important;

@@ -1,6 +1,55 @@
 // Slider functionality
 document.addEventListener('DOMContentLoaded', function() {
     
+    // Product Slider Navigation - Desktop Only
+    function initProductSliderNavigation() {
+        // Only initialize on desktop (screens larger than 1024px)
+        if (window.innerWidth <= 1024) {
+            return;
+        }
+        
+        const sliders = document.querySelectorAll('.products-slider');
+        
+        sliders.forEach(slider => {
+            const container = slider.querySelector('.products-container');
+            const prevBtn = slider.querySelector('.slider-btn.prev');
+            const nextBtn = slider.querySelector('.slider-btn.next');
+            
+            if (!container || !prevBtn || !nextBtn) return;
+            
+            // Scroll amount based on card width + gap
+            const scrollAmount = 370; // 350px card + 20px gap
+            
+            prevBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                container.scrollBy({
+                    left: -scrollAmount,
+                    behavior: 'smooth'
+                });
+            });
+            
+            nextBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                container.scrollBy({
+                    left: scrollAmount,
+                    behavior: 'smooth'
+                });
+            });
+        });
+    }
+    
+    // Initialize slider navigation
+    initProductSliderNavigation();
+    
+    // Re-initialize on window resize (if changing from mobile to desktop)
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            initProductSliderNavigation();
+        }, 250);
+    });
+    
     // Debounce function for performance
     function debounce(func, wait) {
         let timeout;

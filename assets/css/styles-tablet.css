@@ -5,6 +5,11 @@
 
 @media (min-width: 768px) and (max-width: 1024px) {
     
+    /* إخفاء أزرار التنقل على التابلت */
+    .slider-btn {
+        display: none !important;
+    }
+    
     /* Reset any desktop styles */
     * {
         -webkit-tap-highlight-color: transparent;
