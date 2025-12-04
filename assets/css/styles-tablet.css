@@ -10,6 +10,15 @@
         display: none !important;
     }
     
+    /* منع التمرير عندما تكون القائمة مفتوحة */
+    body.sidebar-open,
+    html.sidebar-open {
+        overflow: hidden !important;
+        position: fixed !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+    
     /* Reset any desktop styles */
     * {
         -webkit-tap-highlight-color: transparent;

@@ -9,6 +9,15 @@
         display: none !important;
     }
     
+    /* منع التمرير عندما تكون القائمة مفتوحة */
+    body.sidebar-open,
+    html.sidebar-open {
+        overflow: hidden !important;
+        position: fixed !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+    
     /* Disable all active/focus/hover effects on touch devices */
     * {
         -webkit-tap-highlight-color: transparent !important;

@@ -259,7 +259,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     e.preventDefault();
                     sidebar.classList.add('active');
                     overlay.classList.add('active');
+                    
+                    // Prevent scrolling on body when sidebar is open
+                    document.body.classList.add('sidebar-open');
+                    document.documentElement.classList.add('sidebar-open');
+                    
+                    // Additional inline styles for maximum compatibility
                     document.body.style.overflow = 'hidden';
+                    document.body.style.position = 'fixed';
+                    document.body.style.width = '100%';
                 });
             }
             
@@ -267,7 +275,15 @@ document.addEventListener('DOMContentLoaded', function() {
             function closeSidebar() {
                 sidebar.classList.remove('active');
                 overlay.classList.remove('active');
+                
+                // Restore scrolling
+                document.body.classList.remove('sidebar-open');
+                document.documentElement.classList.remove('sidebar-open');
+                
+                // Remove inline styles
                 document.body.style.overflow = '';
+                document.body.style.position = '';
+                document.body.style.width = '';
             }
             
             header.querySelector('.mobile-sidebar-close').addEventListener('click', closeSidebar);
