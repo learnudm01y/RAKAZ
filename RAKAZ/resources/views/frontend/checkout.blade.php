@@ -1,0 +1,668 @@
+@extends('layouts.app')
+
+@section('content')
+@push('styles')
+  <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lora', serif;
+            background: #f8f8f8;
+            color: #333;
+        }
+
+        .checkout-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .checkout-header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+        }
+
+        .checkout-logo {
+            margin-bottom: 20px;
+        }
+
+        .checkout-logo img {
+            height: 50px;
+        }
+
+        .checkout-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            font-weight: 400;
+            color: #1a1a1a;
+        }
+
+        .checkout-steps {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .checkout-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #999;
+        }
+
+        .checkout-step.active {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .checkout-step.active .step-number {
+            background: #333;
+            color: white;
+            border-color: #333;
+        }
+
+        .checkout-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
+
+        .checkout-form {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+        }
+
+        .form-section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e5e5;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .form-grid.full {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-label .required {
+            color: #e74c3c;
+        }
+
+        .form-input {
+            padding: 12px 15px;
+            border: 2px solid #e5e5e5;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Lora', serif;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #333;
+        }
+
+        /* تم إزالة .form-select - نستخدم المكتبة المخصصة فقط */
+
+        .form-textarea {
+            padding: 12px 15px;
+            border: 2px solid #e5e5e5;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Lora', serif;
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .shipping-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .shipping-option {
+            border: 2px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .shipping-option:hover {
+            border-color: #333;
+        }
+
+        .shipping-option.selected {
+            border-color: #333;
+            background: #f8f8f8;
+        }
+
+        .shipping-option input[type="radio"] {
+            display: none;
+        }
+
+        .shipping-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .shipping-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .shipping-price {
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        .shipping-description {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .payment-option {
+            border: 2px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .payment-option:hover {
+            border-color: #333;
+        }
+
+        .payment-option.selected {
+            border-color: #333;
+            background: #f8f8f8;
+        }
+
+        .payment-option input[type="radio"] {
+            display: none;
+        }
+
+        .payment-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .payment-name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .order-summary {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .summary-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        .summary-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .summary-item-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .summary-item-details {
+            flex: 1;
+        }
+
+        .summary-item-name {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .summary-item-specs {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .summary-item-price {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .summary-totals {
+            padding: 20px 0;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 14px;
+        }
+
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 0;
+            font-size: 18px;
+            font-weight: 600;
+            border-top: 2px solid #333;
+            margin-top: 10px;
+        }
+
+        .place-order-btn {
+            width: 100%;
+            padding: 15px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .place-order-btn:hover {
+            background: #555;
+        }
+
+        .back-to-cart {
+            width: 100%;
+            padding: 15px;
+            background: white;
+            color: #333;
+            border: 2px solid #333;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            text-align: center;
+            display: block;
+            text-decoration: none;
+        }
+
+        .back-to-cart:hover {
+            background: #f5f5f5;
+        }
+
+        .secure-checkout {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .secure-checkout svg {
+            width: 16px;
+            height: 16px;
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+
+        @media (max-width: 1024px) {
+            .checkout-content {
+                grid-template-columns: 1fr;
+            }
+
+            .order-summary {
+                position: static;
+                order: -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .checkout-steps {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-methods {
+                grid-template-columns: 1fr;
+            }
+
+            .checkout-form {
+                padding: 20px;
+            }
+        }
+    </style>
+@endpush
+    <div class="checkout-container">
+        <!-- Header -->
+        <div class="checkout-header">
+            <div class="checkout-logo">
+                <a href="{{ route('home') }}">
+                    <img src="/assets/images/ركاز بني copy (1).png" alt="ركاز">
+                </a>
+            </div>
+            <h1 class="checkout-title">إتمام الطلب</h1>
+            <div class="checkout-steps">
+                <div class="checkout-step active">
+                    <span class="step-number">1</span>
+                    <span>معلومات الشحن</span>
+                </div>
+                <div class="checkout-step">
+                    <span class="step-number">2</span>
+                    <span>طريقة الدفع</span>
+                </div>
+                <div class="checkout-step">
+                    <span class="step-number">3</span>
+                    <span>تأكيد الطلب</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="checkout-content">
+            <!-- Checkout Form -->
+            <div class="checkout-form">
+                <!-- Contact Information -->
+                <div class="form-section">
+                    <h2 class="form-section-title">معلومات الاتصال</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">الاسم الأول <span class="required">*</span></label>
+                            <input type="text" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">اسم العائلة <span class="required">*</span></label>
+                            <input type="text" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">البريد الإلكتروني <span class="required">*</span></label>
+                            <input type="email" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">رقم الهاتف <span class="required">*</span></label>
+                            <input type="tel" class="form-input" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipping Address -->
+                <div class="form-section">
+                    <h2 class="form-section-title">عنوان الشحن</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">الدولة <span class="required">*</span></label>
+                            <select class="custom-select-init" required>
+                                <option value="">اختر الدولة</option>
+                                <option value="ae">الإمارات العربية المتحدة</option>
+                                <option value="sa">المملكة العربية السعودية</option>
+                                <option value="kw">الكويت</option>
+                                <option value="bh">البحرين</option>
+                                <option value="qa">قطر</option>
+                                <option value="om">عُمان</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">المدينة <span class="required">*</span></label>
+                            <input type="text" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">المنطقة / الحي</label>
+                            <input type="text" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">الرمز البريدي</label>
+                            <input type="text" class="form-input">
+                        </div>
+                    </div>
+                    <div class="form-grid full">
+                        <div class="form-group">
+                            <label class="form-label">العنوان بالتفصيل <span class="required">*</span></label>
+                            <textarea class="form-textarea" placeholder="الشارع، رقم المبنى، الطابق، رقم الشقة..." required></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipping Method -->
+                <div class="form-section">
+                    <h2 class="form-section-title">طريقة الشحن</h2>
+                    <div class="shipping-methods">
+                        <label class="shipping-option selected">
+                            <input type="radio" name="shipping" value="standard" checked>
+                            <div class="shipping-header">
+                                <span class="shipping-name">الشحن القياسي</span>
+                                <span class="shipping-price">مجاني</span>
+                            </div>
+                            <div class="shipping-description">التسليم خلال 3-5 أيام عمل</div>
+                        </label>
+                        <label class="shipping-option">
+                            <input type="radio" name="shipping" value="express">
+                            <div class="shipping-header">
+                                <span class="shipping-name">الشحن السريع</span>
+                                <span class="shipping-price">50 د.إ</span>
+                            </div>
+                            <div class="shipping-description">التسليم خلال يوم عمل واحد</div>
+                        </label>
+                        <label class="shipping-option">
+                            <input type="radio" name="shipping" value="same-day">
+                            <div class="shipping-header">
+                                <span class="shipping-name">التوصيل في نفس اليوم</span>
+                                <span class="shipping-price">100 د.إ</span>
+                            </div>
+                            <div class="shipping-description">التسليم خلال ساعتين (دبي فقط)</div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="form-section">
+                    <h2 class="form-section-title">طريقة الدفع</h2>
+                    <div class="payment-methods">
+                        <label class="payment-option selected">
+                            <input type="radio" name="payment" value="card" checked>
+                            <div class="payment-icon">💳</div>
+                            <div class="payment-name">بطاقة الائتمان</div>
+                        </label>
+                        <label class="payment-option">
+                            <input type="radio" name="payment" value="apple-pay">
+                            <div class="payment-icon">🍎</div>
+                            <div class="payment-name">Apple Pay</div>
+                        </label>
+                        <label class="payment-option">
+                            <input type="radio" name="payment" value="cod">
+                            <div class="payment-icon">💵</div>
+                            <div class="payment-name">الدفع عند الاستلام</div>
+                        </label>
+                        <label class="payment-option">
+                            <input type="radio" name="payment" value="tabby">
+                            <div class="payment-icon">📱</div>
+                            <div class="payment-name">Tabby - قسطها</div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Additional Notes -->
+                <div class="form-section">
+                    <h2 class="form-section-title">ملاحظات إضافية (اختياري)</h2>
+                    <div class="form-grid full">
+                        <div class="form-group">
+                            <textarea class="form-textarea" placeholder="أضف أي ملاحظات خاصة بطلبك..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <h3 class="summary-title">ملخص الطلب</h3>
+
+                <!-- Items -->
+                <div class="summary-item">
+                    <img src="/assets/images/New folder/Emirati_Gold_Edition_White.jpg" alt="كندورة" class="summary-item-image">
+                    <div class="summary-item-details">
+                        <div class="summary-item-name">كندورة إماراتية كلاسيكية بيضاء</div>
+                        <div class="summary-item-specs">المقاس: L | اللون: أبيض</div>
+                    </div>
+                    <div class="summary-item-price">775 د.إ</div>
+                </div>
+
+                <div class="summary-item">
+                    <img src="/assets/images/New folder/Kuwaiti_blue_image_3_treated.jpg" alt="كندورة" class="summary-item-image">
+                    <div class="summary-item-details">
+                        <div class="summary-item-name">كندورة كويتية فاخرة زرقاء</div>
+                        <div class="summary-item-specs">المقاس: M | اللون: أزرق</div>
+                    </div>
+                    <div class="summary-item-price">850 د.إ</div>
+                </div>
+
+                <!-- Totals -->
+                <div class="summary-totals">
+                    <div class="summary-row">
+                        <span>المجموع الفرعي</span>
+                        <span>1,625 د.إ</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>الشحن</span>
+                        <span>مجاني</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>الضريبة (5%)</span>
+                        <span>81.25 د.إ</span>
+                    </div>
+                    <div class="summary-total">
+                        <span>المجموع الكلي</span>
+                        <span>1,706.25 د.إ</span>
+                    </div>
+                </div>
+
+                <button class="place-order-btn" id="placeOrderBtn">تأكيد وإتمام الطلب</button>
+                <a href="{{ route('cart') }}" class="back-to-cart">العودة إلى السلة</a>
+
+                <div class="secure-checkout">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V7.3l7-3.11v8.8z"/>
+                    </svg>
+                    عملية دفع آمنة ومشفرة
+                </div>
+            </div>
+        </div>
+    </div>
+    @endsection
+@push('scripts')
+
+    <script>
+        // Shipping method selection
+        document.querySelectorAll('.shipping-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.shipping-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                this.classList.add('selected');
+            });
+        });
+
+        // Payment method selection
+        document.querySelectorAll('.payment-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.payment-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                this.classList.add('selected');
+            });
+        });
+
+        // Place Order with SweetAlert2
+        document.getElementById('placeOrderBtn').addEventListener('click', function() {
+            Swal.fire({
+                title: 'تأكيد الطلب',
+                text: 'هل أنت متأكد من رغبتك في إتمام الطلب؟',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'نعم، أكمل الطلب',
+                cancelButtonText: 'المراجعة',
+                confirmButtonColor: '#000',
+                cancelButtonColor: '#666',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'تم إرسال طلبك بنجاح!',
+                        html: 'شكراً لك على طلبك<br>سيتم التواصل معك قريباً لتأكيد التفاصيل',
+                        icon: 'success',
+                        confirmButtonText: 'العودة للرئيسية',
+                        confirmButtonColor: '#000',
+                        allowOutsideClick: false
+                    }).then(() => {
+                        window.location.href = '{{ route('home') }}';
+                    });
+                }
+            });
+        });
+    </script>
+
+@endpush

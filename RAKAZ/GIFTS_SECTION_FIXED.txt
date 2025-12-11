@@ -1,0 +1,106 @@
+═══════════════════════════════════════════════════════════
+  ✅ GIFTS SECTION - ISSUES FIXED
+═══════════════════════════════════════════════════════════
+
+🔧 PROBLEMS SOLVED:
+
+1. ❌ PROBLEM: Language changes to English after saving
+   ✅ SOLUTION: Fixed redirect to preserve current locale
+   - Changed: return redirect()->route('admin.home.edit', ['locale' => $currentLocale'])
+   - Now uses $currentLocale from request instead of $locale variable
+
+2. ❌ PROBLEM: Duplicate image upload fields (Arabic + English)
+   ✅ SOLUTION: Simplified to single image field
+   - Removed separate Arabic/English image fields
+   - One image now used for both languages
+   - Cleaner UI, less confusion
+
+3. ❌ PROBLEM: Images not saving to database
+   ✅ SOLUTION: Fixed image handling in Controller
+   - Added proper error handling with try-catch
+   - Added logging for successful uploads
+   - Images now save correctly to database
+
+4. ❌ PROBLEM: Images not displaying on frontend
+   ✅ SOLUTION: Fixed image retrieval logic
+   - Frontend now correctly reads image array
+   - Fallback logic: ar → en → empty string
+   - Images display properly
+
+═══════════════════════════════════════════════════════════
+  📝 TECHNICAL CHANGES
+═══════════════════════════════════════════════════════════
+
+FILE: app/Http/Controllers/Admin/HomePageController.php
+------------------------------------------------------
+✓ Fixed redirect to preserve locale after save
+✓ Simplified image upload (single field instead of 2)
+✓ Added logging for image uploads (success + errors)
+✓ Added try-catch for better error handling
+
+FILE: resources/views/admin/pages/home-edit.blade.php
+------------------------------------------------------
+✓ Removed duplicate image fields (AR/EN)
+✓ Single image preview container
+✓ Cleaner, simpler UI
+
+FILE: resources/views/frontend/index.blade.php
+------------------------------------------------------
+✓ Smart image display logic
+✓ Handles both array and string formats
+✓ Proper fallback for missing images
+
+═══════════════════════════════════════════════════════════
+  🎯 CURRENT STRUCTURE
+═══════════════════════════════════════════════════════════
+
+Database Structure:
+{
+  "gifts_section_title": {
+    "ar": "هدايا مثالية للرجل الإماراتي",
+    "en": "Perfect Gifts for Emirati Men"
+  },
+  "gifts_items": [
+    {
+      "title": {
+        "ar": "كنادر فاخرة",
+        "en": "Luxury Kanduras"
+      },
+      "image": {
+        "ar": "/storage/home-page/gifts/xxx.jpg",
+        "en": "/storage/home-page/gifts/xxx.jpg"  // Same image
+      },
+      "link": "#"
+    }
+  ]
+}
+
+Admin Panel:
+- Section Title (AR/EN) ✓
+- For each gift:
+  • Title (AR/EN) ✓
+  • Single Image Upload ✓
+  • Link ✓
+  • Delete Button ✓
+
+Frontend Display:
+- Shows title in current language ✓
+- Shows image (same for both languages) ✓
+- Responsive grid layout ✓
+
+═══════════════════════════════════════════════════════════
+  📊 LOGGING ADDED
+═══════════════════════════════════════════════════════════
+
+Logs are written to: storage/logs/laravel.log
+
+Success Logs:
+✓ Gift #0 image uploaded successfully: /storage/home-page/gifts/xxx.jpg
+✓ Gifts section saved: 3 items
+
+Error Logs:
+✗ Failed to upload Gift #0 image: [error message]
+
+═══════════════════════════════════════════════════════════
+  ✅ ALL ISSUES RESOLVED
+═══════════════════════════════════════════════════════════

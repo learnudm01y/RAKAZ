@@ -1,0 +1,126 @@
+/* Dynamic Product Styles */
+
+.original-price {
+    text-decoration: line-through;
+    color: #999;
+    margin-left: 10px;
+    font-size: 0.9em;
+}
+
+.color-option {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent !important;
+}
+
+.color-option.active {
+    border: 2px solid #1a1a1a !important;
+    transform: scale(1.1);
+}
+
+.color-option:hover {
+    transform: scale(1.05);
+}
+
+.product-card-small a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.product-card-small a:hover {
+    opacity: 0.9;
+}
+
+.wishlist-btn-small.active svg path {
+    fill: #dc2626;
+    stroke: #dc2626;
+}
+
+.btn-add-to-wishlist.active svg path {
+    fill: #dc2626;
+    stroke: #dc2626;
+}
+
+.price-group-small {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.price-original {
+    text-decoration: line-through;
+    color: #999;
+    font-size: 14px;
+}
+
+.price-sale {
+    color: #dc2626;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.discount-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #dc2626;
+    color: white;
+    font-size: 12px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.color-dots {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.color-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+}
+
+.stock-notice strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Pagination Links */
+.pagination a.pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: inherit;
+}
+
+.pagination a.pagination-btn:hover {
+    background: #f5f5f5;
+}
+
+.price-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* RTL Support */
+[dir="rtl"] .original-price,
+html[lang="ar"] .original-price {
+    margin-left: 0;
+    margin-right: 10px;
+}
+
+[dir="rtl"] .price-group-small,
+html[lang="ar"] .price-group-small {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .price-group,
+html[lang="ar"] .price-group {
+    flex-direction: row-reverse;
+}
