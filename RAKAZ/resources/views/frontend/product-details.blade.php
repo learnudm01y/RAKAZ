@@ -8,8 +8,11 @@
 @push('scripts')
     <script src="/assets/js/product-details.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pica@9.0.1/dist/pica.min.js"></script>
     <script>
         const isArabic = '{{ app()->getLocale() }}' === 'ar';
+
+        // CSS handles image quality optimization better without distortion
 
         document.addEventListener('DOMContentLoaded', function() {
             // Color selection
@@ -336,15 +339,22 @@
                                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                                     </svg>
                                 </button>
-                                @if($relatedProduct->is_new || $relatedProduct->is_on_sale)
-                                <div class="product-badges">
-                                    @if($relatedProduct->is_new)
+                                @if($relatedProduct->sale_price && $relatedProduct->sale_price < $relatedProduct->price)
+                                    @php
+                                        $discountPercent = round((($relatedProduct->price - $relatedProduct->sale_price) / $relatedProduct->price) * 100);
+                                    @endphp
+                                    <div class="discount-badge-wrapper">
+                                        <img src="{{ asset('assets/images/discount.png') }}" alt="Discount" class="discount-badge-image">
+                                        <div class="discount-badge-text">
+                                            <span class="discount-text-ar">تخفيض</span>
+                                            <span class="discount-text-en">DISCOUNT</span>
+                                            <span class="discount-percent">{{ $discountPercent }}%</span>
+                                        </div>
+                                    </div>
+                                @elseif($relatedProduct->is_new)
                                     <span class="badge-new">{{ app()->getLocale() == 'ar' ? 'جديد' : 'New' }}</span>
-                                    @endif
-                                    @if($relatedProduct->is_on_sale && $relatedProduct->sale_price)
+                                @elseif($relatedProduct->is_on_sale)
                                     <span class="badge-discount">{{ app()->getLocale() == 'ar' ? 'عرض خاص' : 'Sale' }}</span>
-                                    @endif
-                                </div>
                                 @endif
                             </div>
                             <div class="product-info-small">
@@ -357,10 +367,6 @@
                                     <span class="price-original">{{ number_format($relatedProduct->price, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</span>
                                     <span class="price-sale">{{ number_format($relatedProduct->sale_price, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</span>
                                 </div>
-                                @php
-                                    $discount = round((($relatedProduct->price - $relatedProduct->sale_price) / $relatedProduct->price) * 100);
-                                @endphp
-                                <span class="discount-badge">{{ app()->getLocale() == 'ar' ? 'خصم' : 'Save' }} {{ $discount }}%</span>
                                 @else
                                 <p class="product-price-small">{{ number_format($relatedProduct->price, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</p>
                                 @endif
@@ -406,15 +412,22 @@
                                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                                     </svg>
                                 </button>
-                                @if($brandProduct->is_new || $brandProduct->is_on_sale)
-                                <div class="product-badges">
-                                    @if($brandProduct->is_new)
+                                @if($brandProduct->sale_price && $brandProduct->sale_price < $brandProduct->price)
+                                    @php
+                                        $discountPercent = round((($brandProduct->price - $brandProduct->sale_price) / $brandProduct->price) * 100);
+                                    @endphp
+                                    <div class="discount-badge-wrapper">
+                                        <img src="{{ asset('assets/images/discount.png') }}" alt="Discount" class="discount-badge-image">
+                                        <div class="discount-badge-text">
+                                            <span class="discount-text-ar">تخفيض</span>
+                                            <span class="discount-text-en">DISCOUNT</span>
+                                            <span class="discount-percent">{{ $discountPercent }}%</span>
+                                        </div>
+                                    </div>
+                                @elseif($brandProduct->is_new)
                                     <span class="badge-new">{{ app()->getLocale() == 'ar' ? 'جديد' : 'New' }}</span>
-                                    @endif
-                                    @if($brandProduct->is_on_sale)
+                                @elseif($brandProduct->is_on_sale)
                                     <span class="badge-new" style="background: #dc2626;">{{ app()->getLocale() == 'ar' ? 'عرض' : 'Sale' }}</span>
-                                    @endif
-                                </div>
                                 @endif
                             </div>
                             <div class="product-info-small">

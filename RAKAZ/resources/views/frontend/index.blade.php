@@ -80,7 +80,7 @@
             </button>
             <div class="products-container">
                 <div class="product-card">
-                    <a href="{{ route('product.details') }}" class="product-image-wrapper">
+                    <a href="{{ route('shop') }}" class="product-image-wrapper">
                         <img src="/assets/images/New folder/Emirati_Gold_Edition_Blue.jpg" alt="Product" class="product-image-primary">
                         <img src="/assets/images/New folder/Emirati_Gold_Edition_White.jpg" alt="Product" class="product-image-secondary">
                         <button class="wishlist-btn">
@@ -116,7 +116,7 @@
                     </div>
                 </div>
                 <div class="product-card">
-                    <a href="{{ route('product.details') }}" class="product-image-wrapper">
+                    <a href="{{ route('shop') }}" class="product-image-wrapper">
                         <img src="/assets/images/New folder/Kuwaiti_Gold_Edition_White.jpg" alt="Product" class="product-image-primary">
                         <img src="/assets/images/New folder/Kuwaiti_blue_image_3_treated.jpg" alt="Product" class="product-image-secondary">
                         <button class="wishlist-btn">
@@ -147,7 +147,7 @@
                     </div>
                 </div>
                 <div class="product-card">
-                    <a href="{{ route('product.details') }}" class="product-image-wrapper">
+                    <a href="{{ route('shop') }}" class="product-image-wrapper">
                         <img src="/assets/images/New folder/Treated_1.jpg" alt="Product" class="product-image-primary">
                         <img src="/assets/images/New folder/Treated_image_2.jpg" alt="Product" class="product-image-secondary">
                         <button class="wishlist-btn">
@@ -183,7 +183,7 @@
                     </div>
                 </div>
                 <div class="product-card">
-                    <a href="{{ route('product.details') }}" class="product-image-wrapper">
+                    <a href="{{ route('shop') }}" class="product-image-wrapper">
                         <img src="/assets/images/New folder/Image_treated_4.jpg" alt="Product" class="product-image-primary">
                         <img src="/assets/images/New folder/Updated_size.jpg" alt="Product" class="product-image-secondary">
                         <button class="wishlist-btn">
@@ -218,7 +218,7 @@
                     </div>
                 </div>
                 <div class="product-card">
-                    <a href="{{ route('product.details') }}" class="product-image-wrapper">
+                    <a href="{{ route('shop') }}" class="product-image-wrapper">
                         <img src="/assets/images/New folder/2_0665cfeb-d5d6-429a-b541-168097c14ccb.jpg" alt="Product" class="product-image-primary">
                         <img src="/assets/images/New folder/2_98b84880-82eb-4ddf-8923-63083d78ffbf.jpg" alt="Product" class="product-image-secondary">
                         <button class="wishlist-btn">
@@ -338,7 +338,7 @@
             </button>
             <div class="products-container">
                 <div class="product-card">
-                    <a href="{{ route('product.details') }}" class="product-image-wrapper">
+                    <a href="{{ route('shop') }}" class="product-image-wrapper">
                         <img src="/assets/images/New folder/2_fa42623b-b79c-423e-be3d-a63ede9ff974.jpg" alt="Product" class="product-image-primary">
                         <img src="/assets/images/New folder/3_36dc3051-f361-4a0a-bfd5-3c984f283a01.jpg" alt="Product" class="product-image-secondary">
                         <button class="wishlist-btn">
@@ -374,7 +374,7 @@
                     </div>
                 </div>
                 <div class="product-card">
-                    <a href="{{ route('product.details') }}" class="product-image-wrapper">
+                    <a href="{{ route('shop') }}" class="product-image-wrapper">
                         <img src="/assets/images/New folder/3_5d1a45bd-0fb0-46aa-9bf1-0251f1e8a513.jpg" alt="Product" class="product-image-primary">
                         <img src="/assets/images/New folder/3_70b1a53a-2b15-4598-8e56-eb5b979e18fd.jpg" alt="Product" class="product-image-secondary">
                         <button class="wishlist-btn">
@@ -406,7 +406,7 @@
                     </div>
                 </div>
                 <div class="product-card">
-                    <a href="{{ route('product.details') }}" class="product-image-wrapper">
+                    <a href="{{ route('shop') }}" class="product-image-wrapper">
                         <img src="/assets/images/New folder/3_a0c29748-9d72-43bc-8fbd-9704da8d885f.jpg" alt="Product" class="product-image-primary">
                         <img src="/assets/images/New folder/3_ac5cf230-1e12-4c93-9db4-bfb900263827.jpg" alt="Product" class="product-image-secondary">
                         <button class="wishlist-btn">
@@ -442,7 +442,7 @@
                     </div>
                 </div>
                 <div class="product-card">
-                    <a href="{{ route('product.details') }}" class="product-image-wrapper">
+                    <a href="{{ route('shop') }}" class="product-image-wrapper">
                         <img src="/assets/images/New folder/3_c079fc2f-cb5e-4337-a2fb-d4055f9dd23c.jpg" alt="Product" class="product-image-primary">
                         <img src="/assets/images/New folder/3_c379f95c-dc6b-4058-b6d4-962885eec798.jpg" alt="Product" class="product-image-secondary">
                         <button class="wishlist-btn">
@@ -478,7 +478,7 @@
                     </div>
                 </div>
                 <div class="product-card">
-                    <a href="{{ route('product.details') }}" class="product-image-wrapper">
+                    <a href="{{ route('shop') }}" class="product-image-wrapper">
                         <img src="/assets/images/New folder/51.jpg" alt="Product" class="product-image-primary">
                         <img src="/assets/images/New folder/Updated_10943a34-f761-4c6b-b807-a21f83974ed1.jpg" alt="Product" class="product-image-secondary">
                         <button class="wishlist-btn">

@@ -7,6 +7,13 @@
     box-sizing: border-box;
 }
 
+/* High Quality Image Rendering */
+img {
+    -ms-interpolation-mode: bicubic;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
 html, body {
     overflow-x: hidden;
     max-width: 100%;
@@ -597,11 +604,11 @@ html, body {
 /* Product Card */
 .product-card {
     background: transparent;
-
     overflow: hidden;
     transition: all 0.3s ease;
     width: 100%;
     box-sizing: border-box;
+    cursor: pointer;
 }
 
 .product-card:hover {
@@ -616,6 +623,7 @@ html, body {
     background: #ffffff;
     width: 100%;
     box-sizing: border-box;
+    contain: layout style paint;
 }
 
 .product-image-primary,
@@ -626,12 +634,29 @@ html, body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: opacity 0.4s ease;
+    object-position: center;
+    transition: opacity 0.5s ease;
     box-sizing: border-box;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: high-quality;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-font-smoothing: antialiased;
+    will-change: opacity;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.product-image-primary {
+    opacity: 1;
+    z-index: 1;
 }
 
 .product-image-secondary {
     opacity: 0;
+    z-index: 2;
 }
 
 .product-card:hover .product-image-secondary {
@@ -671,13 +696,196 @@ html, body {
     left: 15px;
     background: #1a1a1a;
     color: #fff;
-    padding: 6px 8px;
-
-    font-size: 9px;
+    padding: 6px 12px;
+    font-size: 11px;
     font-weight: 600;
-    max-width: 70px;
     text-align: center;
     white-space: nowrap;
+    border-radius: 4px;
+    z-index: 3;
+}
+
+.badge.discount {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    background: #dc2626;
+    color: #fff;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+    border-radius: 4px;
+    z-index: 3;
+    letter-spacing: 0.5px;
+}
+
+/* Discount Badge with Image */
+.discount-badge-wrapper {
+    position: absolute;
+    top: 10px;
+    z-index: 3;
+    width: 40px;
+    height: 65px;
+}
+
+[dir="rtl"] .discount-badge-wrapper {
+    left: 10px;
+    right: auto;
+}
+
+[dir="ltr"] .discount-badge-wrapper {
+    right: 10px;
+    left: auto;
+}
+
+.discount-badge-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.discount-badge-text {
+    position: absolute;
+    top: 32%;
+    left: 1%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    pointer-events: none;
+}
+
+.discount-text-ar {
+    font-size: 8px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 1px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.discount-text-en {
+    font-size: 6px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 1px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    text-transform: uppercase;
+}
+
+.discount-percent {
+    font-size: 12px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+/* Responsive Discount Badge */
+@media (max-width: 1024px) {
+    .discount-badge-wrapper {
+        width: 38px;
+        height: 60px;
+        top: 8px;
+    }
+
+    [dir="rtl"] .discount-badge-wrapper {
+        left: 8px;
+    }
+
+    [dir="ltr"] .discount-badge-wrapper {
+        right: 8px;
+    }
+
+    .discount-badge-text {
+        top: 31%;
+        left: 0%;
+    }
+
+    .discount-text-ar {
+        font-size: 7px;
+    }
+
+    .discount-text-en {
+        font-size: 5px;
+    }
+
+    .discount-percent {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 768px) {
+    .discount-badge-wrapper {
+        width: 35px;
+        height: 55px;
+        top: 5px;
+    }
+
+    [dir="rtl"] .discount-badge-wrapper {
+        left: 5px;
+    }
+
+    [dir="ltr"] .discount-badge-wrapper {
+        right: 5px;
+    }
+
+    .discount-badge-text {
+        top: 30%;
+        left: -1%;
+    }
+
+    .discount-text-ar {
+        font-size: 6px;
+    }
+
+    .discount-text-en {
+        font-size: 5px;
+    }
+
+    .discount-percent {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .discount-badge-wrapper {
+        width: 32px;
+        height: 50px;
+        top: 5px;
+    }
+
+    [dir="rtl"] .discount-badge-wrapper {
+        left: 5px;
+    }
+
+    [dir="ltr"] .discount-badge-wrapper {
+        right: 5px;
+    }
+
+    .discount-badge-text {
+        top: 29%;
+        left: -2%;
+    }
+
+    .discount-text-ar {
+        font-size: 6px;
+    }
+
+    .discount-text-en {
+        font-size: 4px;
+    }
+
+    .discount-percent {
+        font-size: 9px;
+    }
 }
 
 .product-info {
@@ -698,6 +906,11 @@ html, body {
     color: #1a1a1a;
     margin-bottom: 10px;
     line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    display: block;
 }
 
 .product-price {
@@ -706,6 +919,8 @@ html, body {
     color: #2d1300;
     margin-bottom: 10px;
 }
+
+
 
 /* Size Selector */
 .size-selector {

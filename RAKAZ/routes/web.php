@@ -106,6 +106,15 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::resource('categories', CategoryController::class);
     Route::get('categories/subcategories', [CategoryController::class, 'getSubcategories'])->name('categories.subcategories');
 
+    // Sizes Management
+    Route::resource('sizes', \App\Http\Controllers\Admin\SizeController::class)->except(['show', 'create', 'edit']);
+
+    // Colors Management
+    Route::resource('colors', \App\Http\Controllers\Admin\ColorController::class)->except(['show', 'create', 'edit']);
+
+    // Shoe Sizes Management
+    Route::resource('shoe-sizes', \App\Http\Controllers\Admin\ShoeSizeController::class)->except(['show', 'create', 'edit']);
+
     // Menus Management
     Route::resource('menus', MenuController::class);
     Route::get('menus/{menu}/columns', [MenuController::class, 'manageColumns'])->name('menus.columns');

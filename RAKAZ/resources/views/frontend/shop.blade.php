@@ -976,10 +976,22 @@
                                         </path>
                                     </svg>
                                 </button>
-                                @if($product->is_new)
-                                <span class="badge new-season">{{ app()->getLocale() == 'ar' ? 'موسم جديد' : 'New Season' }}</span>
+                                @if($product->sale_price && $product->sale_price < $product->price)
+                                    @php
+                                        $discountPercent = round((($product->price - $product->sale_price) / $product->price) * 100);
+                                    @endphp
+                                    <div class="discount-badge-wrapper">
+                                        <img src="{{ asset('assets/images/discount.png') }}" alt="Discount" class="discount-badge-image">
+                                        <div class="discount-badge-text">
+                                            <span class="discount-text-ar">تخفيض</span>
+                                            <span class="discount-text-en">DISCOUNT</span>
+                                            <span class="discount-percent">{{ $discountPercent }}%</span>
+                                        </div>
+                                    </div>
+                                @elseif($product->is_new)
+                                    <span class="badge new-season">{{ app()->getLocale() == 'ar' ? 'موسم جديد' : 'New Season' }}</span>
                                 @elseif($product->is_on_sale)
-                                <span class="badge discount">{{ app()->getLocale() == 'ar' ? 'عرض خاص' : 'On Sale' }}</span>
+                                    <span class="badge discount">{{ app()->getLocale() == 'ar' ? 'عرض خاص' : 'On Sale' }}</span>
                                 @endif
                             </a>
                             <div class="product-info">
@@ -988,10 +1000,10 @@
                                 @endif
                                 <h3 class="product-name">{{ $product->getName() }}</h3>
                                 @if($product->sale_price && $product->sale_price < $product->price)
-                                <div class="price-group">
-                                    <span class="product-price-original" style="text-decoration: line-through; color: #999; font-size: 14px;">{{ number_format($product->price, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</span>
-                                    <span class="product-price" style="color: #dc2626;">{{ number_format($product->sale_price, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</span>
-                                </div>
+                                <p class="product-price">
+                                    <span style="color: #999; text-decoration: line-through; font-size: 14px; margin-inline-end: 8px;">{{ number_format($product->price, 0) }}</span>
+                                    {{ number_format($product->sale_price, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}
+                                </p>
                                 @else
                                 <p class="product-price">{{ number_format($product->price, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</p>
                                 @endif
@@ -1075,8 +1087,172 @@
 @endsection
 @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pica@9.0.1/dist/pica.min.js"></script>
         <script>
             const isArabic = '{{ app()->getLocale() }}' === 'ar';
+
+            // Smart Pica Implementation - Preserves aspect ratio
+            document.addEventListener('DOMContentLoaded', function() {
+                if (typeof pica === 'undefined') return;
+
+                const picaInstance = pica();
+
+                // Process images after they load
+                function processProductImage(img) {
+                    // Skip if already processed or loading
+                    if (img.dataset.picaProcessed || img.dataset.picaProcessing) return;
+
+                    // Mark as processing
+                    img.dataset.picaProcessing = 'true';
+
+                    // Wait for image to fully load
+                    if (!img.complete || img.naturalWidth === 0) {
+                        img.addEventListener('load', function() {
+                            enhanceImageWithPica(this);
+                        }, { once: true });
+                        return;
+                    }
+
+                    enhanceImageWithPica(img);
+                }
+
+                function enhanceImageWithPica(img) {
+                    try {
+                        // Get the container dimensions
+                        const container = img.parentElement;
+                        const containerRect = container.getBoundingClientRect();
+
+                        // Calculate proper dimensions maintaining aspect ratio
+                        const originalAspect = img.naturalWidth / img.naturalHeight;
+                        const containerAspect = containerRect.width / containerRect.height;
+
+                        let targetWidth, targetHeight;
+
+                        // Use device pixel ratio for retina displays
+                        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+                        // Calculate target dimensions based on object-fit: cover behavior
+                        if (originalAspect > containerAspect) {
+                            // Image is wider - fit to height
+                            targetHeight = Math.round(containerRect.height * dpr);
+                            targetWidth = Math.round(targetHeight * originalAspect);
+                        } else {
+                            // Image is taller - fit to width
+                            targetWidth = Math.round(containerRect.width * dpr);
+                            targetHeight = Math.round(targetWidth / originalAspect);
+                        }
+
+                        // Don't upscale images
+                        if (targetWidth > img.naturalWidth || targetHeight > img.naturalHeight) {
+                            img.dataset.picaProcessed = 'true';
+                            delete img.dataset.picaProcessing;
+                            return;
+                        }
+
+                        // Create canvas with calculated dimensions
+                        const canvas = document.createElement('canvas');
+                        canvas.width = targetWidth;
+                        canvas.height = targetHeight;
+
+                        // Create temporary image for processing
+                        const tempImg = new Image();
+                        tempImg.crossOrigin = 'anonymous';
+
+                        tempImg.onload = function() {
+                            // Use Pica with high quality settings
+                            picaInstance.resize(tempImg, canvas, {
+                                quality: 3,
+                                alpha: true,
+                                unsharpAmount: 160,
+                                unsharpRadius: 0.6,
+                                unsharpThreshold: 1
+                            }).then(result => {
+                                return picaInstance.toBlob(result, 'image/jpeg', 0.92);
+                            }).then(blob => {
+                                // Create object URL and update image
+                                const url = URL.createObjectURL(blob);
+
+                                // Store original src for potential revert
+                                if (!img.dataset.originalSrc) {
+                                    img.dataset.originalSrc = img.src;
+                                }
+
+                                img.src = url;
+                                img.dataset.picaProcessed = 'true';
+                                delete img.dataset.picaProcessing;
+
+                                // Clean up old blob URL after a delay
+                                if (img.dataset.picaBlobUrl) {
+                                    setTimeout(() => URL.revokeObjectURL(img.dataset.picaBlobUrl), 100);
+                                }
+                                img.dataset.picaBlobUrl = url;
+
+                            }).catch(err => {
+                                console.warn('Pica processing failed:', err);
+                                img.dataset.picaProcessed = 'true';
+                                delete img.dataset.picaProcessing;
+                            });
+                        };
+
+                        tempImg.onerror = function() {
+                            img.dataset.picaProcessed = 'true';
+                            delete img.dataset.picaProcessing;
+                        };
+
+                        tempImg.src = img.src;
+
+                    } catch (err) {
+                        console.warn('Pica setup failed:', err);
+                        img.dataset.picaProcessed = 'true';
+                        delete img.dataset.picaProcessing;
+                    }
+                }
+
+                // Process all product images
+                function processAllProductImages() {
+                    const productImages = document.querySelectorAll('.product-image-primary, .product-image-secondary');
+                    productImages.forEach(img => {
+                        processProductImage(img);
+                    });
+                }
+
+                // Initial processing
+                setTimeout(processAllProductImages, 100);
+
+                // Reprocess on window resize (debounced)
+                let resizeTimer;
+                window.addEventListener('resize', function() {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(function() {
+                        // Reset processed flag for responsive resize
+                        document.querySelectorAll('[data-pica-processed]').forEach(img => {
+                            delete img.dataset.picaProcessed;
+                            delete img.dataset.picaProcessing;
+                        });
+                        processAllProductImages();
+                    }, 250);
+                });
+
+                // Process new images added dynamically (e.g., infinite scroll)
+                if (window.MutationObserver) {
+                    const observer = new MutationObserver(function(mutations) {
+                        mutations.forEach(function(mutation) {
+                            mutation.addedNodes.forEach(function(node) {
+                                if (node.nodeType === 1) {
+                                    const images = node.querySelectorAll ?
+                                        node.querySelectorAll('.product-image-primary, .product-image-secondary') : [];
+                                    images.forEach(processProductImage);
+                                }
+                            });
+                        });
+                    });
+
+                    const productsGrid = document.querySelector('.products-grid');
+                    if (productsGrid) {
+                        observer.observe(productsGrid, { childList: true, subtree: true });
+                    }
+                }
+            });
 
             // Mobile Filter Toggle
             const mobileFilterToggle = document.getElementById('mobileFilterToggle');
@@ -1103,6 +1279,27 @@
                     }
                 });
             }
+
+            // Product Image Hover Effect
+            document.addEventListener('DOMContentLoaded', function() {
+                // Handle image hover for all product cards
+                const productCards = document.querySelectorAll('.product-card');
+
+                productCards.forEach(card => {
+                    const imageWrapper = card.querySelector('.product-image-wrapper');
+                    const secondaryImage = card.querySelector('.product-image-secondary');
+
+                    if (imageWrapper && secondaryImage) {
+                        card.addEventListener('mouseenter', function() {
+                            secondaryImage.style.opacity = '1';
+                        });
+
+                        card.addEventListener('mouseleave', function() {
+                            secondaryImage.style.opacity = '0';
+                        });
+                    }
+                });
+            });
 
             // Wishlist functionality
             document.addEventListener('DOMContentLoaded', function() {

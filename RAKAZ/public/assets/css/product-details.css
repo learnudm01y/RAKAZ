@@ -40,6 +40,11 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    image-rendering: high-quality;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -moz-crisp-edges;
+    backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 .wishlist-btn-large {
@@ -159,11 +164,13 @@
     width: 100%;
     height: 120px;
     object-fit: cover;
-
     cursor: pointer;
     border: 2px solid transparent;
     transition: all 0.3s ease;
     flex-shrink: 0;
+    image-rendering: high-quality;
+    image-rendering: -webkit-optimize-contrast;
+    backface-visibility: hidden;
 }
 
 .thumbnail:hover {
@@ -721,6 +728,10 @@
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
+    image-rendering: high-quality;
+    image-rendering: -webkit-optimize-contrast;
+    backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 .product-card-small:hover .product-image-small {
@@ -766,7 +777,6 @@
 .badge-new,
 .badge-discount {
     padding: 5px 10px;
-
     font-size: 11px;
     font-weight: 600;
 }
@@ -774,11 +784,80 @@
 .badge-new {
     background: #1a1a1a;
     color: #ffffff;
+    border-radius: 4px;
 }
 
 .badge-discount {
     background: #e53935;
     color: #ffffff;
+    border-radius: 4px;
+}
+
+/* Discount Badge with Image for Small Cards */
+.product-image-wrapper-small .discount-badge-wrapper {
+    position: absolute;
+    top: 8px;
+    z-index: 3;
+    width: 35px;
+    height: 55px;
+}
+
+[dir="rtl"] .product-image-wrapper-small .discount-badge-wrapper {
+    left: 8px;
+    right: auto;
+}
+
+[dir="ltr"] .product-image-wrapper-small .discount-badge-wrapper {
+    right: 8px;
+    left: auto;
+}
+
+.product-image-wrapper-small .discount-badge-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.product-image-wrapper-small .discount-badge-text {
+    position: absolute;
+    top: 30%;
+    left: -1%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    pointer-events: none;
+}
+
+.product-image-wrapper-small .discount-text-ar {
+    font-size: 6px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 1px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.product-image-wrapper-small .discount-text-en {
+    font-size: 5px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 1px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    text-transform: uppercase;
+}
+
+.product-image-wrapper-small .discount-percent {
+    font-size: 9px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 
 .product-info-small {
