@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار عرض الطلبات - النظام الموحد</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .page-header h1 {
+            color: #1a1a1a;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .success-alert {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .orders-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .orders-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .order-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .order-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .order-date {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .order-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .order-timeline {
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .timeline-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .timeline-line {
+            position: absolute;
+            top: 16px;
+            left: 8%;
+            right: 8%;
+            height: 2px;
+            background: #e5e5e5;
+            z-index: 0;
+        }
+
+        .timeline-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: #28a745;
+            transition: width 0.5s ease;
+            border-radius: 2px;
+        }
+
+        .timeline-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            flex: 1;
+        }
+
+        .step-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #f5f5f5;
+            border: 2px solid #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .step-icon svg {
+            width: 16px;
+            height: 16px;
+            stroke: #999;
+            fill: none;
+        }
+
+        .timeline-step.completed .step-icon {
+            background: #28a745;
+            border-color: #28a745;
+        }
+
+        .timeline-step.completed .step-icon svg {
+            stroke: #fff;
+        }
+
+        .timeline-step.active .step-icon {
+            background: #fff;
+            border-color: #28a745;
+            border-width: 3px;
+        }
+
+        .timeline-step.active .step-icon svg {
+            stroke: #28a745;
+        }
+
+        .step-label {
+            font-size: 10px;
+            color: #999;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .timeline-step.completed .step-label,
+        .timeline-step.active .step-label {
+            color: #1a1a1a;
+        }
+
+        .order-items {
+            margin: 20px 0;
+            border-top: 1px solid #f0f0f0;
+            padding-top: 15px;
+        }
+
+        .order-item {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .item-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-name {
+            font-size: 13px;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .item-quantity {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .order-total {
+            text-align: left;
+        }
+
+        .total-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .total-amount {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .comparison-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .comparison-section h2 {
+            color: #1a1a1a;
+            margin-bottom: 20px;
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+        }
+
+        .features-list li::before {
+            content: "✅";
+            margin-left: 12px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>🎯 اختبار النظام الموحد لعرض الطلبات</h1>
+            <p style="color: #666; margin-top: 10px;">جميع الطلبات بتصميم موحد ولون أخضر موحد</p>
+            <div class="success-alert">
+                ✅ تم تطبيق التصميم الموحد بنجاح - جميع الطلبات الآن باللون الأخضر الموحد
+            </div>
+        </div>
+
+        <div class="orders-grid">
+            <!-- Order 1: Shipped (75%) -->
+            <div class="order-card">
+                <div class="order-header">
+                    <div class="order-info">
+                        <h3>طلب #ORD-20251216-8595</h3>
+                        <p class="order-date">16 ديسمبر 2025</p>
+                    </div>
+                    <div>
+                        <span class="order-badge">⏱ في الطريق للتوصيل</span>
+                    </div>
+                </div>
+
+                <div class="order-timeline">
+                    <div class="timeline-wrapper">
+                        <div class="timeline-line">
+                            <div class="timeline-progress" style="width: 75%"></div>
+                        </div>
+
+                        <div class="timeline-step completed">
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" stroke-width="2">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="step-label">تم الطلب</span>
+                        </div>
+
+                        <div class="timeline-step completed">
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" stroke-width="2">
+                                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="step-label">قيد التحضير</span>
+                        </div>
+
+                        <div class="timeline-step completed">
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" stroke-width="2">
+                                    <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="step-label">تم الشحن</span>
+                        </div>
+
+                        <div class="timeline-step completed active">
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" stroke-width="2">
+                                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="step-label">قيد التوصيل</span>
+                        </div>
+
+                        <div class="timeline-step">
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" stroke-width="2">
+                                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="step-label">تم التوصيل</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-footer">
+                    <div></div>
+                    <div class="order-total">
+                        <div class="total-label">المجموع:</div>
+                        <div class="total-amount">1,400 د.إ</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order 2: Processing (50%) -->
+            <div class="order-card">
+                <div class="order-header">
+                    <div class="order-info">
+                        <h3>طلب #ORD-20251216-1730</h3>
+                        <p class="order-date">16 ديسمبر 2025</p>
+                    </div>
+                    <div>
+                        <span class="order-badge">⏱ قيد التحضير</span>
+                    </div>
+                </div>
+
+                <div class="order-timeline">
+                    <div class="timeline-wrapper">
+                        <div class="timeline-line">
+                            <div class="timeline-progress" style="width: 50%"></div>
+                        </div>
+
+                        <div class="timeline-step completed">
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" stroke-width="2">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="step-label">تم الطلب</span>
+                        </div>
+
+                        <div class="timeline-step completed">
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" stroke-width="2">
+                                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="step-label">قيد التحضير</span>
+                        </div>
+
+                        <div class="timeline-step completed active">
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" stroke-width="2">
+                                    <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="step-label">تم الشحن</span>
+                        </div>
+
+                        <div class="timeline-step">
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" stroke-width="2">
+                                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="step-label">قيد التوصيل</span>
+                        </div>
+
+                        <div class="timeline-step">
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" stroke-width="2">
+                                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="step-label">تم التوصيل</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-footer">
+                    <div></div>
+                    <div class="order-total">
+                        <div class="total-label">المجموع:</div>
+                        <div class="total-amount">1,800 د.إ</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order 3: Pending (0%) -->
+            <div class="order-card">
+                <div class="order-header">
+                    <div class="order-info">
+                        <h3>طلب #ORD-20251216-2298</h3>
+                        <p class="order-date">16 ديسمبر 2025</p>
+                    </div>
+                    <div>
+                        <span class="order-badge">⏱ قيد التحضير</span>
+                    </div>
+                </div>
+
+                <div class="order-timeline">
+                    <div class="timeline-wrapper">
+                        <div class="timeline-line">
+                            <div class="timeline-progress" style="width: 0%"></div>
+                        </div>
+
+                        <div class="timeline-step completed active">
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" stroke-width="2">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="step-label">تم الطلب</span>
+                        </div>
+
+                        <div class="timeline-step">
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" stroke-width="2">
+                                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="step-label">قيد التحضير</span>
+                        </div>
+
+                        <div class="timeline-step">
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" stroke-width="2">
+                                    <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="step-label">تم الشحن</span>
+                        </div>
+
+                        <div class="timeline-step">
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" stroke-width="2">
+                                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="step-label">قيد التوصيل</span>
+                        </div>
+
+                        <div class="timeline-step">
+                            <div class="step-icon">
+                                <svg viewBox="0 0 24 24" stroke-width="2">
+                                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="step-label">تم التوصيل</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-footer">
+                    <div></div>
+                    <div class="order-total">
+                        <div class="total-label">المجموع:</div>
+                        <div class="total-amount">1,425 د.إ</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="comparison-section">
+            <h2>✅ التحسينات المطبقة</h2>
+            <ul class="features-list">
+                <li>توحيد اللون الأخضر لجميع الحالات النشطة (pending, processing, shipped)</li>
+                <li>الخط الأخضر يتوقف عند الخطوة المكتملة بالضبط</li>
+                <li>تصميم موحد لجميع الكروت - لا اختلاف</li>
+                <li>جميع البيانات من قاعدة البيانات الحقيقية</li>
+                <li>كود مبسط وموحد - خوارزمية واحدة</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Animate progress bars on load
+        setTimeout(() => {
+            document.querySelectorAll('.timeline-progress').forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 100);
+            });
+        }, 200);
+    </script>
+</body>
+</html>

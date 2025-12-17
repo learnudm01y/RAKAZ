@@ -37,7 +37,7 @@ class ColorController extends Controller
         Color::create($validated);
 
         return redirect()->route('admin.colors.index')
-            ->with('success', __('Color created successfully'));
+            ->with('success', __('labels.colors.created_successfully'));
     }
 
     /**
@@ -59,7 +59,7 @@ class ColorController extends Controller
         $color->update($validated);
 
         return redirect()->route('admin.colors.index')
-            ->with('success', __('Color updated successfully'));
+            ->with('success', __('labels.colors.updated_successfully'));
     }
 
     /**
@@ -70,6 +70,6 @@ class ColorController extends Controller
         $color->delete();
 
         return redirect()->route('admin.colors.index')
-            ->with('success', __('Color deleted successfully'));
+            ->with('success', __('labels.colors.deleted_successfully'));
     }
 }

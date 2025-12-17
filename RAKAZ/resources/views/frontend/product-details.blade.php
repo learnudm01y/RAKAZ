@@ -3,6 +3,53 @@
 @push('styles')
     <link rel="stylesheet" href="/assets/css/product-details.css">
     <link rel="stylesheet" href="/assets/css/product-dynamic.css">
+    <style>
+        .main-image-wrapper {
+            position: relative;
+        }
+
+        .product-image-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .product-image-nav:hover {
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .product-image-nav.prev {
+            left: 10px;
+        }
+
+        .product-image-nav.next {
+            right: 10px;
+        }
+
+        .product-image-nav svg {
+            width: 20px;
+            height: 20px;
+            stroke: #333;
+        }
+
+        .product-image-nav:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+    </style>
 @endpush
 
 @push('scripts')
@@ -15,6 +62,61 @@
         // CSS handles image quality optimization better without distortion
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Image navigation setup
+            const allImages = [];
+            const mainImage = document.getElementById('mainProductImage');
+            const thumbnails = document.querySelectorAll('.thumbnail');
+
+            // Collect all image sources
+            thumbnails.forEach(thumb => {
+                allImages.push(thumb.src);
+            });
+
+            let currentIndex = 0;
+            const totalImages = allImages.length;
+
+            function updateImage(index) {
+                if (index >= 0 && index < totalImages) {
+                    currentIndex = index;
+                    mainImage.src = allImages[currentIndex];
+
+                    // Update active thumbnail
+                    thumbnails.forEach((thumb, i) => {
+                        thumb.classList.toggle('active', i === currentIndex);
+                    });
+
+                    // Update button states
+                    document.getElementById('prevImage').disabled = currentIndex === 0;
+                    document.getElementById('nextImage').disabled = currentIndex === totalImages - 1;
+                }
+            }
+
+            // Previous button
+            document.getElementById('prevImage').addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (currentIndex > 0) {
+                    updateImage(currentIndex - 1);
+                }
+            });
+
+            // Next button
+            document.getElementById('nextImage').addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (currentIndex < totalImages - 1) {
+                    updateImage(currentIndex + 1);
+                }
+            });
+
+            // Update thumbnails click to use updateImage
+            thumbnails.forEach((thumbnail, index) => {
+                thumbnail.addEventListener('click', function() {
+                    updateImage(index);
+                });
+            });
+
+            // Initialize button states
+            updateImage(0);
+
             // Color selection
             const colorOptions = document.querySelectorAll('.color-option');
             const selectedColorSpan = document.getElementById('selectedColor');
@@ -35,8 +137,13 @@
             const addToCartBtn = document.getElementById('addToCartBtn');
             if (addToCartBtn) {
                 addToCartBtn.addEventListener('click', function() {
+                    const productId = this.dataset.productId;
                     const sizeSelect = document.getElementById('sizeSelect');
                     const selectedSize = sizeSelect ? sizeSelect.value : null;
+
+                    // Get selected color
+                    const selectedColor = document.querySelector('.color-option.active');
+                    const colorValue = selectedColor ? (isArabic ? selectedColor.dataset.colorAr : selectedColor.dataset.colorEn) : null;
 
                     // Check if size is required and selected
                     if (sizeSelect && !selectedSize) {
@@ -50,38 +157,128 @@
                         return;
                     }
 
-                    // Show success message
-                    Swal.fire({
-                        icon: 'success',
-                        title: isArabic ? 'تمت الإضافة!' : 'Added!',
-                        text: isArabic ? 'تم إضافة المنتج للسلة بنجاح' : 'Product added to cart successfully',
-                        timer: 1500,
-                        showConfirmButton: false
+                    // Add to cart via AJAX
+                    const button = this;
+                    button.disabled = true;
+
+                    fetch('{{ route("cart.add") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            product_id: productId,
+                            quantity: 1,
+                            size: selectedSize,
+                            color: colorValue
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update cart count
+                            if (typeof updateCartCount === 'function') {
+                                updateCartCount();
+                            }
+                            const cartBadge = document.getElementById('cartBadge');
+                            if (cartBadge && data.cartCount !== undefined) {
+                                cartBadge.textContent = data.cartCount;
+                            }
+
+                            // Update cart sidebar
+                            if (window.cartSidebarInstance && typeof window.cartSidebarInstance.loadCartFromServer === 'function') {
+                                window.cartSidebarInstance.loadCartFromServer();
+                            }
+
+                            // Show success message
+                            Swal.fire({
+                                icon: 'success',
+                                title: isArabic ? 'تمت الإضافة!' : 'Added!',
+                                text: data.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+
+                            // Add visual feedback
+                            button.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> ' + (isArabic ? 'تمت الإضافة' : 'Added');
+                            button.style.background = '#4CAF50';
+
+                            setTimeout(() => {
+                                button.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> ' + (isArabic ? 'إضافة إلى حقيبة التسوق' : 'Add to Shopping Bag');
+                                button.style.background = '#1a1a1a';
+                                button.disabled = false;
+                            }, 2000);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        button.disabled = false;
+                        Swal.fire({
+                            icon: 'error',
+                            title: isArabic ? 'خطأ!' : 'Error!',
+                            text: isArabic ? 'حدث خطأ أثناء الإضافة للسلة' : 'Error adding to cart',
+                            confirmButtonText: isArabic ? 'حسناً' : 'OK'
+                        });
                     });
-
-                    // Add visual feedback
-                    this.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> ' + (isArabic ? 'تمت الإضافة' : 'Added');
-                    this.style.background = '#4CAF50';
-
-                    setTimeout(() => {
-                        this.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> ' + (isArabic ? 'إضافة إلى حقيبة التسوق' : 'Add to Shopping Bag');
-                        this.style.background = '#1a1a1a';
-                    }, 2000);
                 });
             }
 
             // Add to wishlist
             const addToWishlistBtn = document.getElementById('addToWishlistBtn');
             if (addToWishlistBtn) {
-                addToWishlistBtn.addEventListener('click', function() {
-                    this.classList.toggle('active');
+                addToWishlistBtn.addEventListener('click', async function() {
+                    @guest
+                        Swal.fire({
+                            icon: 'warning',
+                            title: isArabic ? 'يجب تسجيل الدخول' : 'Login Required',
+                            text: isArabic ? 'يجب عليك تسجيل الدخول لإضافة منتجات للمفضلة' : 'You need to login to add products to wishlist',
+                            confirmButtonText: isArabic ? 'تسجيل الدخول' : 'Login',
+                            showCancelButton: true,
+                            cancelButtonText: isArabic ? 'إلغاء' : 'Cancel'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = '{{ route("login") }}';
+                            }
+                        });
+                        return;
+                    @endguest
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: isArabic ? 'تمت الإضافة للمفضلة!' : 'Added to Wishlist!',
-                        timer: 1000,
-                        showConfirmButton: false
-                    });
+                    const productId = this.dataset.productId;
+                    const button = this;
+
+                    try {
+                        const response = await fetch('{{ route("wishlist.toggle") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ product_id: productId })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            button.classList.toggle('active');
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: data.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: isArabic ? 'خطأ!' : 'Error!',
+                            text: isArabic ? 'حدث خطأ أثناء الإضافة للمفضلة' : 'Error adding to wishlist'
+                        });
+                    }
                 });
             }
 
@@ -94,6 +291,12 @@
                     this.classList.toggle('active');
                 });
             });
+
+            // Initialize custom select for size dropdown
+            const sizeSelect = document.getElementById('sizeSelect');
+            if (sizeSelect && typeof CustomSelect !== 'undefined') {
+                new CustomSelect(sizeSelect);
+            }
         });
     </script>
 @endpush
@@ -107,10 +310,20 @@
             <div class="product-gallery">
                 <!-- Main Image -->
                 <div class="main-image-wrapper">
+                    <button class="product-image-nav prev" id="prevImage">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
                     <img src="{{ $product->main_image ? asset('storage/' . $product->main_image) : asset('assets/images/placeholder.jpg') }}"
                          alt="{{ $product->getName() }}"
                          class="main-product-image"
                          id="mainProductImage">
+                    <button class="product-image-nav next" id="nextImage">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </button>
                 </div>
 
                 <!-- Thumbnail Images -->
@@ -219,13 +432,38 @@
                     @endif
 
                     <!-- Size Selection -->
-                    @if($product->sizes && is_array($product->sizes) && count($product->sizes) > 0)
-                    <div class="option-group">
+                    @php
+                        $hasSizes = $product->sizes && is_array($product->sizes) && count($product->sizes) > 0;
+                        // Debug
+                        \Log::info('Product Sizes Check', [
+                            'product_id' => $product->id,
+                            'sizes' => $product->sizes,
+                            'is_array' => is_array($product->sizes),
+                            'count' => is_array($product->sizes) ? count($product->sizes) : 0,
+                            'has_sizes' => $hasSizes
+                        ]);
+                    @endphp
+
+                    @if($hasSizes)
+                    <div class="option-group" style="background: #fff3cd; padding: 15px; border-radius: 8px; border: 2px solid #ffc107;">
                         <div class="size-header">
-                            <label class="option-label">{{ app()->getLocale() == 'ar' ? 'اختيار المقاس:' : 'Select Size:' }}</label>
+                            <label class="option-label" style="font-size: 16px; font-weight: bold; color: #000;">{{ app()->getLocale() == 'ar' ? 'اختيار المقاس:' : 'Select Size:' }}</label>
                             <a href="#" class="size-guide-link">{{ app()->getLocale() == 'ar' ? 'جدول المقاسات' : 'Size Guide' }}</a>
                         </div>
-                        <select class="size-select custom-select" id="sizeSelect" required>
+                        <!-- Available Sizes Display -->
+                        <div style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 6px; border: 2px solid #28a745;">
+                            <div style="font-size: 14px; font-weight: 700; color: #28a745; margin-bottom: 10px;">
+                                ✅ {{ app()->getLocale() == 'ar' ? 'المقاسات المتوفرة:' : 'Available Sizes:' }} ({{ count($product->sizes) }})
+                            </div>
+                            <div style="font-size: 16px; color: #212529; font-weight: 600; line-height: 1.8;">
+                                @foreach($product->sizes as $index => $size)
+                                    <span style="display: inline-block; padding: 8px 16px; margin: 4px; background: #007bff; color: white; border-radius: 4px; font-weight: bold;">
+                                        {{ is_array($size) ? (app()->getLocale() == 'ar' ? ($size['ar'] ?? $size['en']) : ($size['en'] ?? $size['ar'])) : $size }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
+                        <select class="size-select custom-select" id="sizeSelect" required style="font-size: 16px; font-weight: 600;">
                             <option value="">{{ app()->getLocale() == 'ar' ? 'اختر المقاس' : 'Select Size' }}</option>
                             @foreach($product->sizes as $size)
                             <option value="{{ is_array($size) ? ($size['value'] ?? $size['ar'] ?? $size['en']) : $size }}">
@@ -233,6 +471,13 @@
                             </option>
                             @endforeach
                         </select>
+                    </div>
+                    @else
+                    <div style="padding: 15px; background: #f8d7da; border: 2px solid #dc3545; border-radius: 8px; margin: 10px 0;">
+                        <strong style="color: #dc3545;">⚠️ تحذير: لا توجد مقاسات متاحة لهذا المنتج</strong>
+                        <div style="margin-top: 10px; font-size: 13px;">
+                            Debug: sizes = {{ json_encode($product->sizes) }}
+                        </div>
                     </div>
                     @endif
                 </div>
@@ -267,7 +512,7 @@
                         </svg>
                         {{ app()->getLocale() == 'ar' ? 'إضافة إلى حقيبة التسوق' : 'Add to Shopping Bag' }}
                     </button>
-                    <button class="btn-add-to-wishlist" id="addToWishlistBtn" data-product-id="{{ $product->id }}">
+                    <button class="btn-add-to-wishlist {{ auth()->check() && \App\Models\Wishlist::isInWishlist(auth()->id(), $product->id) ? 'active' : '' }}" id="addToWishlistBtn" data-product-id="{{ $product->id }}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                         </svg>
@@ -278,6 +523,12 @@
                 <div class="product-tabs">
                     <div class="tabs-header">
                         <button class="tab-btn active" data-tab="description">{{ app()->getLocale() == 'ar' ? 'الوصف' : 'Description' }}</button>
+                        @if($product->sizing_info && ((is_array($product->sizing_info) && !empty(array_filter($product->sizing_info))) || (!is_array($product->sizing_info) && $product->sizing_info)))
+                        <button class="tab-btn" data-tab="sizing">{{ app()->getLocale() == 'ar' ? 'المقاسات والحجم' : 'Sizing & Fit' }}</button>
+                        @endif
+                        @if($product->design_details && ((is_array($product->design_details) && !empty(array_filter($product->design_details))) || (!is_array($product->design_details) && $product->design_details)))
+                        <button class="tab-btn" data-tab="design">{{ app()->getLocale() == 'ar' ? 'تفاصيل التصميم' : 'Design Details' }}</button>
+                        @endif
                         @if($product->specifications && is_array($product->specifications) && count($product->specifications) > 0)
                         <button class="tab-btn" data-tab="details">{{ app()->getLocale() == 'ar' ? 'المواصفات' : 'Specifications' }}</button>
                         @endif
@@ -285,13 +536,20 @@
                     </div>
                     <div class="tabs-content">
                         <div class="tab-panel active" id="description">
-                            @if($product->short_description)
-                            <div>{!! $product->getShortDescription() !!}</div>
-                            @endif
                             @if($product->description)
                             <div>{!! $product->getDescription() !!}</div>
                             @endif
                         </div>
+                        @if($product->sizing_info && ((is_array($product->sizing_info) && !empty(array_filter($product->sizing_info))) || (!is_array($product->sizing_info) && $product->sizing_info)))
+                        <div class="tab-panel" id="sizing">
+                            <div>{!! app()->getLocale() == 'ar' ? ($product->sizing_info['ar'] ?? '') : ($product->sizing_info['en'] ?? $product->sizing_info['ar'] ?? '') !!}</div>
+                        </div>
+                        @endif
+                        @if($product->design_details && ((is_array($product->design_details) && !empty(array_filter($product->design_details))) || (!is_array($product->design_details) && $product->design_details)))
+                        <div class="tab-panel" id="design">
+                            <div>{!! app()->getLocale() == 'ar' ? ($product->design_details['ar'] ?? '') : ($product->design_details['en'] ?? $product->design_details['ar'] ?? '') !!}</div>
+                        </div>
+                        @endif
                         @if($product->specifications && is_array($product->specifications) && count($product->specifications) > 0)
                         <div class="tab-panel" id="details">
                             <p><strong>{{ app()->getLocale() == 'ar' ? 'رمز المنتج:' : 'SKU:' }}</strong> {{ $product->sku }}</p>

@@ -17,7 +17,6 @@ return new class extends Migration
             // Basic Information (Multilingual JSON fields)
             $table->json('name'); // {ar: "", en: ""}
             $table->json('slug'); // {ar: "", en: ""}
-            $table->json('short_description')->nullable(); // {ar: "", en: ""}
             $table->json('description')->nullable(); // {ar: "", en: ""}
 
             // Category

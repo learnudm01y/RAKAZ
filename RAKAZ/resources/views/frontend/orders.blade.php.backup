@@ -1,0 +1,930 @@
+@extends('layouts.app')
+
+@section('content')
+@push('styles')
+
+    <style>
+        /* Orders Page Specific Styles */
+        .orders-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+
+        .orders-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .orders-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 42px;
+            font-weight: 400;
+            margin-bottom: 15px;
+            color: #1a1a1a;
+        }
+
+        .orders-subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .wishlist-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .wishlist-action-btn {
+            flex: 1;
+            min-width: 180px;
+            max-width: 220px;
+            padding: 12px 20px;
+            border: 2px solid #333;
+            border-radius: 4px;
+            background: white;
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .wishlist-action-btn:hover {
+            background: #f5f5f5;
+            border-color: #555;
+        }
+
+        .wishlist-action-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Tabs Navigation */
+        .orders-tabs {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 50px;
+            border-bottom: 2px solid #e5e5e5;
+        }
+
+        .orders-tab {
+            padding: 15px 40px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 16px;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            bottom: -2px;
+        }
+
+        .orders-tab:hover {
+            color: #333;
+        }
+
+        .orders-tab.active {
+            color: #333;
+            border-bottom-color: #333;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Live Orders - Cards */
+        .live-orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .order-card {
+            background: white;
+            border: 2px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .order-card:hover {
+            border-color: #333;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .order-number {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .order-date {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .order-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .order-status-badge.processing {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .order-status-badge.shipping {
+            background: #cfe2ff;
+            color: #084298;
+        }
+
+        .order-status-badge.delivering {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .order-status-badge.delivered {
+            background: #d1e7dd;
+            color: #0a3622;
+        }
+
+        /* Progress Tracker */
+        .order-progress {
+            margin: 25px 0;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .progress-steps::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: 0;
+            left: 0;
+            height: 2px;
+            background: #e5e5e5;
+            z-index: 0;
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 20px;
+            right: 0;
+            height: 2px;
+            background: #4caf50;
+            z-index: 1;
+            transition: width 0.5s ease;
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .progress-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .progress-step.completed .progress-icon {
+            background: #4caf50;
+            border-color: #4caf50;
+        }
+
+        .progress-step.completed .progress-icon svg {
+            stroke: white;
+        }
+
+        .progress-step.active .progress-icon {
+            border-color: #4caf50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .progress-step.active .progress-icon svg {
+            stroke: #4caf50;
+        }
+
+        .progress-label {
+            font-size: 11px;
+            color: #999;
+            text-align: center;
+            max-width: 70px;
+        }
+
+        .progress-step.completed .progress-label,
+        .progress-step.active .progress-label {
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* Order Items */
+        .order-items {
+            margin: 20px 0;
+        }
+
+        .order-item {
+            display: flex;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .order-item-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: #f5f5f5;
+        }
+
+        .order-item-details {
+            flex: 1;
+        }
+
+        .order-item-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .order-item-info {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .order-item-price {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Order Footer */
+        .order-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .order-total {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .order-btn {
+            padding: 8px 16px;
+            border: 2px solid #333;
+            border-radius: 4px;
+            background: white;
+            color: #333;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .order-btn:hover {
+            background: #333;
+            color: white;
+        }
+
+        .order-btn.primary {
+            background: #333;
+            color: white;
+        }
+
+        .order-btn.primary:hover {
+            background: #555;
+        }
+
+        /* Past Orders Table */
+        .orders-table-container {
+            background: white;
+            border: 2px solid #e5e5e5;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .orders-table thead {
+            background: #f8f8f8;
+        }
+
+        .orders-table th {
+            padding: 15px 20px;
+            text-align: right;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e5e5e5;
+        }
+
+        .orders-table td {
+            padding: 20px;
+            text-align: right;
+            font-size: 14px;
+            color: #666;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .orders-table tr:hover {
+            background: #fafafa;
+        }
+
+        .table-order-number {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .table-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .table-status.completed {
+            background: #d1e7dd;
+            color: #0a3622;
+        }
+
+        .table-status.cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .table-status.returned {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .table-btn {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            color: #666;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .table-btn:hover {
+            border-color: #333;
+            color: #333;
+        }
+
+        /* Empty State */
+        .empty-orders {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .empty-orders-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 25px;
+            opacity: 0.3;
+        }
+
+        .empty-orders-title {
+            font-size: 24px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .empty-orders-text {
+            font-size: 15px;
+            color: #999;
+            margin-bottom: 25px;
+        }
+
+        .empty-orders-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .empty-orders-btn:hover {
+            background: #555;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .live-orders-grid {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .orders-container {
+                padding: 40px 20px;
+            }
+
+            .orders-title {
+                font-size: 32px;
+            }
+
+            .orders-tabs {
+                gap: 10px;
+            }
+
+            .orders-tab {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
+            .live-orders-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .progress-steps {
+                gap: 5px;
+            }
+
+            .progress-icon {
+                width: 35px;
+                height: 35px;
+            }
+
+            .progress-label {
+                font-size: 10px;
+                max-width: 60px;
+            }
+
+            .orders-table-container {
+                overflow-x: auto;
+            }
+
+            .orders-table {
+                min-width: 600px;
+            }
+        }
+    </style>
+@endpush
+
+    <!-- Orders Content -->
+    <div class="orders-container">
+        <div class="orders-header">
+            <h1 class="orders-title">طلباتي</h1>
+            <p class="orders-subtitle">تتبع ومراجعة جميع طلباتك</p>
+            <div class="wishlist-actions">
+                <button class="wishlist-action-btn" onclick="window.location.href='wishlist.html'">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                    المفضلة
+                </button>
+                <button class="wishlist-action-btn" onclick="window.location.href='orders.html'">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                        <line x1="1" y1="10" x2="23" y2="10"></line>
+                    </svg>
+                    طلباتي
+                </button>
+                <button class="wishlist-action-btn" onclick="window.location.href='cart.html'">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    السلة
+                </button>
+            </div>
+        </div>
+
+        @if($orders && count($orders) > 0)
+        <!-- Orders List -->
+        <div class="live-orders-grid">
+            @foreach($orders as $order)
+                <div class="order-card">
+                    <div class="order-card-header">
+                        <div>
+                            <div class="order-number">طلب #12345</div>
+                            <div class="order-date">٢ ديسمبر ٢٠٢٥</div>
+                        </div>
+                        <div class="order-status-badge delivering">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="1" y="3" width="15" height="13"></rect>
+                                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                            </svg>
+                            في الطريق للتوصيل
+                        </div>
+                    </div>
+
+                    <!-- Progress Tracker -->
+                    <div class="order-progress">
+                        <div class="progress-steps">
+                            <div class="progress-line" style="width: 75%;"></div>
+
+                            <div class="progress-step completed">
+                                <div class="progress-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                <div class="progress-label">تم الطلب</div>
+                            </div>
+
+                            <div class="progress-step completed">
+                                <div class="progress-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                <div class="progress-label">قيد التحضير</div>
+                            </div>
+
+                            <div class="progress-step completed">
+                                <div class="progress-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                <div class="progress-label">تم الشحن</div>
+                            </div>
+
+                            <div class="progress-step active">
+                                <div class="progress-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="1" y="3" width="15" height="13"></rect>
+                                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                        <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                        <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                    </svg>
+                                </div>
+                                <div class="progress-label">قيد التوصيل</div>
+                            </div>
+
+                            <div class="progress-step">
+                                <div class="progress-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                    </svg>
+                                </div>
+                                <div class="progress-label">تم التوصيل</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Items -->
+                    <div class="order-items">
+                        <div class="order-item">
+                            <img src="/assets/images/New folder/Emirati_Gold_Edition_White.jpg" alt="كندورة" class="order-item-image">
+                            <div class="order-item-details">
+                                <div class="order-item-name">كندورة إماراتية كلاسيكية بيضاء</div>
+                                <div class="order-item-info">المقاس: L | اللون: أبيض</div>
+                            </div>
+                            <div class="order-item-price">775 د.إ</div>
+                        </div>
+                    </div>
+
+                    <!-- Order Footer -->
+                    <div class="order-card-footer">
+                        <div class="order-total">المجموع: 775 د.إ</div>
+                        <div class="order-actions">
+                            <button class="order-btn">تتبع الطلب</button>
+                            <button class="order-btn primary">التفاصيل</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Card 2 - قيد التحضير -->
+                <div class="order-card">
+                    <div class="order-card-header">
+                        <div>
+                            <div class="order-number">طلب #12344</div>
+                            <div class="order-date">١ ديسمبر ٢٠٢٥</div>
+                        </div>
+                        <div class="order-status-badge processing">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            قيد التحضير
+                        </div>
+                    </div>
+
+                    <!-- Progress Tracker -->
+                    <div class="order-progress">
+                        <div class="progress-steps">
+                            <div class="progress-line" style="width: 25%;"></div>
+
+                            <div class="progress-step completed">
+                                <div class="progress-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
+                                <div class="progress-label">تم الطلب</div>
+                            </div>
+
+                            <div class="progress-step active">
+                                <div class="progress-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="9" y1="9" x2="15" y2="9"></line>
+                                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                                    </svg>
+                                </div>
+                                <div class="progress-label">قيد التحضير</div>
+                            </div>
+
+                            <div class="progress-step">
+                                <div class="progress-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="1" y="3" width="15" height="13"></rect>
+                                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                    </svg>
+                                </div>
+                                <div class="progress-label">تم الشحن</div>
+                            </div>
+
+                            <div class="progress-step">
+                                <div class="progress-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="1" y="3" width="15" height="13"></rect>
+                                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                        <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                        <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                    </svg>
+                                </div>
+                                <div class="progress-label">قيد التوصيل</div>
+                            </div>
+
+                            <div class="progress-step">
+                                <div class="progress-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                    </svg>
+                                </div>
+                                <div class="progress-label">تم التوصيل</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Items -->
+                    <div class="order-items">
+                        <div class="order-item">
+                            <img src="/assets/images/New folder/Kuwaiti_blue_image_3_treated.jpg" alt="كندورة" class="order-item-image">
+                            <div class="order-item-details">
+                                <div class="order-item-name">كندورة كويتية زرقاء</div>
+                                <div class="order-item-info">المقاس: M | اللون: أزرق</div>
+                            </div>
+                            <div class="order-item-price">850 د.إ</div>
+                        </div>
+                        <div class="order-item">
+                            <img src="/assets/images/New folder/49.jpg" alt="عقال" class="order-item-image">
+                            <div class="order-item-details">
+                                <div class="order-item-name">عقال تقليدي فاخر</div>
+                                <div class="order-item-info">قطعة واحدة</div>
+                            </div>
+                            <div class="order-item-price">250 د.إ</div>
+                        </div>
+                    </div>
+
+                    <!-- Order Footer -->
+                    <div class="order-card-footer">
+                        <div class="order-total">المجموع: 1,100 د.إ</div>
+                        <div class="order-actions">
+                            <button class="order-btn">إلغاء الطلب</button>
+                            <button class="order-btn primary">التفاصيل</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Past Orders Tab -->
+        <div class="tab-content" id="past-orders">
+            <div class="orders-table-container">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>رقم الطلب</th>
+                            <th>التاريخ</th>
+                            <th>المنتجات</th>
+                            <th>المبلغ</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="table-order-number">#12343</td>
+                            <td>٢٨ نوفمبر ٢٠٢٥</td>
+                            <td>كندورة إماراتية بيضاء</td>
+                            <td>775 د.إ</td>
+                            <td><span class="table-status completed">تم التوصيل</span></td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="table-btn">عرض</button>
+                                    <button class="table-btn">إعادة الطلب</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-order-number">#12342</td>
+                            <td>٢٥ نوفمبر ٢٠٢٥</td>
+                            <td>عقال تقليدي + غترة</td>
+                            <td>450 د.إ</td>
+                            <td><span class="table-status completed">تم التوصيل</span></td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="table-btn">عرض</button>
+                                    <button class="table-btn">إعادة الطلب</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-order-number">#12341</td>
+                            <td>٢٠ نوفمبر ٢٠٢٥</td>
+                            <td>كندورة كويتية × 2</td>
+                            <td>1,700 د.إ</td>
+                            <td><span class="table-status completed">تم التوصيل</span></td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="table-btn">عرض</button>
+                                    <button class="table-btn">إعادة الطلب</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-order-number">#12340</td>
+                            <td>١٥ نوفمبر ٢٠٢٥</td>
+                            <td>شال خليجي فاخر</td>
+                            <td>320 د.إ</td>
+                            <td><span class="table-status returned">تم الإرجاع</span></td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="table-btn">عرض</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-order-number">#12339</td>
+                            <td>١٠ نوفمبر ٢٠٢٥</td>
+                            <td>كندورة إماراتية ذهبية</td>
+                            <td>950 د.إ</td>
+                            <td><span class="table-status completed">تم التوصيل</span></td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="table-btn">عرض</button>
+                                    <button class="table-btn">إعادة الطلب</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+@endsection
+@push('scripts')
+
+    <script>
+        // Tabs Functionality
+        document.querySelectorAll('.orders-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                document.querySelectorAll('.orders-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                // Add active class to clicked tab
+                this.classList.add('active');
+
+                // Show corresponding content
+                const tabName = this.getAttribute('data-tab');
+                document.getElementById(`${tabName}-orders`).classList.add('active');
+            });
+        });
+
+        // Cancel Order with SweetAlert2
+        document.querySelectorAll('.order-btn').forEach(btn => {
+            if (btn.textContent.includes('إلغاء الطلب')) {
+                btn.addEventListener('click', function() {
+                    Swal.fire({
+                        title: 'إلغاء الطلب',
+                        text: 'هل أنت متأكد من رغبتك في إلغاء هذا الطلب؟',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'نعم، قم بالإلغاء',
+                        cancelButtonText: 'لا، احتفظ بالطلب',
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#000',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'تم الإلغاء',
+                                text: 'تم إلغاء طلبك بنجاح',
+                                icon: 'success',
+                                confirmButtonText: 'حسناً',
+                                confirmButtonColor: '#000',
+                                timer: 2500,
+                                timerProgressBar: true
+                            }).then(() => {
+                                // Remove order or move to past orders
+                                this.closest('.order-card, tr').remove();
+                            });
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+@endpush

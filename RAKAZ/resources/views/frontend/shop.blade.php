@@ -86,6 +86,7 @@
         }
 
         .modal-main-image-wrapper {
+            position: relative;
             width: 100%;
             aspect-ratio: 1;
             overflow: hidden;
@@ -98,6 +99,48 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        .modal-image-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .modal-image-nav:hover {
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .modal-image-nav.prev {
+            left: 10px;
+        }
+
+        .modal-image-nav.next {
+            right: 10px;
+        }
+
+        .modal-image-nav svg {
+            width: 20px;
+            height: 20px;
+            stroke: #333;
+        }
+
+        .modal-image-nav:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
         }
 
         .modal-thumbnails-wrapper {
@@ -452,7 +495,17 @@
                     <!-- Product Gallery -->
                     <div class="modal-product-gallery">
                         <div class="modal-main-image-wrapper">
+                            <button class="modal-image-nav prev" id="modalPrevImage">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
                             <img src="" alt="" class="modal-main-product-image" id="modalMainImage">
+                            <button class="modal-image-nav next" id="modalNextImage">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
                         </div>
                         <div class="modal-thumbnail-gallery">
                             <div class="modal-thumbnails-wrapper" id="modalThumbnails">
@@ -511,11 +564,20 @@
                         <div class="modal-product-options">
                             <div class="modal-option-group">
                                 <div class="modal-size-header">
-                                    <label class="modal-option-label">اختيار المقاس</label>
+                                    <label class="modal-option-label" style="font-size: 16px; font-weight: bold;">اختيار المقاس</label>
                                     <a href="#" class="modal-size-guide-link">جدول المقاسات</a>
                                 </div>
-                                <div class="modal-size-buttons" id="modalSizeButtons">
+                                <!-- Available Sizes Display -->
+                                <div id="modalAvailableSizes" style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 6px; border: 2px solid #28a745; display: none;">
+                                    <div style="font-size: 14px; font-weight: 700; color: #28a745; margin-bottom: 10px;">
+                                        ✅ <span id="modalSizesTitle">المقاسات المتوفرة:</span> <span id="modalSizesCount"></span>
+                                    </div>
+                                    <div id="modalSizesList" style="font-size: 16px; color: #212529; font-weight: 600; line-height: 1.8;"></div>
                                 </div>
+                                <!-- Size Dropdown -->
+                                <select class="custom-select" id="modalSizeSelect" style="width: 100%; font-size: 16px; font-weight: 600;">
+                                    <option value="">اختر المقاس</option>
+                                </select>
                             </div>
                         </div>
 
@@ -551,33 +613,24 @@
                         <!-- Product Details Tabs -->
                         <div class="modal-product-tabs">
                             <div class="modal-tabs-header">
-                                <button class="modal-tab-btn active" data-tab="modal-description">وصف المنتج</button>
-                                <button class="modal-tab-btn" data-tab="modal-shipping">التوصيل والإرجاع</button>
-                                <button class="modal-tab-btn" data-tab="modal-details">المقاسات والحجم</button>
+                                <button class="modal-tab-btn active" data-tab="modal-description">{{ app()->getLocale() == 'ar' ? 'وصف المنتج' : 'Description' }}</button>
+                                <button class="modal-tab-btn" data-tab="modal-sizing" style="display: none;">{{ app()->getLocale() == 'ar' ? 'المقاسات والحجم' : 'Sizing Info' }}</button>
+                                <button class="modal-tab-btn" data-tab="modal-design" style="display: none;">{{ app()->getLocale() == 'ar' ? 'تفاصيل التصميم' : 'Design Details' }}</button>
+                                <button class="modal-tab-btn" data-tab="modal-shipping">{{ app()->getLocale() == 'ar' ? 'التوصيل والإرجاع' : 'Delivery & Returns' }}</button>
                             </div>
                             <div class="modal-tabs-content">
                                 <div class="modal-tab-panel active" id="modal-description">
-                                    <p id="modalDescription">منتج فاخر من ركاز مصنوع بعناية فائقة من أجود أنواع الأقمشة
-                                        لراحتك وأناقتك.</p>
-                                    <ul>
-                                        <li>مصنوع من أجود أنواع القطن</li>
-                                        <li>تصميم عصري وأنيق</li>
-                                        <li>مريح للاستخدام اليومي</li>
-                                    </ul>
+                                    <div id="modalDescription"></div>
+                                </div>
+                                <div class="modal-tab-panel" id="modal-sizing">
+                                    <div id="modalSizingInfo"></div>
+                                </div>
+                                <div class="modal-tab-panel" id="modal-design">
+                                    <div id="modalDesignDetails"></div>
                                 </div>
                                 <div class="modal-tab-panel" id="modal-shipping">
-                                    <p>نوفر شحن مجاني لجميع الطلبات داخل الإمارات.</p>
-                                    <p>التوصيل خلال 2-3 أيام عمل، أو توصيل في نفس اليوم في دبي وأبوظبي.</p>
-                                    <p>الإرجاع مجاني خلال 14 يوم من تاريخ الاستلام.</p>
-                                </div>
-                                <div class="modal-tab-panel" id="modal-details">
-                                    <p>رمز المنتج: <span id="modalProductCode">RKZ-001</span></p>
-                                    <ul>
-                                        <li>مصنوع من مواد عالية الجودة</li>
-                                        <li>تصميم تقليدي مع لمسة عصرية</li>
-                                        <li>متوفر بعدة مقاسات</li>
-                                        <li>مناسب لجميع المناسبات</li>
-                                    </ul>
+                                    <p>{{ app()->getLocale() == 'ar' ? 'نوفر شحن مجاني لجميع الطلبات. التوصيل خلال 2-3 أيام عمل.' : 'We offer free shipping on all orders. Delivery in 2-3 business days.' }}</p>
+                                    <p>{{ app()->getLocale() == 'ar' ? 'الإرجاع مجاني خلال 14 يوم من تاريخ الاستلام.' : 'Free returns within 14 days from receipt date.' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -632,62 +685,15 @@
                     <div class="filter-section">
                         <h3 class="filter-title">مقاس العلابيس</h3>
                         <div class="size-grid">
+                            @foreach($sizes as $size)
                             <label class="size-checkbox">
-                                <input type="checkbox" name="size" value="XXS">
+                                <input type="checkbox" name="size" value="{{ $size->name }}">
                                 <span class="size-label">
-                                    <span class="size-value">XXS</span>
-                                    <span class="size-count">(24)</span>
+                                    <span class="size-value">{{ $size->name }}</span>
+                                    <span class="size-count">({{ $size->products_count ?? 0 }})</span>
                                 </span>
                             </label>
-                            <label class="size-checkbox">
-                                <input type="checkbox" name="size" value="XS">
-                                <span class="size-label">
-                                    <span class="size-value">XS</span>
-                                    <span class="size-count">(214)</span>
-                                </span>
-                            </label>
-                            <label class="size-checkbox">
-                                <input type="checkbox" name="size" value="S">
-                                <span class="size-label">
-                                    <span class="size-value">S</span>
-                                    <span class="size-count">(1331)</span>
-                                </span>
-                            </label>
-                            <label class="size-checkbox">
-                                <input type="checkbox" name="size" value="M">
-                                <span class="size-label">
-                                    <span class="size-value">M</span>
-                                    <span class="size-count">(1329)</span>
-                                </span>
-                            </label>
-                            <label class="size-checkbox">
-                                <input type="checkbox" name="size" value="L">
-                                <span class="size-label">
-                                    <span class="size-value">L</span>
-                                    <span class="size-count">(1323)</span>
-                                </span>
-                            </label>
-                            <label class="size-checkbox">
-                                <input type="checkbox" name="size" value="XL">
-                                <span class="size-label">
-                                    <span class="size-value">XL</span>
-                                    <span class="size-count">(1211)</span>
-                                </span>
-                            </label>
-                            <label class="size-checkbox">
-                                <input type="checkbox" name="size" value="XXL">
-                                <span class="size-label">
-                                    <span class="size-value">XXL</span>
-                                    <span class="size-count">(764)</span>
-                                </span>
-                            </label>
-                            <label class="size-checkbox">
-                                <input type="checkbox" name="size" value="XXXL">
-                                <span class="size-label">
-                                    <span class="size-value">XXXL</span>
-                                    <span class="size-count">(52)</span>
-                                </span>
-                            </label>
+                            @endforeach
                         </div>
                     </div>
 
@@ -697,96 +703,20 @@
                         <div class="shoe-size-selector">
                             <select class="shoe-size-dropdown custom-select">
                                 <option value="">EU</option>
-                                <option value="36">36 (3)</option>
-                                <option value="37">37 (4)</option>
-                                <option value="37.5">37.5 (5)</option>
-                                <option value="38">38 (4)</option>
-                                <option value="38.5">38.5 (10)</option>
-                                <option value="39">39 (15)</option>
-                                <option value="39.5">39.5 (1)</option>
-                                <option value="40">40 (212)</option>
-                                <option value="40.5">40.5 (66)</option>
-                                <option value="41">41 (279)</option>
-                                <option value="41.5">41.5 (39)</option>
-                                <option value="42">42 (391)</option>
-                                <option value="42.5">42.5 (85)</option>
-                                <option value="43">43 (365)</option>
-                                <option value="43.5">43.5 (28)</option>
-                                <option value="44">44 (291)</option>
-                                <option value="44.5">44.5 (21)</option>
-                                <option value="45">45 (189)</option>
+                                @foreach($shoeSizes as $shoeSize)
+                                <option value="{{ $shoeSize->size }}">{{ $shoeSize->size }} ({{ $shoeSize->products_count ?? 0 }})</option>
+                                @endforeach
                             </select>
                             <div class="shoe-size-scroll">
+                                @foreach($shoeSizes as $shoeSize)
                                 <label class="shoe-size-checkbox">
-                                    <input type="checkbox" name="shoe-size" value="36">
+                                    <input type="checkbox" name="shoe-size" value="{{ $shoeSize->size }}">
                                     <span class="shoe-label">
-                                        <span class="shoe-count">(3)</span>
-                                        <span class="shoe-value">36</span>
+                                        <span class="shoe-count">({{ $shoeSize->products_count ?? 0 }})</span>
+                                        <span class="shoe-value">{{ $shoeSize->size }}</span>
                                     </span>
                                 </label>
-                                <label class="shoe-size-checkbox">
-                                    <input type="checkbox" name="shoe-size" value="37">
-                                    <span class="shoe-label">
-                                        <span class="shoe-count">(4)</span>
-                                        <span class="shoe-value">37</span>
-                                    </span>
-                                </label>
-                                <label class="shoe-size-checkbox">
-                                    <input type="checkbox" name="shoe-size" value="37.5">
-                                    <span class="shoe-label">
-                                        <span class="shoe-count">(5)</span>
-                                        <span class="shoe-value">37.5</span>
-                                    </span>
-                                </label>
-                                <label class="shoe-size-checkbox">
-                                    <input type="checkbox" name="shoe-size" value="38">
-                                    <span class="shoe-label">
-                                        <span class="shoe-count">(4)</span>
-                                        <span class="shoe-value">38</span>
-                                    </span>
-                                </label>
-                                <label class="shoe-size-checkbox">
-                                    <input type="checkbox" name="shoe-size" value="38.5">
-                                    <span class="shoe-label">
-                                        <span class="shoe-count">(10)</span>
-                                        <span class="shoe-value">38.5</span>
-                                    </span>
-                                </label>
-                                <label class="shoe-size-checkbox">
-                                    <input type="checkbox" name="shoe-size" value="39">
-                                    <span class="shoe-label">
-                                        <span class="shoe-count">(15)</span>
-                                        <span class="shoe-value">39</span>
-                                    </span>
-                                </label>
-                                <label class="shoe-size-checkbox">
-                                    <input type="checkbox" name="shoe-size" value="39.5">
-                                    <span class="shoe-label">
-                                        <span class="shoe-count">(1)</span>
-                                        <span class="shoe-value">39.5</span>
-                                    </span>
-                                </label>
-                                <label class="shoe-size-checkbox">
-                                    <input type="checkbox" name="shoe-size" value="40">
-                                    <span class="shoe-label">
-                                        <span class="shoe-count">(212)</span>
-                                        <span class="shoe-value">40</span>
-                                    </span>
-                                </label>
-                                <label class="shoe-size-checkbox">
-                                    <input type="checkbox" name="shoe-size" value="40.5">
-                                    <span class="shoe-label">
-                                        <span class="shoe-count">(66)</span>
-                                        <span class="shoe-value">40.5</span>
-                                    </span>
-                                </label>
-                                <label class="shoe-size-checkbox">
-                                    <input type="checkbox" name="shoe-size" value="41">
-                                    <span class="shoe-label">
-                                        <span class="shoe-count">(279)</span>
-                                        <span class="shoe-value">41</span>
-                                    </span>
-                                </label>
+                                @endforeach
                             </div>
                         </div>
                     </div>
@@ -795,88 +725,16 @@
                     <div class="filter-section">
                         <h3 class="filter-title">اللون</h3>
                         <div class="color-scroll">
+                            @foreach($colors as $color)
                             <label class="color-checkbox">
-                                <input type="checkbox" name="color" value="black">
+                                <input type="checkbox" name="color" value="{{ strtolower(app()->getLocale() == 'ar' ? ($color->name['ar'] ?? '') : ($color->name['en'] ?? $color->name['ar'] ?? '')) }}">
                                 <span class="color-label">
-                                    <span class="color-circle" style="background-color: #000000;"></span>
-                                    <span class="color-name">أسود</span>
-                                    <span class="color-count">(760)</span>
+                                    <span class="color-circle" style="background-color: {{ $color->hex_code }};@if($color->hex_code == '#FFFFFF') border: 1px solid #ddd;@endif"></span>
+                                    <span class="color-name">{{ app()->getLocale() == 'ar' ? ($color->name['ar'] ?? '') : ($color->name['en'] ?? $color->name['ar'] ?? '') }}</span>
+                                    <span class="color-count">({{ $color->products_count ?? 0 }})</span>
                                 </span>
                             </label>
-                            <label class="color-checkbox">
-                                <input type="checkbox" name="color" value="blue">
-                                <span class="color-label">
-                                    <span class="color-circle" style="background-color: #4A90E2;"></span>
-                                    <span class="color-name">أزرق</span>
-                                    <span class="color-count">(484)</span>
-                                </span>
-                            </label>
-                            <label class="color-checkbox">
-                                <input type="checkbox" name="color" value="gray">
-                                <span class="color-label">
-                                    <span class="color-circle" style="background-color: #808080;"></span>
-                                    <span class="color-name">رمادي</span>
-                                    <span class="color-count">(290)</span>
-                                </span>
-                            </label>
-                            <label class="color-checkbox">
-                                <input type="checkbox" name="color" value="green">
-                                <span class="color-label">
-                                    <span class="color-circle" style="background-color: #7ED321;"></span>
-                                    <span class="color-name">أخضر</span>
-                                    <span class="color-count">(263)</span>
-                                </span>
-                            </label>
-                            <label class="color-checkbox">
-                                <input type="checkbox" name="color" value="beige">
-                                <span class="color-label">
-                                    <span class="color-circle" style="background-color: #D4C5B9;"></span>
-                                    <span class="color-name">لون محايد</span>
-                                    <span class="color-count">(250)</span>
-                                </span>
-                            </label>
-                            <label class="color-checkbox">
-                                <input type="checkbox" name="color" value="purple">
-                                <span class="color-label">
-                                    <span class="color-circle"
-                                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></span>
-                                    <span class="color-name">ملون</span>
-                                    <span class="color-count">(247)</span>
-                                </span>
-                            </label>
-                            <label class="color-checkbox">
-                                <input type="checkbox" name="color" value="brown">
-                                <span class="color-label">
-                                    <span class="color-circle" style="background-color: #8B4513;"></span>
-                                    <span class="color-name">بني</span>
-                                    <span class="color-count">(211)</span>
-                                </span>
-                            </label>
-                            <label class="color-checkbox">
-                                <input type="checkbox" name="color" value="metallic">
-                                <span class="color-label">
-                                    <span class="color-circle" style="background-color: #C0C0C0;"></span>
-                                    <span class="color-name">عديم اللون</span>
-                                    <span class="color-count">(167)</span>
-                                </span>
-                            </label>
-                            <label class="color-checkbox">
-                                <input type="checkbox" name="color" value="white">
-                                <span class="color-label">
-                                    <span class="color-circle"
-                                        style="background-color: #FFFFFF; border: 1px solid #ddd;"></span>
-                                    <span class="color-name">أبيض</span>
-                                    <span class="color-count">(159)</span>
-                                </span>
-                            </label>
-                            <label class="color-checkbox">
-                                <input type="checkbox" name="color" value="red">
-                                <span class="color-label">
-                                    <span class="color-circle" style="background-color: #E53935;"></span>
-                                    <span class="color-name">أحمر</span>
-                                    <span class="color-count">(55)</span>
-                                </span>
-                            </label>
+                            @endforeach
                         </div>
                     </div>
 
@@ -886,18 +744,18 @@
                         <div class="price-range-wrapper">
                             <div class="price-display">
                                 <div class="price-box">
-                                    <label>الكمية الأدنى</label>
+                                    <label>السعر الأدنى</label>
                                     <div class="price-input-wrapper">
-                                        <input type="number" id="minPrice" value="60" min="0"
-                                            max="28050">
+                                        <input type="number" id="minPrice" value="{{ request('min_price', $minPrice) }}" min="{{ $minPrice }}"
+                                            max="{{ $maxPrice }}">
                                         <span class="currency">AED</span>
                                     </div>
                                 </div>
                                 <div class="price-box">
-                                    <label>الكمية الأقصى</label>
+                                    <label>السعر الأعلى</label>
                                     <div class="price-input-wrapper">
-                                        <input type="number" id="maxPrice" value="28050" min="0"
-                                            max="28050">
+                                        <input type="number" id="maxPrice" value="{{ request('max_price', $maxPrice) }}" min="{{ $minPrice }}"
+                                            max="{{ $maxPrice }}">
                                         <span class="currency">AED</span>
                                     </div>
                                 </div>
@@ -959,17 +817,19 @@
                     <div class="products-grid" data-view="grid-3">
                         @forelse($products as $product)
                         <div class="product-card">
-                            <a href="{{ route('product.details', $product->getSlug()) }}" class="product-image-wrapper">
-                                <img src="{{ $product->main_image ? asset('storage/' . $product->main_image) : asset('assets/images/placeholder.jpg') }}"
-                                    alt="{{ $product->getName() }}" class="product-image-primary">
-                                @if($product->gallery_images && is_array($product->gallery_images) && count($product->gallery_images) > 0)
-                                <img src="{{ asset('storage/' . $product->gallery_images[0]) }}"
-                                    alt="{{ $product->getName() }}" class="product-image-secondary">
-                                @else
-                                <img src="{{ $product->main_image ? asset('storage/' . $product->main_image) : asset('assets/images/placeholder.jpg') }}"
-                                    alt="{{ $product->getName() }}" class="product-image-secondary">
-                                @endif
-                                <button class="wishlist-btn" data-product-id="{{ $product->id }}">
+                            <div class="product-image-wrapper" style="position: relative;">
+                                <a href="{{ route('product.details', $product->getSlug()) }}" style="display: block;">
+                                    <img src="{{ $product->main_image ? asset('storage/' . $product->main_image) : asset('assets/images/placeholder.jpg') }}"
+                                        alt="{{ $product->getName() }}" class="product-image-primary">
+                                    @if($product->hover_image)
+                                    <img src="{{ asset('storage/' . $product->hover_image) }}"
+                                        alt="{{ $product->getName() }}" class="product-image-secondary">
+                                    @else
+                                    <img src="{{ $product->main_image ? asset('storage/' . $product->main_image) : asset('assets/images/placeholder.jpg') }}"
+                                        alt="{{ $product->getName() }}" class="product-image-secondary">
+                                    @endif
+                                </a>
+                                <button class="wishlist-btn {{ auth()->check() && \App\Models\Wishlist::isInWishlist(auth()->id(), $product->id) ? 'active' : '' }}" data-product-id="{{ $product->id }}" onclick="event.stopPropagation();">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path
                                             d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
@@ -993,7 +853,7 @@
                                 @elseif($product->is_on_sale)
                                     <span class="badge discount">{{ app()->getLocale() == 'ar' ? 'عرض خاص' : 'On Sale' }}</span>
                                 @endif
-                            </a>
+                            </div>
                             <div class="product-info">
                                 @if($product->brand)
                                 <p class="product-brand">{{ $product->brand }}</p>
@@ -1090,6 +950,18 @@
         <script src="https://cdn.jsdelivr.net/npm/pica@9.0.1/dist/pica.min.js"></script>
         <script>
             const isArabic = '{{ app()->getLocale() }}' === 'ar';
+
+            // Initialize Custom Selects
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize all custom select dropdowns on page load
+                if (typeof CustomSelect !== 'undefined') {
+                    document.querySelectorAll('.custom-select').forEach(select => {
+                        if (!select.parentElement.classList.contains('custom-select-wrapper')) {
+                            new CustomSelect(select);
+                        }
+                    });
+                }
+            });
 
             // Smart Pica Implementation - Preserves aspect ratio
             document.addEventListener('DOMContentLoaded', function() {
@@ -1280,8 +1152,90 @@
                 });
             }
 
-            // Product Image Hover Effect
+            // Apply Filters Functionality
+            const applyFiltersBtn = document.querySelector('.apply-filters-btn');
+            if (applyFiltersBtn) {
+                applyFiltersBtn.addEventListener('click', function() {
+                    const url = new URL(window.location.href);
+
+                    // Clear previous filter params
+                    url.searchParams.delete('sizes[]');
+                    url.searchParams.delete('shoe_sizes[]');
+                    url.searchParams.delete('colors[]');
+                    url.searchParams.delete('min_price');
+                    url.searchParams.delete('max_price');
+
+                    // Get selected sizes
+                    const selectedSizes = [];
+                    document.querySelectorAll('input[name="size"]:checked').forEach(input => {
+                        selectedSizes.push(input.value);
+                    });
+                    selectedSizes.forEach(size => {
+                        url.searchParams.append('sizes[]', size);
+                    });
+
+                    // Get selected shoe sizes
+                    const selectedShoeSizes = [];
+                    document.querySelectorAll('input[name="shoe-size"]:checked').forEach(input => {
+                        selectedShoeSizes.push(input.value);
+                    });
+                    selectedShoeSizes.forEach(size => {
+                        url.searchParams.append('shoe_sizes[]', size);
+                    });
+
+                    // Get selected colors
+                    const selectedColors = [];
+                    document.querySelectorAll('input[name="color"]:checked').forEach(input => {
+                        selectedColors.push(input.value);
+                    });
+                    selectedColors.forEach(color => {
+                        url.searchParams.append('colors[]', color);
+                    });
+
+                    // Get price range
+                    const minPrice = document.getElementById('minPrice').value;
+                    const maxPrice = document.getElementById('maxPrice').value;
+
+                    if (minPrice) {
+                        url.searchParams.set('min_price', minPrice);
+                    }
+                    if (maxPrice) {
+                        url.searchParams.set('max_price', maxPrice);
+                    }
+
+                    // Redirect to filtered URL
+                    window.location.href = url.toString();
+                });
+            }
+
+            // Restore filter selections from URL
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // Restore sizes
+            const sizesParam = urlParams.getAll('sizes[]');
+            sizesParam.forEach(size => {
+                const checkbox = document.querySelector(`input[name="size"][value="${size}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+
+            // Restore shoe sizes
+            const shoeSizesParam = urlParams.getAll('shoe_sizes[]');
+            shoeSizesParam.forEach(size => {
+                const checkbox = document.querySelector(`input[name="shoe-size"][value="${size}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+
+            // Restore colors
+            const colorsParam = urlParams.getAll('colors[]');
+            colorsParam.forEach(color => {
+                const checkbox = document.querySelector(`input[name="color"][value="${color}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+
+            // Product Image Hover Effect & Wishlist - Combined DOMContentLoaded
             document.addEventListener('DOMContentLoaded', function() {
+                console.log('🚀 Shop page initialized - POWER MODE ACTIVATED');
+
                 // Handle image hover for all product cards
                 const productCards = document.querySelectorAll('.product-card');
 
@@ -1299,29 +1253,266 @@
                         });
                     }
                 });
-            });
 
-            // Wishlist functionality
-            document.addEventListener('DOMContentLoaded', function() {
-                const wishlistButtons = document.querySelectorAll('.wishlist-btn');
-                wishlistButtons.forEach(button => {
-                    button.addEventListener('click', function(e) {
+                // Wishlist functionality - Using event delegation
+                console.log('💗 Initializing wishlist system...');
+
+                // Use event delegation on the products grid
+                const productsGrid = document.querySelector('.products-grid');
+
+                if (!productsGrid) {
+                    console.error('❌ Products grid not found!');
+                    return;
+                }
+
+                console.log('✅ Products grid found, attaching event listeners');
+
+                productsGrid.addEventListener('click', async function(e) {
+                    // Check if clicked element is wishlist button or its child
+                    const button = e.target.closest('.wishlist-btn');
+
+                    if (button) {
+                        console.log('💗 Wishlist button clicked! Product ID:', button.dataset.productId);
+
                         e.preventDefault();
                         e.stopPropagation();
-                        this.classList.toggle('active');
+
+                        @guest
+                            console.log('⚠️ User not logged in');
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'يجب تسجيل الدخول',
+                                text: 'يجب عليك تسجيل الدخول أولاً لإضافة منتجات إلى قائمة الأمنيات',
+                                confirmButtonText: 'تسجيل الدخول الآن',
+                                showCancelButton: true,
+                                cancelButtonText: 'إلغاء',
+                                confirmButtonColor: '#1a1a1a',
+                                cancelButtonColor: '#666',
+                                background: '#ffffff',
+                                color: '#000000',
+                                iconColor: '#ffc107'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = "{{ route('login') }}";
+                                }
+                            });
+                            return;
+                        @endguest
+
+                        const productId = button.dataset.productId;
+
+                        if (!productId) {
+                            console.error('❌ Product ID not found on button');
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'خطأ!',
+                                text: 'لم يتم العثور على معرف المنتج',
+                                confirmButtonColor: '#1a1a1a',
+                                background: '#ffffff',
+                                color: '#000000',
+                                iconColor: '#dc3545'
+                            });
+                            return;
+                        }
+
+                        console.log('📤 Sending request to add/remove from wishlist...');
+
+                        // Show loading state
+                        const originalHTML = button.innerHTML;
+                        button.disabled = true;
+                        button.style.opacity = '0.6';
+
+                        try {
+                            const response = await fetch("{{ route('wishlist.toggle') }}", {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({ product_id: productId })
+                            });
+
+                            console.log('📥 Response status:', response.status);
+
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+
+                            const data = await response.json();
+                            console.log('📦 Response data:', data);
+
+                            if (data.success) {
+                                // Toggle active class
+                                button.classList.toggle('active');
+
+                                console.log('✅ Success! isAdded:', data.isAdded);
+
+                                // Show beautiful success message
+                                Swal.fire({
+                                    icon: data.isAdded ? 'success' : 'error',
+                                    title: data.isAdded ? 'تمت الإضافة بنجاح' : 'تم الحذف',
+                                    text: data.isAdded
+                                        ? 'تم إضافة المنتج إلى قائمة الأمنيات'
+                                        : 'تم حذف المنتج من قائمة الأمنيات',
+                                    timer: 2500,
+                                    showConfirmButton: false,
+                                    position: 'top-end',
+                                    toast: true,
+                                    background: '#ffffff',
+                                    color: '#000000',
+                                    iconColor: data.isAdded ? '#28a745' : '#dc3545',
+                                    customClass: {
+                                        popup: 'animated fadeInRight'
+                                    }
+                                });
+
+                                // Update wishlist count in header badge
+                                const wishlistBadge = document.querySelector('.header-link[href*="wishlist"] .badge');
+                                if (wishlistBadge) {
+                                    const currentCount = parseInt(wishlistBadge.textContent) || 0;
+                                    const newCount = data.isAdded ? currentCount + 1 : Math.max(0, currentCount - 1);
+                                    wishlistBadge.textContent = newCount;
+                                    console.log(`🔢 Wishlist count updated: ${currentCount} → ${newCount}`);
+                                }
+                            } else {
+                                throw new Error(data.message || 'حدث خطأ غير معروف');
+                            }
+                        } catch (error) {
+                            console.error('❌ Error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'خطأ!',
+                                text: error.message || 'حدث خطأ أثناء الإضافة للمفضلة. يرجى المحاولة مرة أخرى.',
+                                confirmButtonText: 'حسناً',
+                                confirmButtonColor: '#1a1a1a',
+                                background: '#ffffff',
+                                color: '#000000',
+                                iconColor: '#dc3545'
+                            });
+                        } finally {
+                            // Restore button state
+                            button.disabled = false;
+                            button.style.opacity = '1';
+                        }
+                    }
+                });
+
+                console.log('✅ Wishlist event listener attached successfully!');
+
+                // Additional: Direct event listeners on all wishlist buttons as backup
+                const allWishlistButtons = document.querySelectorAll('.wishlist-btn');
+                console.log(`🔄 Found ${allWishlistButtons.length} wishlist buttons, attaching direct listeners...`);
+
+                allWishlistButtons.forEach((btn, index) => {
+                    btn.addEventListener('click', async function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+
+                        console.log(`🎯 Direct listener fired for button ${index + 1}/${allWishlistButtons.length}`);
+                        console.log('Product ID from button:', this.dataset.productId);
+
+                        @guest
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'يجب تسجيل الدخول',
+                                text: 'يجب عليك تسجيل الدخول أولاً',
+                                confirmButtonText: 'تسجيل الدخول',
+                                showCancelButton: true,
+                                cancelButtonText: 'إلغاء',
+                                confirmButtonColor: '#1a1a1a',
+                                cancelButtonColor: '#666',
+                                background: '#ffffff',
+                                color: '#000000',
+                                iconColor: '#ffc107'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = "{{ route('login') }}";
+                                }
+                            });
+                            return;
+                        @endguest
+
+                        const productId = this.dataset.productId;
+                        if (!productId) {
+                            console.error('❌ No product ID!');
+                            return;
+                        }
+
+                        this.disabled = true;
+                        this.style.opacity = '0.6';
+
+                        try {
+                            console.log('📡 Sending AJAX request...');
+                            const response = await fetch("{{ route('wishlist.toggle') }}", {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({ product_id: productId })
+                            });
+
+                            const data = await response.json();
+                            console.log('✅ Response:', data);
+
+                            if (data.success) {
+                                this.classList.toggle('active');
+
+                                Swal.fire({
+                                    icon: data.isAdded ? 'success' : 'error',
+                                    title: data.isAdded ? 'تمت الإضافة بنجاح' : 'تم الحذف',
+                                    text: data.isAdded ? 'تم إضافة المنتج إلى قائمة الأمنيات' : 'تم حذف المنتج من قائمة الأمنيات',
+                                    timer: 2500,
+                                    showConfirmButton: false,
+                                    position: 'top-end',
+                                    toast: true,
+                                    background: '#ffffff',
+                                    color: '#000000',
+                                    iconColor: data.isAdded ? '#28a745' : '#dc3545'
+                                });
+
+                                // Update wishlist count
+                                const wishlistBadge = document.querySelector('.header-link[href*="wishlist"] .badge');
+                                if (wishlistBadge) {
+                                    const currentCount = parseInt(wishlistBadge.textContent) || 0;
+                                    const newCount = data.isAdded ? currentCount + 1 : Math.max(0, currentCount - 1);
+                                    wishlistBadge.textContent = newCount;
+                                }
+                            }
+                        } catch (error) {
+                            console.error('❌ Error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'خطأ!',
+                                text: 'حدث خطأ. يرجى المحاولة مرة أخرى.',
+                                confirmButtonColor: '#1a1a1a',
+                                background: '#ffffff',
+                                color: '#000000',
+                                iconColor: '#dc3545'
+                            });
+                        } finally {
+                            this.disabled = false;
+                            this.style.opacity = '1';
+                        }
                     });
                 });
 
+                console.log('🎉 All wishlist buttons ready!');
+
                 // View toggle
                 const viewButtons = document.querySelectorAll('.view-btn');
-                const productsGrid = document.querySelector('.products-grid');
 
                 viewButtons.forEach(btn => {
                     btn.addEventListener('click', function() {
                         viewButtons.forEach(b => b.classList.remove('active'));
                         this.classList.add('active');
                         const view = this.getAttribute('data-view');
-                        productsGrid.setAttribute('data-view', view);
+                        if (productsGrid) {
+                            productsGrid.setAttribute('data-view', view);
+                        }
                     });
                 });
 
@@ -1372,7 +1563,7 @@
                     button.addEventListener('click', function(e) {
                         e.preventDefault();
                         const productCard = this.closest('.product-card');
-                        const productLink = productCard.querySelector('.product-image-wrapper');
+                        const productLink = productCard.querySelector('.product-image-wrapper a');
                         const productUrl = productLink.href;
 
                         // Fetch product data from server
@@ -1382,9 +1573,26 @@
                                 'Accept': 'application/json'
                             }
                         })
-                        .then(response => response.json())
-                        .catch(() => {
-                            // Fallback: get data from card
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(product => {
+                            console.log('Product data received from API:', product);
+                            console.log('Total images:', product.images ? product.images.length : 0);
+                            console.log('Description:', product.description ? 'Available' : 'Missing');
+                            console.log('Sizing info:', product.sizing_info ? 'Available' : 'Missing');
+                            console.log('Design details:', product.design_details ? 'Available' : 'Missing');
+                            openProductModal(product);
+                        })
+                        .catch(error => {
+                            console.error('Error loading product from API:', error);
+
+                            // Fallback: get basic data from card (without description/details)
+                            console.warn('Using fallback data from product card');
+                            const productId = button.dataset.productId || productCard.querySelector('[data-product-id]')?.dataset.productId;
                             const productName = productCard.querySelector('.product-name').textContent;
                             const productBrandEl = productCard.querySelector('.product-brand');
                             const productBrand = productBrandEl ? productBrandEl.textContent : '';
@@ -1400,22 +1608,20 @@
                                 sizes.push(sizeBtn.getAttribute('data-size'));
                             });
 
-                            return {
+                            const fallbackProduct = {
+                                id: productId,
                                 name: productName,
                                 brand: productBrand,
                                 price: productPrice,
                                 images: [primaryImage, secondaryImage],
                                 hasNewSeason: hasNewSeasonBadge,
-                                sizes: sizes
+                                sizes: sizes,
+                                description: '',
+                                sizing_info: '',
+                                design_details: ''
                             };
-                        })
-                        .then(product => {
-                            console.log('Product data received:', product);
-                            console.log('Total images:', product.images ? product.images.length : 0);
-                            openProductModal(product);
-                        })
-                        .catch(error => {
-                            console.error('Error loading product:', error);
+
+                            openProductModal(fallbackProduct);
                         });
                     });
                 });
@@ -1431,6 +1637,10 @@
                     const modalThumbnails = document.getElementById('modalThumbnails');
                     const modalSizeButtons = document.getElementById('modalSizeButtons');
 
+                    // Store product ID globally
+                    currentProductId = product.id;
+                    console.log('Current Product ID:', currentProductId);
+
                     // Set product data
                     const allImages = product.images || [];
                     if (allImages.length > 0) {
@@ -1442,16 +1652,81 @@
                     modalProductName.textContent = product.name;
                     modalPrice.textContent = product.price;
 
-                    // Update description if available
+                    // Update description
                     const modalDescription = document.getElementById('modalDescription');
-                    if (modalDescription && product.description) {
-                        modalDescription.innerHTML = product.description;
+                    if (modalDescription) {
+                        if (product.description) {
+                            modalDescription.innerHTML = product.description;
+                        } else {
+                            modalDescription.innerHTML = '<p>{{ app()->getLocale() == "ar" ? "لا يوجد وصف متاح" : "No description available" }}</p>';
+                        }
                     }
 
-                    // Update product code if available
-                    const modalProductCode = document.getElementById('modalProductCode');
-                    if (modalProductCode && product.sku) {
-                        modalProductCode.textContent = product.sku;
+                    // Update sizing info tab
+                    const modalSizingInfo = document.getElementById('modalSizingInfo');
+                    const sizingTabBtn = document.querySelector('.modal-tab-btn[data-tab="modal-sizing"]');
+                    if (product.sizing_info && product.sizing_info.trim() !== '') {
+                        if (modalSizingInfo) modalSizingInfo.innerHTML = product.sizing_info;
+                        if (sizingTabBtn) {
+                            sizingTabBtn.style.display = 'inline-block';
+                            sizingTabBtn.style.visibility = 'visible';
+                        }
+                    } else {
+                        if (modalSizingInfo) modalSizingInfo.innerHTML = '';
+                        if (sizingTabBtn) {
+                            sizingTabBtn.style.display = 'none';
+                            sizingTabBtn.style.visibility = 'hidden';
+                        }
+                    }
+
+                    // Update design details tab
+                    const modalDesignDetails = document.getElementById('modalDesignDetails');
+                    const designTabBtn = document.querySelector('.modal-tab-btn[data-tab="modal-design"]');
+                    if (product.design_details && product.design_details.trim() !== '') {
+                        if (modalDesignDetails) modalDesignDetails.innerHTML = product.design_details;
+                        if (designTabBtn) {
+                            designTabBtn.style.display = 'inline-block';
+                            designTabBtn.style.visibility = 'visible';
+                        }
+                    } else {
+                        if (modalDesignDetails) modalDesignDetails.innerHTML = '';
+                        if (designTabBtn) {
+                            designTabBtn.style.display = 'none';
+                            designTabBtn.style.visibility = 'hidden';
+                        }
+                    }
+
+                    // Log for debugging
+                    console.log('Product data loaded:', {
+                        has_description: !!product.description,
+                        has_sizing: !!(product.sizing_info && product.sizing_info.trim()),
+                        has_design: !!(product.design_details && product.design_details.trim())
+                    });
+
+                    // Reset tabs: hide all panels and deactivate all buttons
+                    document.querySelectorAll('.modal-tab-panel').forEach(panel => {
+                        panel.classList.remove('active');
+                    });
+                    document.querySelectorAll('.modal-tab-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+
+                    // Find and activate first visible tab
+                    const allTabBtns = document.querySelectorAll('.modal-tab-btn');
+                    let firstVisibleTab = null;
+                    for (let btn of allTabBtns) {
+                        const btnStyle = window.getComputedStyle(btn);
+                        if (btnStyle.display !== 'none' && btnStyle.visibility !== 'hidden') {
+                            firstVisibleTab = btn;
+                            break;
+                        }
+                    }
+
+                    if (firstVisibleTab) {
+                        firstVisibleTab.classList.add('active');
+                        const firstTabId = firstVisibleTab.getAttribute('data-tab');
+                        const firstPanel = document.getElementById(firstTabId);
+                        if (firstPanel) firstPanel.classList.add('active');
                     }
 
                     // Show/hide season badge
@@ -1471,29 +1746,107 @@
                         thumbnail.alt = `صورة ${index + 1}`;
                         thumbnail.className = `modal-thumbnail ${index === 0 ? 'active' : ''}`;
                         thumbnail.addEventListener('click', function() {
-                            modalMainImage.src = img;
-                            document.querySelectorAll('.modal-thumbnail').forEach(t => t.classList
-                                .remove('active'));
-                            this.classList.add('active');
+                            updateModalImage(index);
                         });
                         modalThumbnails.appendChild(thumbnail);
                     });
 
-                    // Add size buttons
-                    modalSizeButtons.innerHTML = '';
+                    // Add sizes to dropdown
+                    const modalSizeSelect = document.getElementById('modalSizeSelect');
+                    const modalSizesList = document.getElementById('modalSizesList');
+                    const modalAvailableSizes = document.getElementById('modalAvailableSizes');
+
+                    // Debug: Log sizes
+                    console.log('🔍 Product sizes:', product.sizes);
+                    console.log('📊 Sizes length:', product.sizes ? product.sizes.length : 0);
+
+                    // Clear existing options except first one
+                    modalSizeSelect.innerHTML = '<option value="">اختر المقاس</option>';
+
                     if (product.sizes && product.sizes.length > 0) {
+                        console.log('✅ Displaying ' + product.sizes.length + ' sizes');
+
+                        // Update sizes count
+                        document.getElementById('modalSizesCount').textContent = '(' + product.sizes.length + ')';
+
+                        // Display available sizes list as badges
+                        const sizesHTML = product.sizes.map(size =>
+                            '<span style="display: inline-block; padding: 8px 16px; margin: 4px; background: #007bff; color: white; border-radius: 4px; font-weight: bold; font-size: 14px;">' +
+                            size +
+                            '</span>'
+                        ).join('');
+
+                        modalSizesList.innerHTML = sizesHTML;
+                        modalAvailableSizes.style.display = 'block';
+
+                        // Add sizes to dropdown
                         product.sizes.forEach(size => {
-                            const sizeBtn = document.createElement('button');
-                            sizeBtn.className = 'modal-size-btn';
-                            sizeBtn.textContent = size;
-                            sizeBtn.addEventListener('click', function() {
-                                document.querySelectorAll('.modal-size-btn').forEach(btn => btn.classList
-                                    .remove('selected'));
-                                this.classList.add('selected');
-                            });
-                            modalSizeButtons.appendChild(sizeBtn);
+                            const option = document.createElement('option');
+                            option.value = size;
+                            option.textContent = size;
+                            modalSizeSelect.appendChild(option);
                         });
+
+                        console.log('✅ Added ' + product.sizes.length + ' options to dropdown');
+
+                        // Destroy old custom select if exists
+                        if (modalSizeSelect.parentElement.classList.contains('custom-select-wrapper')) {
+                            const wrapper = modalSizeSelect.parentElement;
+                            const parent = wrapper.parentElement;
+                            parent.insertBefore(modalSizeSelect, wrapper);
+                            wrapper.remove();
+                        }
+
+                        // Initialize custom select
+                        if (typeof CustomSelect !== 'undefined') {
+                            new CustomSelect(modalSizeSelect);
+                            console.log('✅ CustomSelect initialized');
+                        } else {
+                            console.warn('⚠️ CustomSelect not available');
+                        }
+                    } else {
+                        console.warn('⚠️ No sizes available for this product');
+                        modalAvailableSizes.style.display = 'none';
                     }
+
+                    // Setup image navigation
+                    let currentImageIndex = 0;
+                    const totalImages = allImages.length;
+
+                    function updateModalImage(index) {
+                        if (index >= 0 && index < totalImages) {
+                            currentImageIndex = index;
+                            modalMainImage.src = allImages[currentImageIndex];
+
+                            // Update active thumbnail
+                            document.querySelectorAll('.modal-thumbnail').forEach((t, i) => {
+                                t.classList.toggle('active', i === currentImageIndex);
+                            });
+
+                            // Update navigation buttons state
+                            document.getElementById('modalPrevImage').disabled = currentImageIndex === 0;
+                            document.getElementById('modalNextImage').disabled = currentImageIndex === totalImages - 1;
+                        }
+                    }
+
+                    // Previous image button
+                    document.getElementById('modalPrevImage').onclick = function(e) {
+                        e.stopPropagation();
+                        if (currentImageIndex > 0) {
+                            updateModalImage(currentImageIndex - 1);
+                        }
+                    };
+
+                    // Next image button
+                    document.getElementById('modalNextImage').onclick = function(e) {
+                        e.stopPropagation();
+                        if (currentImageIndex < totalImages - 1) {
+                            updateModalImage(currentImageIndex + 1);
+                        }
+                    };
+
+                    // Initial state
+                    updateModalImage(0);
 
                     // Show modal
                     modal.style.display = 'block';
@@ -1530,11 +1883,14 @@
                 });
 
                 // Add to bag from modal
+                let currentProductId = null;
+
                 document.getElementById('modalAddToBag').addEventListener('click', function() {
-                    const selectedSize = document.querySelector('.modal-size-btn.selected');
+                    const modalSizeSelect = document.getElementById('modalSizeSelect');
+                    const selectedSize = modalSizeSelect ? modalSizeSelect.value : null;
                     const productName = document.getElementById('modalProductName').textContent;
 
-                    if (!selectedSize) {
+                    if (modalSizeSelect && !selectedSize) {
                         Swal.fire({
                             icon: 'warning',
                             title: 'اختر المقاس',
@@ -1545,30 +1901,74 @@
                         return;
                     }
 
-                    // Add visual feedback
-                    this.innerHTML =
-                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> تمت الإضافة';
-                    this.style.background = '#4CAF50';
+                    // Add to cart via AJAX
+                    const button = this;
+                    button.disabled = true;
 
-                    setTimeout(() => {
-                        this.innerHTML =
-                            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> إضافة إلى حقيبة التسوق';
-                        this.style.background = '#1a1a1a';
-                    }, 2000);
+                    fetch("{{ route('cart.add') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            product_id: currentProductId,
+                            quantity: 1,
+                            size: selectedSize
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update cart count
+                            if (typeof updateCartCount === 'function') {
+                                updateCartCount();
+                            }
+                            const cartBadge = document.getElementById('cartBadge');
+                            if (cartBadge && data.cartCount !== undefined) {
+                                cartBadge.textContent = data.cartCount;
+                            }
 
-                    // Show success message
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'تمت الإضافة!',
-                        text: `تم إضافة ${productName} للسلة بنجاح`,
-                        timer: 1500,
-                        showConfirmButton: false
+                            // Update cart sidebar
+                            if (window.cartSidebarInstance && typeof window.cartSidebarInstance.loadCartFromServer === 'function') {
+                                window.cartSidebarInstance.loadCartFromServer();
+                            }
+
+                            // Add visual feedback
+                            button.innerHTML =
+                                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> تمت الإضافة';
+                            button.style.background = '#4CAF50';
+
+                            // Show success message
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'تمت الإضافة!',
+                                text: data.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+
+                            // Close modal after adding
+                            setTimeout(() => {
+                                button.innerHTML =
+                                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> إضافة إلى حقيبة التسوق';
+                                button.style.background = '#1a1a1a';
+                                button.disabled = false;
+                                closeProductModal();
+                            }, 1500);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        button.disabled = false;
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطأ!',
+                            text: 'حدث خطأ أثناء الإضافة للسلة',
+                            confirmButtonText: 'حسناً'
+                        });
                     });
-
-                    // Close modal after adding
-                    setTimeout(() => {
-                        closeProductModal();
-                    }, 1500);
                 });
             });
         </script>

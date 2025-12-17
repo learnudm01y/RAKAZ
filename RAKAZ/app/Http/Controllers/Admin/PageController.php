@@ -55,7 +55,7 @@ class PageController extends Controller
         Page::create($validated);
 
         return redirect()->route('admin.pages.index')
-            ->with('success', 'تم إضافة الصفحة بنجاح');
+            ->with('success', __('labels.pages.created_successfully'));
     }
 
     /**
@@ -96,7 +96,7 @@ class PageController extends Controller
         $page->update($validated);
 
         return redirect()->route('admin.pages.index')
-            ->with('success', 'تم تحديث الصفحة بنجاح');
+            ->with('success', __('labels.pages.updated_successfully'));
     }
 
     /**
@@ -107,6 +107,6 @@ class PageController extends Controller
         $page->delete();
 
         return redirect()->route('admin.pages.index')
-            ->with('success', 'تم حذف الصفحة بنجاح');
+            ->with('success', __('labels.pages.deleted_successfully'));
     }
 }

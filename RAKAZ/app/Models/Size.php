@@ -30,4 +30,22 @@ class Size extends Model
         $locale = app()->getLocale();
         return $this->name_translations[$locale] ?? $this->name;
     }
+
+    /**
+     * Get products with this size
+     */
+    public function productSizes()
+    {
+        return $this->hasMany(\App\Models\ProductSize::class, 'size_id');
+    }
+
+    /**
+     * Get products through pivot table
+     */
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'product_size')
+                    ->withPivot('stock_quantity')
+                    ->withTimestamps();
+    }
 }

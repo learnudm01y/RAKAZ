@@ -13,8 +13,9 @@ class Product extends Model
     protected $fillable = [
         'name',
         'slug',
-        'short_description',
         'description',
+        'sizing_info',
+        'design_details',
         'category_id',
         'price',
         'sale_price',
@@ -25,6 +26,7 @@ class Product extends Model
         'stock_status',
         'low_stock_threshold',
         'main_image',
+        'hover_image',
         'gallery_images',
         'weight',
         'dimensions',
@@ -53,8 +55,9 @@ class Product extends Model
     protected $casts = [
         'name' => 'array',
         'slug' => 'array',
-        'short_description' => 'array',
         'description' => 'array',
+        'sizing_info' => 'array',
+        'design_details' => 'array',
         'price' => 'decimal:2',
         'sale_price' => 'decimal:2',
         'cost' => 'decimal:2',
@@ -87,6 +90,36 @@ class Product extends Model
     }
 
     /**
+     * Get the sizes for the product (many-to-many relationship)
+     */
+    public function productSizes()
+    {
+        return $this->belongsToMany(Size::class, 'product_size')
+                    ->withPivot('stock_quantity')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get the shoe sizes for the product (many-to-many relationship)
+     */
+    public function productShoeSizes()
+    {
+        return $this->belongsToMany(ShoeSize::class, 'product_shoe_size')
+                    ->withPivot('stock_quantity')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get the colors for the product (many-to-many relationship)
+     */
+    public function productColors()
+    {
+        return $this->belongsToMany(Color::class, 'color_product')
+                    ->withPivot('stock_quantity')
+                    ->withTimestamps();
+    }
+
+    /**
      * Get name by locale
      */
     public function getName($locale = null)
@@ -105,21 +138,30 @@ class Product extends Model
     }
 
     /**
-     * Get short description by locale
-     */
-    public function getShortDescription($locale = null)
-    {
-        $locale = $locale ?? app()->getLocale();
-        return $this->short_description[$locale] ?? $this->short_description['ar'] ?? '';
-    }
-
-    /**
      * Get description by locale
      */
     public function getDescription($locale = null)
     {
         $locale = $locale ?? app()->getLocale();
         return $this->description[$locale] ?? $this->description['ar'] ?? '';
+    }
+
+    /**
+     * Get sizing info by locale
+     */
+    public function getSizingInfo($locale = null)
+    {
+        $locale = $locale ?? app()->getLocale();
+        return $this->sizing_info[$locale] ?? $this->sizing_info['ar'] ?? '';
+    }
+
+    /**
+     * Get design details by locale
+     */
+    public function getDesignDetails($locale = null)
+    {
+        $locale = $locale ?? app()->getLocale();
+        return $this->design_details[$locale] ?? $this->design_details['ar'] ?? '';
     }
 
     /**

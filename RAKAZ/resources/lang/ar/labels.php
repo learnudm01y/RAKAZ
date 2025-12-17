@@ -90,6 +90,73 @@ return [
         'sort_order' => 'ترتيب العرض',
         'status' => 'الحالة',
 
+        'created_successfully' => 'تم إضافة التصنيف بنجاح',
+        'updated_successfully' => 'تم تحديث التصنيف بنجاح',
+        'deleted_successfully' => 'تم حذف التصنيف بنجاح',
         'confirm_delete' => 'هل أنت متأكد من حذف هذا التصنيف؟',
+    ],
+
+    // Products
+    'products' => [
+        'title' => 'إدارة المنتجات',
+        'add_new' => 'إضافة منتج جديد',
+        'edit' => 'تعديل المنتج',
+        'no_products' => 'لا توجد منتجات حالياً',
+        'add_first' => 'إضافة أول منتج',
+
+        'name_ar' => 'اسم المنتج بالعربي',
+        'name_en' => 'اسم المنتج بالإنجليزي',
+        'price' => 'السعر',
+        'sale_price' => 'سعر التخفيض',
+        'stock' => 'المخزون',
+        'status' => 'الحالة',
+        'category' => 'التصنيف',
+
+        'created_successfully' => 'تم إضافة المنتج بنجاح',
+        'updated_successfully' => 'تم تحديث المنتج بنجاح',
+        'deleted_successfully' => 'تم حذف المنتج بنجاح',
+        'confirm_delete' => 'هل أنت متأكد من حذف هذا المنتج؟',
+    ],
+
+    // Sizes
+    'sizes' => [
+        'title' => 'إدارة القياسات',
+        'add_new' => 'إضافة قياس جديد',
+        'edit' => 'تعديل القياس',
+        'created_successfully' => 'تم إضافة القياس بنجاح',
+        'updated_successfully' => 'تم تحديث القياس بنجاح',
+        'deleted_successfully' => 'تم حذف القياس بنجاح',
+    ],
+
+    // Shoe Sizes
+    'shoe_sizes' => [
+        'title' => 'إدارة قياسات الأحذية',
+        'add_new' => 'إضافة قياس جديد',
+        'edit' => 'تعديل القياس',
+        'created_successfully' => 'تم إضافة قياس الحذاء بنجاح',
+        'updated_successfully' => 'تم تحديث قياس الحذاء بنجاح',
+        'deleted_successfully' => 'تم حذف قياس الحذاء بنجاح',
+    ],
+
+    // Colors
+    'colors' => [
+        'title' => 'إدارة الألوان',
+        'add_new' => 'إضافة لون جديد',
+        'edit' => 'تعديل اللون',
+        'created_successfully' => 'تم إضافة اللون بنجاح',
+        'updated_successfully' => 'تم تحديث اللون بنجاح',
+        'deleted_successfully' => 'تم حذف اللون بنجاح',
+    ],
+
+    // Pages
+    'pages' => [
+        'created_successfully' => 'تم إضافة الصفحة بنجاح',
+        'updated_successfully' => 'تم تحديث الصفحة بنجاح',
+        'deleted_successfully' => 'تم حذف الصفحة بنجاح',
+    ],
+
+    // Home Page
+    'homepage' => [
+        'updated_successfully' => 'تم تحديث محتوى الصفحة الرئيسية بنجاح',
     ],
 ];

@@ -33,4 +33,22 @@ class ShoeSize extends Model
         }
         return $this->size;
     }
+
+    /**
+     * Get products with this shoe size
+     */
+    public function productShoeSizes()
+    {
+        return $this->hasMany(\App\Models\ProductShoeSize::class, 'shoe_size_id');
+    }
+
+    /**
+     * Get products through pivot table
+     */
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'product_shoe_size')
+                    ->withPivot('stock_quantity')
+                    ->withTimestamps();
+    }
 }

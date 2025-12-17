@@ -34,7 +34,7 @@ class ProductController extends Controller
         $categoryId = $request->get('category_id');
         $status = $request->get('status');
 
-        $products = Product::with('category')
+        $products = Product::with(['category', 'productSizes', 'productShoeSizes', 'productColors'])
             ->when($search, function($query) use ($search) {
                 $query->search($search);
             })
@@ -55,7 +55,7 @@ class ProductController extends Controller
             })
             ->orderBy('sort_order')
             ->orderBy('created_at', 'desc')
-            ->paginate($perPage)
+            ->paginate(10)
             ->withQueryString();
 
         $categories = Category::where('is_active', true)
@@ -75,7 +75,19 @@ class ProductController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        return view('admin.products.create', compact('categories'));
+        $sizes = \App\Models\Size::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        $shoeSizes = \App\Models\ShoeSize::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        $colors = \App\Models\Color::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        return view('admin.products.create', compact('categories', 'sizes', 'shoeSizes', 'colors'));
     }
 
     /**
@@ -94,10 +106,12 @@ class ProductController extends Controller
                 'name_en' => 'required|string|max:255',
                 'slug_ar' => 'required|string|max:255',
                 'slug_en' => 'required|string|max:255',
-                'short_description_ar' => 'nullable|string',
-                'short_description_en' => 'nullable|string',
                 'description_ar' => 'nullable|string',
                 'description_en' => 'nullable|string',
+                'sizing_info_ar' => 'nullable|string',
+                'sizing_info_en' => 'nullable|string',
+                'design_details_ar' => 'nullable|string',
+                'design_details_en' => 'nullable|string',
                 'category_id' => 'nullable|exists:categories,id',
                 'price' => 'required|numeric|min:0',
                 'sale_price' => 'nullable|numeric|min:0',
@@ -108,6 +122,7 @@ class ProductController extends Controller
                 'stock_status' => 'required|in:in_stock,out_of_stock,on_backorder',
                 'low_stock_threshold' => 'nullable|integer|min:0',
                 'main_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
+                'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
                 'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
                 'brand' => 'nullable|string|max:255',
                 'manufacturer' => 'nullable|string|max:255',
@@ -122,6 +137,12 @@ class ProductController extends Controller
             $mainImagePath = null;
             if ($request->hasFile('main_image')) {
                 $mainImagePath = $request->file('main_image')->store('products', 'public');
+            }
+
+            // Handle hover image upload
+            $hoverImagePath = null;
+            if ($request->hasFile('hover_image')) {
+                $hoverImagePath = $request->file('hover_image')->store('products', 'public');
             }
 
             // Handle gallery images upload
@@ -149,13 +170,17 @@ class ProductController extends Controller
                     'ar' => $validated['slug_ar'] ?: $this->generateSlug($validated['name_ar']),
                     'en' => $validated['slug_en'] ?: $this->generateSlug($validated['name_en']),
                 ],
-                'short_description' => [
-                    'ar' => $request->short_description_ar ?? '',
-                    'en' => $request->short_description_en ?? '',
-                ],
                 'description' => [
                     'ar' => $request->description_ar ?? '',
                     'en' => $request->description_en ?? '',
+                ],
+                'sizing_info' => [
+                    'ar' => $request->sizing_info_ar ?? '',
+                    'en' => $request->sizing_info_en ?? '',
+                ],
+                'design_details' => [
+                    'ar' => $request->design_details_ar ?? '',
+                    'en' => $request->design_details_en ?? '',
                 ],
                 'category_id' => $validated['category_id'] ?? null,
                 'price' => $validated['price'],
@@ -167,6 +192,7 @@ class ProductController extends Controller
                 'stock_status' => $validated['stock_status'],
                 'low_stock_threshold' => $validated['low_stock_threshold'] ?? null,
                 'main_image' => $mainImagePath,
+                'hover_image' => $hoverImagePath,
                 'gallery_images' => $galleryImages,
                 'brand' => $validated['brand'] ?? null,
                 'manufacturer' => $validated['manufacturer'] ?? null,
@@ -179,13 +205,46 @@ class ProductController extends Controller
 
             $product = Product::create($productData);
 
+            // Sync sizes with stock quantities
+            if ($request->has('sizes')) {
+                $sizesData = [];
+                foreach ($request->sizes as $sizeId) {
+                    $sizesData[$sizeId] = [
+                        'stock_quantity' => $request->size_stock[$sizeId] ?? 0
+                    ];
+                }
+                $product->productSizes()->sync($sizesData);
+            }
+
+            // Sync shoe sizes with stock quantities
+            if ($request->has('shoe_sizes')) {
+                $shoeSizesData = [];
+                foreach ($request->shoe_sizes as $shoeSizeId) {
+                    $shoeSizesData[$shoeSizeId] = [
+                        'stock_quantity' => $request->shoe_size_stock[$shoeSizeId] ?? 0
+                    ];
+                }
+                $product->productShoeSizes()->sync($shoeSizesData);
+            }
+
+            // Sync colors with stock quantities
+            if ($request->has('colors')) {
+                $colorsData = [];
+                foreach ($request->colors as $colorId) {
+                    $colorsData[$colorId] = [
+                        'stock_quantity' => $request->color_stock[$colorId] ?? 0
+                    ];
+                }
+                $product->productColors()->sync($colorsData);
+            }
+
             \Log::info('Product created successfully', [
                 'product_id' => $product->id,
                 'user_id' => auth()->id()
             ]);
 
             return redirect()->route('admin.products.index')
-                ->with('success', app()->getLocale() == 'ar' ? 'تم إضافة المنتج بنجاح' : 'Product added successfully');
+                ->with('success', __('labels.products.created_successfully'));
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::warning('Product validation failed', [
                 'errors' => $e->errors(),
@@ -220,7 +279,22 @@ class ProductController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        return view('admin.products.edit', compact('product', 'categories'));
+        $sizes = \App\Models\Size::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        $shoeSizes = \App\Models\ShoeSize::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        $colors = \App\Models\Color::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        // Load existing relationships
+        $product->load(['productSizes', 'productShoeSizes', 'productColors']);
+
+        return view('admin.products.edit', compact('product', 'categories', 'sizes', 'shoeSizes', 'colors'));
     }
 
     /**
@@ -240,10 +314,12 @@ class ProductController extends Controller
                 'name_en' => 'required|string|max:255',
                 'slug_ar' => 'required|string|max:255',
                 'slug_en' => 'required|string|max:255',
-                'short_description_ar' => 'nullable|string',
-                'short_description_en' => 'nullable|string',
                 'description_ar' => 'nullable|string',
                 'description_en' => 'nullable|string',
+                'sizing_info_ar' => 'nullable|string',
+                'sizing_info_en' => 'nullable|string',
+                'design_details_ar' => 'nullable|string',
+                'design_details_en' => 'nullable|string',
                 'category_id' => 'nullable|exists:categories,id',
                 'price' => 'required|numeric|min:0',
                 'sale_price' => 'nullable|numeric|min:0',
@@ -254,6 +330,7 @@ class ProductController extends Controller
                 'stock_status' => 'required|in:in_stock,out_of_stock,on_backorder',
                 'low_stock_threshold' => 'nullable|integer|min:0',
                 'main_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
+                'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
                 'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
                 'brand' => 'nullable|string|max:255',
                 'manufacturer' => 'nullable|string|max:255',
@@ -273,6 +350,17 @@ class ProductController extends Controller
                 $mainImagePath = $request->file('main_image')->store('products', 'public');
             } else {
                 $mainImagePath = $product->main_image;
+            }
+
+            // Handle hover image upload
+            if ($request->hasFile('hover_image')) {
+                // Delete old image
+                if ($product->hover_image) {
+                    Storage::disk('public')->delete($product->hover_image);
+                }
+                $hoverImagePath = $request->file('hover_image')->store('products', 'public');
+            } else {
+                $hoverImagePath = $product->hover_image;
             }
 
             // Handle gallery images
@@ -315,13 +403,17 @@ class ProductController extends Controller
                     'ar' => $validated['slug_ar'] ?: $this->generateSlug($validated['name_ar']),
                     'en' => $validated['slug_en'] ?: $this->generateSlug($validated['name_en']),
                 ],
-                'short_description' => [
-                    'ar' => $request->short_description_ar ?? '',
-                    'en' => $request->short_description_en ?? '',
-                ],
                 'description' => [
                     'ar' => $request->description_ar ?? '',
                     'en' => $request->description_en ?? '',
+                ],
+                'sizing_info' => [
+                    'ar' => $request->sizing_info_ar ?? '',
+                    'en' => $request->sizing_info_en ?? '',
+                ],
+                'design_details' => [
+                    'ar' => $request->design_details_ar ?? '',
+                    'en' => $request->design_details_en ?? '',
                 ],
                 'category_id' => $validated['category_id'] ?? null,
                 'price' => $validated['price'],
@@ -333,6 +425,7 @@ class ProductController extends Controller
                 'stock_status' => $validated['stock_status'],
                 'low_stock_threshold' => $validated['low_stock_threshold'] ?? null,
                 'main_image' => $mainImagePath,
+                'hover_image' => $hoverImagePath,
                 'gallery_images' => $galleryImages,
                 'brand' => $validated['brand'] ?? null,
                 'manufacturer' => $validated['manufacturer'] ?? null,
@@ -343,13 +436,52 @@ class ProductController extends Controller
                 'sort_order' => $validated['sort_order'] ?? 0,
             ]);
 
+            // Sync sizes with stock quantities
+            if ($request->has('sizes')) {
+                $sizesData = [];
+                foreach ($request->sizes as $sizeId) {
+                    $sizesData[$sizeId] = [
+                        'stock_quantity' => $request->size_stock[$sizeId] ?? 0
+                    ];
+                }
+                $product->productSizes()->sync($sizesData);
+            } else {
+                $product->productSizes()->detach();
+            }
+
+            // Sync shoe sizes with stock quantities
+            if ($request->has('shoe_sizes')) {
+                $shoeSizesData = [];
+                foreach ($request->shoe_sizes as $shoeSizeId) {
+                    $shoeSizesData[$shoeSizeId] = [
+                        'stock_quantity' => $request->shoe_size_stock[$shoeSizeId] ?? 0
+                    ];
+                }
+                $product->productShoeSizes()->sync($shoeSizesData);
+            } else {
+                $product->productShoeSizes()->detach();
+            }
+
+            // Sync colors with stock quantities
+            if ($request->has('colors')) {
+                $colorsData = [];
+                foreach ($request->colors as $colorId) {
+                    $colorsData[$colorId] = [
+                        'stock_quantity' => $request->color_stock[$colorId] ?? 0
+                    ];
+                }
+                $product->productColors()->sync($colorsData);
+            } else {
+                $product->productColors()->detach();
+            }
+
             \Log::info('Product updated successfully', [
                 'product_id' => $product->id,
                 'user_id' => auth()->id()
             ]);
 
             return redirect()->route('admin.products.index')
-                ->with('success', app()->getLocale() == 'ar' ? 'تم تحديث المنتج بنجاح' : 'Product updated successfully');
+                ->with('success', __('labels.products.updated_successfully'));
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::warning('Product update validation failed', [
                 'product_id' => $product->id,

@@ -35,7 +35,7 @@ class ShoeSizeController extends Controller
         ShoeSize::create($validated);
 
         return redirect()->route('admin.shoe-sizes.index')
-            ->with('success', __('Shoe size created successfully'));
+            ->with('success', __('labels.shoe_sizes.created_successfully'));
     }
 
     /**
@@ -55,7 +55,7 @@ class ShoeSizeController extends Controller
         $shoeSize->update($validated);
 
         return redirect()->route('admin.shoe-sizes.index')
-            ->with('success', __('Shoe size updated successfully'));
+            ->with('success', __('labels.shoe_sizes.updated_successfully'));
     }
 
     /**
@@ -66,6 +66,6 @@ class ShoeSizeController extends Controller
         $shoeSize->delete();
 
         return redirect()->route('admin.shoe-sizes.index')
-            ->with('success', __('Shoe size deleted successfully'));
+            ->with('success', __('labels.shoe_sizes.deleted_successfully'));
     }
 }

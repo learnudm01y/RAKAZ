@@ -64,9 +64,7 @@ class CategoryController extends Controller
         Category::create($data);
 
         return redirect()->route('admin.categories.index')
-            ->with('success', app()->getLocale() == 'ar'
-                ? 'تم إضافة التصنيف بنجاح'
-                : 'Category added successfully');
+            ->with('success', __('labels.categories.created_successfully'));
     }
 
     public function edit(Category $category)
@@ -126,9 +124,7 @@ class CategoryController extends Controller
         $category->update($data);
 
         return redirect()->route('admin.categories.index')
-            ->with('success', app()->getLocale() == 'ar'
-                ? 'تم تحديث التصنيف بنجاح'
-                : 'Category updated successfully');
+            ->with('success', __('labels.categories.updated_successfully'));
     }
 
     public function destroy(Category $category)
@@ -143,9 +139,7 @@ class CategoryController extends Controller
         $category->delete();
 
         return redirect()->route('admin.categories.index')
-            ->with('success', app()->getLocale() == 'ar'
-                ? 'تم حذف التصنيف بنجاح'
-                : 'Category deleted successfully');
+            ->with('success', __('labels.categories.deleted_successfully'));
     }
 
     /**

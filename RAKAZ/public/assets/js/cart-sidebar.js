@@ -4,7 +4,7 @@
 
 class CartSidebar {
     constructor() {
-        this.cart = this.loadCart();
+        this.cart = [];
         this.sidebar = document.getElementById('cartSidebar');
         this.overlay = document.getElementById('cartOverlay');
         this.closeBtn = document.getElementById('cartClose');
@@ -14,7 +14,7 @@ class CartSidebar {
         this.cartFooter = document.getElementById('cartFooter');
         this.cartBadge = document.getElementById('cartBadge');
         this.cartSubtotal = document.getElementById('cartSubtotal');
-        
+
         this.init();
     }
 
@@ -22,7 +22,9 @@ class CartSidebar {
         // Event Listeners
         this.toggleBtn?.addEventListener('click', (e) => {
             e.preventDefault();
-            this.openCart();
+            this.loadCartFromServer().then(() => {
+                this.openCart();
+            });
         });
 
         this.closeBtn?.addEventListener('click', () => this.closeCart());
@@ -35,9 +37,29 @@ class CartSidebar {
             }
         });
 
-        // Initialize cart display
-        this.updateCart();
-        this.attachProductListeners();
+        // Load cart on init
+        this.loadCartFromServer();
+    }
+
+    async loadCartFromServer() {
+        try {
+            const response = await fetch('/api/cart', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                this.cart = data.items || [];
+                this.updateCartDisplay();
+                console.log('Cart loaded:', this.cart.length, 'items');
+            }
+        } catch (error) {
+            console.error('Error loading cart:', error);
+        }
     }
 
     attachProductListeners() {
@@ -47,10 +69,10 @@ class CartSidebar {
             option.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 const size = option.getAttribute('data-size');
                 const productCard = option.closest('.product-card');
-                
+
                 if (productCard) {
                     this.addToCart(productCard, size);
                 }
@@ -59,47 +81,88 @@ class CartSidebar {
     }
 
     addToCart(productCard, size) {
-        const product = {
-            id: Date.now(),
-            image: productCard.querySelector('.product-image-primary')?.src || '',
-            brand: productCard.querySelector('.product-brand')?.textContent || '',
-            name: productCard.querySelector('.product-name')?.textContent || '',
-            price: productCard.querySelector('.product-price')?.textContent || '',
-            size: size,
-            quantity: 1
-        };
-
-        this.cart.push(product);
-        this.saveCart();
-        this.updateCart();
-
-        // Show success notification
-        this.showNotification('تمت الإضافة للسلة!', `${product.name} - المقاس: ${size}`);
+        // Note: This method is for legacy support only
+        // Modern implementation uses AJAX cart.add endpoint
+        console.log('addToCart called - please use the AJAX endpoint instead');
     }
 
-    removeFromCart(productId) {
-        this.cart = this.cart.filter(item => item.id !== productId);
-        this.saveCart();
-        this.updateCart();
-        
-        // Show notification
-        this.showNotification('تم الحذف', 'تم إزالة المنتج من السلة');
-    }
+    async removeFromCart(productId) {
+        try {
+            const response = await fetch(`/cart/${productId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
 
-    updateQuantity(productId, change) {
-        const item = this.cart.find(item => item.id === productId);
-        if (item) {
-            item.quantity += change;
-            if (item.quantity <= 0) {
-                this.removeFromCart(productId);
-            } else {
-                this.saveCart();
-                this.updateCart();
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    // Reload cart from server
+                    await this.loadCartFromServer();
+
+                    // Update cart count badge
+                    if (typeof updateCartCount === 'function') {
+                        updateCartCount();
+                    }
+
+                    // Show notification
+                    this.showNotification('تم الحذف', data.message || 'تم إزالة المنتج من السلة');
+                }
             }
+        } catch (error) {
+            console.error('Error removing from cart:', error);
+            this.showNotification('خطأ', 'حدث خطأ أثناء حذف المنتج');
         }
     }
 
-    updateCart() {
+    async updateQuantity(productId, change) {
+        const item = this.cart.find(item => item.id === productId);
+        if (!item) return;
+
+        const newQuantity = item.quantity + change;
+
+        if (newQuantity <= 0) {
+            await this.removeFromCart(productId);
+            return;
+        }
+
+        try {
+            const response = await fetch(`/cart/${productId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    quantity: newQuantity
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    // Reload cart from server
+                    await this.loadCartFromServer();
+
+                    // Update cart count badge
+                    if (typeof updateCartCount === 'function') {
+                        updateCartCount();
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error updating quantity:', error);
+            this.showNotification('خطأ', 'حدث خطأ أثناء تحديث الكمية');
+        }
+    }
+
+    updateCartDisplay() {
         // Update badge
         const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0);
         if (this.cartBadge) {
@@ -225,24 +288,36 @@ class CartSidebar {
         }
     }
 
-    saveCart() {
-        localStorage.setItem('cart', JSON.stringify(this.cart));
-        
-        // Dispatch custom event for other scripts
-        window.dispatchEvent(new CustomEvent('cartUpdated', { 
-            detail: { cart: this.cart } 
-        }));
-    }
+    async clearCart() {
+        try {
+            const response = await fetch('/cart', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
 
-    loadCart() {
-        const saved = localStorage.getItem('cart');
-        return saved ? JSON.parse(saved) : [];
-    }
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    // Reload cart from server
+                    await this.loadCartFromServer();
 
-    clearCart() {
-        this.cart = [];
-        this.saveCart();
-        this.updateCart();
+                    // Update cart count badge
+                    if (typeof updateCartCount === 'function') {
+                        updateCartCount();
+                    }
+
+                    this.showNotification('تم التفريغ', data.message || 'تم تفريغ السلة');
+                }
+            }
+        } catch (error) {
+            console.error('Error clearing cart:', error);
+            this.showNotification('خطأ', 'حدث خطأ أثناء تفريغ السلة');
+        }
     }
 
     getCart() {
@@ -268,7 +343,7 @@ class CartSidebar {
 
 // Initialize Cart Sidebar when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    window.cartSidebar = new CartSidebar();
+    window.cartSidebarInstance = new CartSidebar();
 });
 
 // Export for use in other scripts

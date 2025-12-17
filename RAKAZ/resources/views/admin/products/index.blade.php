@@ -114,6 +114,7 @@
                                 <th>{{ app()->getLocale() == 'ar' ? 'المنتج' : 'Product' }}</th>
                                 <th width="100">{{ app()->getLocale() == 'ar' ? 'SKU' : 'SKU' }}</th>
                                 <th width="120">{{ app()->getLocale() == 'ar' ? 'التصنيف' : 'Category' }}</th>
+                                <th width="150">{{ app()->getLocale() == 'ar' ? 'المتغيرات' : 'Variants' }}</th>
                                 <th width="100">{{ app()->getLocale() == 'ar' ? 'السعر' : 'Price' }}</th>
                                 <th width="80">{{ app()->getLocale() == 'ar' ? 'المخزون' : 'Stock' }}</th>
                                 <th width="100">{{ app()->getLocale() == 'ar' ? 'الحالة' : 'Status' }}</th>
@@ -154,6 +155,52 @@
                                         @else
                                             <span class="text-muted">—</span>
                                         @endif
+                                    </td>
+                                    <td>
+                                        <div class="variants-info">
+                                            @if($product->productSizes->count() > 0)
+                                                <div class="variant-group mb-1">
+                                                    <small class="text-muted">{{ app()->getLocale() == 'ar' ? 'قياسات:' : 'Sizes:' }}</small>
+                                                    <div class="variant-badges">
+                                                        @foreach($product->productSizes->take(3) as $size)
+                                                            <span class="badge badge-secondary badge-sm">{{ $size->name }}</span>
+                                                        @endforeach
+                                                        @if($product->productSizes->count() > 3)
+                                                            <span class="badge badge-light badge-sm">+{{ $product->productSizes->count() - 3 }}</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @endif
+                                            @if($product->productShoeSizes->count() > 0)
+                                                <div class="variant-group mb-1">
+                                                    <small class="text-muted">{{ app()->getLocale() == 'ar' ? 'أحذية:' : 'Shoes:' }}</small>
+                                                    <div class="variant-badges">
+                                                        @foreach($product->productShoeSizes->take(3) as $shoeSize)
+                                                            <span class="badge badge-secondary badge-sm">{{ $shoeSize->size }}</span>
+                                                        @endforeach
+                                                        @if($product->productShoeSizes->count() > 3)
+                                                            <span class="badge badge-light badge-sm">+{{ $product->productShoeSizes->count() - 3 }}</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @endif
+                                            @if($product->productColors->count() > 0)
+                                                <div class="variant-group">
+                                                    <small class="text-muted">{{ app()->getLocale() == 'ar' ? 'ألوان:' : 'Colors:' }}</small>
+                                                    <div class="variant-badges">
+                                                        @foreach($product->productColors->take(3) as $color)
+                                                            <span class="color-dot" style="background-color: {{ $color->hex_code }}; @if($color->hex_code == '#FFFFFF') border: 1px solid #ddd; @endif" title="{{ $color->translated_name }}"></span>
+                                                        @endforeach
+                                                        @if($product->productColors->count() > 3)
+                                                            <span class="badge badge-light badge-sm">+{{ $product->productColors->count() - 3 }}</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @endif
+                                            @if($product->productSizes->count() == 0 && $product->productShoeSizes->count() == 0 && $product->productColors->count() == 0)
+                                                <span class="text-muted">—</span>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="product-price">
@@ -493,6 +540,35 @@
 .pagination-links nav {
     display: flex;
     gap: 4px;
+}
+
+/* Variants Styles */
+.variants-info {
+    font-size: 12px;
+}
+
+.variant-group {
+    margin-bottom: 4px;
+}
+
+.variant-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.badge-sm {
+    font-size: 10px;
+    padding: 2px 6px;
+}
+
+.color-dot {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid #e5e7eb;
 }
 
 /* Responsive */

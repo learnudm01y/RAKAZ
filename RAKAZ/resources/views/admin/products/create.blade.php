@@ -48,58 +48,68 @@
         @csrf
 
         <div class="row">
-            <!-- Main Content Column -->
-            <div class="col-md-8">
-                <!-- Basic Information -->
+            <!-- Right Column - Basic Information (70%) -->
+            <div class="col-lg-8">
+                <!-- Names and Descriptions -->
                 <div class="card mb-4">
                     <div class="card-header">
                         <h3 class="card-title">{{ app()->getLocale() == 'ar' ? 'المعلومات الأساسية' : 'Basic Information' }}</h3>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label required">{{ app()->getLocale() == 'ar' ? 'اسم المنتج (عربي)' : 'Product Name (Arabic)' }}</label>
-                                <input type="text" name="name_ar" class="form-control @error('name_ar') is-invalid @enderror" value="{{ old('name_ar') }}" required>
-                                @error('name_ar')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                        <!-- Hidden slug fields - auto-generated from product names -->
+                        <input type="hidden" name="slug_ar" value="{{ old('slug_ar') }}">
+                        <input type="hidden" name="slug_en" value="{{ old('slug_en') }}">
 
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label required">{{ app()->getLocale() == 'ar' ? 'اسم المنتج (إنجليزي)' : 'Product Name (English)' }}</label>
-                                <input type="text" name="name_en" class="form-control @error('name_en') is-invalid @enderror" value="{{ old('name_en') }}" required>
-                                @error('name_en')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label required">{{ app()->getLocale() == 'ar' ? 'اسم المنتج (عربي)' : 'Product Name (Arabic)' }}</label>
+                            <input type="text" name="name_ar" dir="rtl" class="form-control @error('name_ar') is-invalid @enderror" value="{{ old('name_ar') }}" required>
+                            @error('name_ar')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
 
-                            <!-- Hidden slug fields - auto-generated from product names -->
-                            <input type="hidden" name="slug_ar" value="{{ old('slug_ar') }}">
-                            <input type="hidden" name="slug_en" value="{{ old('slug_en') }}">
+                        <div class="mb-3">
+                            <label class="form-label required">{{ app()->getLocale() == 'ar' ? 'اسم المنتج (إنجليزي)' : 'Product Name (English)' }}</label>
+                            <input type="text" name="name_en" dir="ltr" class="form-control @error('name_en') is-invalid @enderror" value="{{ old('name_en') }}" required>
+                            @error('name_en')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">{{ app()->getLocale() == 'ar' ? 'وصف مختصر (عربي)' : 'Short Description (Arabic)' }}</label>
-                                <div id="short_description_ar_editor" style="height: 150px; background: #fff;"></div>
-                                <textarea name="short_description_ar" id="short_description_ar" class="d-none">{{ old('short_description_ar') }}</textarea>
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ app()->getLocale() == 'ar' ? 'الوصف (عربي)' : 'Description (Arabic)' }}</label>
+                            <div id="description_ar_editor" class="quill-editor-rtl" style="height: 250px; background: #fff;" dir="rtl"></div>
+                            <textarea name="description_ar" id="description_ar" class="d-none">{{ old('description_ar') }}</textarea>
+                        </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">{{ app()->getLocale() == 'ar' ? 'وصف مختصر (إنجليزي)' : 'Short Description (English)' }}</label>
-                                <div id="short_description_en_editor" style="height: 150px; background: #fff;"></div>
-                                <textarea name="short_description_en" id="short_description_en" class="d-none">{{ old('short_description_en') }}</textarea>
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ app()->getLocale() == 'ar' ? 'الوصف (إنجليزي)' : 'Description (English)' }}</label>
+                            <div id="description_en_editor" class="quill-editor-ltr" style="height: 250px; background: #fff;" dir="ltr"></div>
+                            <textarea name="description_en" id="description_en" class="d-none">{{ old('description_en') }}</textarea>
+                        </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">{{ app()->getLocale() == 'ar' ? 'الوصف الكامل (عربي)' : 'Full Description (Arabic)' }}</label>
-                                <div id="description_ar_editor" style="height: 250px; background: #fff;"></div>
-                                <textarea name="description_ar" id="description_ar" class="d-none">{{ old('description_ar') }}</textarea>
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ app()->getLocale() == 'ar' ? 'المقاسات والحجم (عربي)' : 'Sizing Info (Arabic)' }}</label>
+                            <div id="sizing_info_ar_editor" class="quill-editor-rtl" style="height: 200px; background: #fff;" dir="rtl"></div>
+                            <textarea name="sizing_info_ar" id="sizing_info_ar" class="d-none">{{ old('sizing_info_ar') }}</textarea>
+                        </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">{{ app()->getLocale() == 'ar' ? 'الوصف الكامل (إنجليزي)' : 'Full Description (English)' }}</label>
-                                <div id="description_en_editor" style="height: 250px; background: #fff;"></div>
-                                <textarea name="description_en" id="description_en" class="d-none">{{ old('description_en') }}</textarea>
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ app()->getLocale() == 'ar' ? 'المقاسات والحجم (إنجليزي)' : 'Sizing Info (English)' }}</label>
+                            <div id="sizing_info_en_editor" class="quill-editor-ltr" style="height: 200px; background: #fff;" dir="ltr"></div>
+                            <textarea name="sizing_info_en" id="sizing_info_en" class="d-none">{{ old('sizing_info_en') }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">{{ app()->getLocale() == 'ar' ? 'تفاصيل التصميم (عربي)' : 'Design Details (Arabic)' }}</label>
+                            <div id="design_details_ar_editor" class="quill-editor-rtl" style="height: 200px; background: #fff;" dir="rtl"></div>
+                            <textarea name="design_details_ar" id="design_details_ar" class="d-none">{{ old('design_details_ar') }}</textarea>
+                        </div>
+
+                        <div class="mb-0">
+                            <label class="form-label">{{ app()->getLocale() == 'ar' ? 'تفاصيل التصميم (إنجليزي)' : 'Design Details (English)' }}</label>
+                            <div id="design_details_en_editor" class="quill-editor-ltr" style="height: 200px; background: #fff;" dir="ltr"></div>
+                            <textarea name="design_details_en" id="design_details_en" class="d-none">{{ old('design_details_en') }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -189,23 +199,28 @@
                 </div>
             </div>
 
-            <!-- Sidebar Column -->
-            <div class="col-md-4">
+            <!-- Left Column - Images & Settings (30%) -->
+            <div class="col-lg-4">
                 <!-- Product Images -->
                 <div class="card mb-4">
                     <div class="card-header">
                         <h3 class="card-title">{{ app()->getLocale() == 'ar' ? 'صور المنتج' : 'Product Images' }}</h3>
+                        <small class="text-muted d-block mt-1">{{ app()->getLocale() == 'ar' ? 'نسبة العرض: 3:4 (مثل 300×400 بكسل)' : 'Aspect Ratio: 3:4 (e.g., 300×400 px)' }}</small>
                     </div>
                     <div class="card-body">
-                        <!-- Main Image -->
-                        <div class="mb-3">
-                            <label class="form-label">{{ app()->getLocale() == 'ar' ? 'الصورة الرئيسية' : 'Main Image' }}</label>
+                        <!-- Main Image (First - Default Display) -->
+                        <div class="mb-4">
+                            <label class="form-label required">
+                                <span class="badge bg-primary me-2">1</span>
+                                {{ app()->getLocale() == 'ar' ? 'الصورة الرئيسية (الافتراضية)' : 'Main Image (Default)' }}
+                            </label>
                             <div class="image-upload-wrapper">
-                                <div class="image-preview" id="image-preview">
+                                <div class="product-image-preview" id="main-image-preview">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                     </svg>
-                                    <p>{{ app()->getLocale() == 'ar' ? 'اضغط لاختيار صورة' : 'Click to select image' }}</p>
+                                    <p class="mb-0">{{ app()->getLocale() == 'ar' ? 'الصورة الأولى' : 'First Image' }}</p>
+                                    <small class="text-muted">{{ app()->getLocale() == 'ar' ? 'تظهر بشكل افتراضي' : 'Shows by default' }}</small>
                                 </div>
                                 <input type="file" name="main_image" id="main_image" class="d-none" accept="image/*">
                             </div>
@@ -214,17 +229,41 @@
                             @enderror
                         </div>
 
-                        <!-- Gallery Images -->
+                        <!-- Hover Image (Second - Shows on Hover) -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <span class="badge bg-secondary me-2">2</span>
+                                {{ app()->getLocale() == 'ar' ? 'صورة التمرير (تظهر عند Hover)' : 'Hover Image (Shows on Hover)' }}
+                            </label>
+                            <div class="image-upload-wrapper">
+                                <div class="product-image-preview" id="hover-image-preview">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path>
+                                    </svg>
+                                    <p class="mb-0">{{ app()->getLocale() == 'ar' ? 'الصورة الثانية' : 'Second Image' }}</p>
+                                    <small class="text-muted">{{ app()->getLocale() == 'ar' ? 'تظهر عند التمرير بالماوس' : 'Shows on mouse hover' }}</small>
+                                </div>
+                                <input type="file" name="hover_image" id="hover_image" class="d-none" accept="image/*">
+                            </div>
+                            <small class="form-text text-muted">{{ app()->getLocale() == 'ar' ? 'اختياري - إذا لم تُضف، ستظهر الصورة الرئيسية' : 'Optional - Main image shows if not added' }}</small>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Additional Gallery Images -->
                         <div>
-                            <label class="form-label">{{ app()->getLocale() == 'ar' ? 'معرض الصور' : 'Image Gallery' }}</label>
+                            <label class="form-label">
+                                {{ app()->getLocale() == 'ar' ? 'صور إضافية (معرض الصور)' : 'Additional Images (Gallery)' }}
+                            </label>
                             <div class="gallery-upload-wrapper">
                                 <button type="button" class="btn btn-outline-primary btn-sm w-100" id="add-gallery-images">
                                     <i class="fas fa-plus"></i>
-                                    {{ app()->getLocale() == 'ar' ? 'إضافة صور' : 'Add Images' }}
+                                    {{ app()->getLocale() == 'ar' ? 'إضافة صور للمعرض' : 'Add Gallery Images' }}
                                 </button>
                                 <input type="file" name="gallery_images[]" id="gallery_images" class="d-none" accept="image/*" multiple>
                             </div>
                             <div id="gallery-preview" class="gallery-preview-grid mt-3"></div>
+                            <small class="form-text text-muted">{{ app()->getLocale() == 'ar' ? 'هذه الصور تظهر في صفحة تفاصيل المنتج فقط' : 'These images appear in product details page only' }}</small>
                             @error('gallery_images')
                                 <div class="text-danger mt-2" style="font-size: 13px;">{{ $message }}</div>
                             @enderror
@@ -319,6 +358,100 @@
                         <small class="form-text text-muted">{{ app()->getLocale() == 'ar' ? 'الأقل يظهر أولاً' : 'Lower numbers appear first' }}</small>
                     </div>
                 </div>
+
+                <!-- Clothing Sizes -->
+                <div class="card mb-4">
+                    <div class="card-header" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#clothingSizesCollapse" aria-expanded="true" aria-controls="clothingSizesCollapse">
+                        <h3 class="card-title">
+                            <i class="fas fa-chevron-down me-2"></i>
+                            {{ app()->getLocale() == 'ar' ? 'قياسات الملابس' : 'Clothing Sizes' }}
+                        </h3>
+                    </div>
+                    <div class="collapse show" id="clothingSizesCollapse">
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach($sizes as $size)
+                            <div class="col-md-6 col-sm-6 col-12 mb-3">
+                                <div class="variant-checkbox-group">
+                                    <div class="form-check">
+                                        <input class="form-check-input size-checkbox" type="checkbox" name="sizes[]" value="{{ $size->id }}" id="size_{{ $size->id }}" {{ in_array($size->id, old('sizes', [])) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="size_{{ $size->id }}">
+                                            {{ $size->name }} ({{ $size->translated_name }})
+                                        </label>
+                                    </div>
+                                    <div class="stock-input-wrapper mt-2" id="size_stock_{{ $size->id }}" style="display: {{ in_array($size->id, old('sizes', [])) ? 'block' : 'none' }};">
+                                        <input type="number" name="size_stock[{{ $size->id }}]" class="form-control form-control-sm" placeholder="{{ app()->getLocale() == 'ar' ? 'الكمية' : 'Stock' }}" min="0" value="{{ old('size_stock.'.$size->id, 0) }}">
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+                <!-- Shoe Sizes -->
+                <div class="card mb-4">
+                    <div class="card-header" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#shoeSizesCollapse" aria-expanded="true" aria-controls="shoeSizesCollapse">
+                        <h3 class="card-title">
+                            <i class="fas fa-chevron-down me-2"></i>
+                            {{ app()->getLocale() == 'ar' ? 'قياسات الأحذية' : 'Shoe Sizes' }}
+                        </h3>
+                    </div>
+                    <div class="collapse show" id="shoeSizesCollapse">
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach($shoeSizes as $shoeSize)
+                            <div class="col-md-4 col-sm-4 col-6 mb-3">
+                                <div class="variant-checkbox-group">
+                                    <div class="form-check">
+                                        <input class="form-check-input shoe-size-checkbox" type="checkbox" name="shoe_sizes[]" value="{{ $shoeSize->id }}" id="shoe_size_{{ $shoeSize->id }}" {{ in_array($shoeSize->id, old('shoe_sizes', [])) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="shoe_size_{{ $shoeSize->id }}">
+                                            {{ $shoeSize->size }}
+                                        </label>
+                                    </div>
+                                    <div class="stock-input-wrapper mt-2" id="shoe_size_stock_{{ $shoeSize->id }}" style="display: {{ in_array($shoeSize->id, old('shoe_sizes', [])) ? 'block' : 'none' }};">
+                                        <input type="number" name="shoe_size_stock[{{ $shoeSize->id }}]" class="form-control form-control-sm" placeholder="{{ app()->getLocale() == 'ar' ? 'الكمية' : 'Stock' }}" min="0" value="{{ old('shoe_size_stock.'.$shoeSize->id, 0) }}">
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+                <!-- Colors -->
+                <div class="card mb-4">
+                    <div class="card-header" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#colorsCollapse" aria-expanded="true" aria-controls="colorsCollapse">
+                        <h3 class="card-title">
+                            <i class="fas fa-chevron-down me-2"></i>
+                            {{ app()->getLocale() == 'ar' ? 'الألوان المتاحة' : 'Available Colors' }}
+                        </h3>
+                    </div>
+                    <div class="collapse show" id="colorsCollapse">
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach($colors as $color)
+                            <div class="col-md-6 col-sm-6 col-12 mb-3">
+                                <div class="variant-checkbox-group">
+                                    <div class="form-check">
+                                        <input class="form-check-input color-checkbox" type="checkbox" name="colors[]" value="{{ $color->id }}" id="color_{{ $color->id }}" {{ in_array($color->id, old('colors', [])) ? 'checked' : '' }}>
+                                        <label class="form-check-label d-flex align-items-center" for="color_{{ $color->id }}">
+                                            <span class="color-circle-preview me-2" style="background-color: {{ $color->hex_code }}; @if($color->hex_code == '#FFFFFF') border: 1px solid #ddd; @endif"></span>
+                                            {{ $color->translated_name }}
+                                        </label>
+                                    </div>
+                                    <div class="stock-input-wrapper mt-2" id="color_stock_{{ $color->id }}" style="display: {{ in_array($color->id, old('colors', [])) ? 'block' : 'none' }};">
+                                        <input type="number" name="color_stock[{{ $color->id }}]" class="form-control form-control-sm" placeholder="{{ app()->getLocale() == 'ar' ? 'الكمية' : 'Stock' }}" min="0" value="{{ old('color_stock.'.$color->id, 0) }}">
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -341,6 +474,47 @@
 /* Product Form Styles */
 .product-form-container {
     padding: 20px;
+    max-width: 100%;
+}
+
+.product-form .row {
+    margin-left: -12px;
+    margin-right: -12px;
+    display: flex !important;
+    flex-wrap: wrap !important;
+}
+
+.product-form .row > [class*='col-'] {
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+/* Force Column Display - CRITICAL */
+.product-form .col-lg-8 {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 66.666667% !important;
+    flex: 0 0 66.666667% !important;
+    max-width: 66.666667% !important;
+}
+
+.product-form .col-lg-4 {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 33.333333% !important;
+    flex: 0 0 33.333333% !important;
+    max-width: 33.333333% !important;
+}
+
+@media (max-width: 991.98px) {
+    .product-form .col-lg-8,
+    .product-form .col-lg-4 {
+        width: 100% !important;
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
 }
 
 .card-title {
@@ -360,6 +534,65 @@
     cursor: pointer;
 }
 
+/* Product Image Preview - 3:4 Aspect Ratio (Like Product Cards) */
+.product-image-preview {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f9fafb;
+    transition: all 0.3s;
+    overflow: hidden;
+    position: relative;
+}
+
+.product-image-preview:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.product-image-preview svg {
+    width: 48px;
+    height: 48px;
+    color: #9ca3af;
+    margin-bottom: 8px;
+}
+
+.product-image-preview p {
+    color: #6b7280;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.product-image-preview small {
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+.product-image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Badge Styling */
+.badge.bg-primary {
+    background-color: #3b82f6 !important;
+}
+
+.badge.bg-secondary {
+    background-color: #6b7280 !important;
+}
+
+/* Old style for backward compatibility */
 .image-preview {
     width: 100%;
     height: 250px;
@@ -401,23 +634,34 @@
 /* Gallery Preview Grid */
 .gallery-preview-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
 }
 
 .gallery-image-item {
     position: relative;
     width: 100%;
-    height: 120px;
+    aspect-ratio: 3 / 4;
     border-radius: 8px;
     overflow: hidden;
-    border: 2px solid #e5e7eb;
+    border: 1px solid #1f2937;
+    background: #f3f4f6;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.gallery-image-item:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transform: translateY(-2px);
 }
 
 .gallery-image-item img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
 }
 
 .gallery-image-item .remove-image {
@@ -426,21 +670,28 @@
     right: 4px;
     background: #ef4444;
     color: white;
-    border: none;
+    border: 1px solid white;
     border-radius: 50%;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 11px;
     transition: all 0.2s;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    z-index: 10;
 }
 
 .gallery-image-item .remove-image:hover {
     background: #dc2626;
     transform: scale(1.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.gallery-image-item .remove-image i {
+    pointer-events: none;
 }
 
 /* Form Actions */
@@ -457,6 +708,39 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
+}
+
+/* Collapsible Card Headers */
+.card-header[data-bs-toggle="collapse"] {
+    user-select: none;
+    transition: background-color 0.2s;
+}
+
+.card-header[data-bs-toggle="collapse"]:hover {
+    background-color: #f9fafb;
+}
+
+.card-header[data-bs-toggle="collapse"] .fa-chevron-down {
+    transition: transform 0.3s ease;
+    display: inline-block;
+}
+
+.card-header[data-bs-toggle="collapse"].collapsed .fa-chevron-down {
+    transform: rotate(0deg);
+}
+
+.card-header[data-bs-toggle="collapse"]:not(.collapsed) .fa-chevron-down {
+    transform: rotate(180deg);
+}
+
+/* Collapse functionality */
+.collapse {
+    display: none;
+    transition: all 0.3s ease;
+}
+
+.collapse.show {
+    display: block;
 }
 
 /* Quill Editor Styling */
@@ -488,6 +772,149 @@ textarea.d-none {
     display: none !important;
 }
 
+/* Force LTR for English Quill Editors - CRITICAL FIX */
+.quill-editor-ltr,
+.quill-editor-ltr .ql-editor,
+.quill-editor-ltr .ql-container,
+.quill-editor-ltr .ql-editor.ql-blank::before {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+.quill-editor-ltr .ql-editor {
+    unicode-bidi: embed !important;
+}
+
+.quill-editor-ltr .ql-editor p,
+.quill-editor-ltr .ql-editor h1,
+.quill-editor-ltr .ql-editor h2,
+.quill-editor-ltr .ql-editor h3,
+.quill-editor-ltr .ql-editor ul,
+.quill-editor-ltr .ql-editor ol,
+.quill-editor-ltr .ql-editor li,
+.quill-editor-ltr .ql-editor div,
+.quill-editor-ltr .ql-editor span,
+.quill-editor-ltr .ql-editor strong,
+.quill-editor-ltr .ql-editor em {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+/* Force RTL for Arabic Quill Editors */
+.quill-editor-rtl,
+.quill-editor-rtl .ql-editor,
+.quill-editor-rtl .ql-container,
+.quill-editor-rtl .ql-editor.ql-blank::before {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+.quill-editor-rtl .ql-editor {
+    unicode-bidi: embed !important;
+}
+
+.quill-editor-rtl .ql-editor p,
+.quill-editor-rtl .ql-editor h1,
+.quill-editor-rtl .ql-editor h2,
+.quill-editor-rtl .ql-editor h3,
+.quill-editor-rtl .ql-editor ul,
+.quill-editor-rtl .ql-editor ol,
+.quill-editor-rtl .ql-editor li,
+.quill-editor-rtl .ql-editor div,
+.quill-editor-rtl .ql-editor span,
+.quill-editor-rtl .ql-editor strong,
+.quill-editor-rtl .ql-editor em {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+/* Fix Quill toolbar alignment */
+.quill-editor-ltr .ql-toolbar {
+    text-align: left !important;
+}
+
+.quill-editor-rtl .ql-toolbar {
+    text-align: right !important;
+}
+
+/* Fix list items in RTL context - CRITICAL */
+[dir="rtl"] .ql-editor li:not(.ql-direction-rtl)::before {
+    margin-left: -0.5em !important;
+    margin-right: 0.5em !important;
+    text-align: right !important;
+    display: inline-block !important;
+    white-space: nowrap !important;
+    width: 1.2em !important;
+}
+
+/* Adaptive Protection - Prevent Editor Destruction */
+.quill-editor-ltr,
+.quill-editor-rtl {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+}
+
+.quill-editor-ltr .ql-container,
+.quill-editor-rtl .ql-container {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+}
+
+.quill-editor-ltr .ql-editor,
+.quill-editor-rtl .ql-editor {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-wrap: break-word !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    box-sizing: border-box !important;
+}
+
+/* Remove external styles and prevent inheritance */
+.quill-editor-ltr .ql-editor *,
+.quill-editor-rtl .ql-editor * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Force container boundaries */
+.quill-editor-ltr .ql-editor p,
+.quill-editor-ltr .ql-editor div,
+.quill-editor-ltr .ql-editor span {
+    max-width: 100% !important;
+    overflow-wrap: break-word !important;
+    word-wrap: break-word !important;
+}
+
+.quill-editor-rtl .ql-editor p,
+.quill-editor-rtl .ql-editor div,
+.quill-editor-rtl .ql-editor span {
+    max-width: 100% !important;
+    overflow-wrap: break-word !important;
+    word-wrap: break-word !important;
+}
+
+/* Reset external margins and paddings */
+.quill-editor-ltr .ql-editor *,
+.quill-editor-rtl .ql-editor * {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+.quill-editor-ltr .ql-editor ul,
+.quill-editor-ltr .ql-editor ol {
+    margin-left: 1.5em !important;
+    margin-right: 0 !important;
+}
+
+.quill-editor-rtl .ql-editor ul,
+.quill-editor-rtl .ql-editor ol {
+    margin-right: 1.5em !important;
+    margin-left: 0 !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .form-actions {
@@ -499,6 +926,31 @@ textarea.d-none {
         justify-content: center;
     }
 }
+
+/* Force Column Display */
+.product-form .col-lg-6 {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+@media (min-width: 992px) {
+    .product-form .col-lg-6 {
+        flex: 0 0 auto;
+        width: 50%;
+    }
+}
+
+@media (max-width: 991px) {
+    .product-form .col-lg-6 {
+        width: 100%;
+    }
+}
+
+/* Debug - make sure columns are visible */
+.product-form .row > div {
+    border: 1px solid transparent;
+}
 </style>
 
 <!-- Quill Editor CSS -->
@@ -507,10 +959,30 @@ textarea.d-none {
 @push('scripts')
 <!-- Quill Editor JS -->
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<!-- Pica.js for High Quality Image Processing -->
+<script src="https://cdn.jsdelivr.net/npm/pica@9.0.1/dist/pica.min.js"></script>
 
 <script>
 $(document).ready(function() {
     const isArabic = '{{ app()->getLocale() }}' === 'ar';
+
+    // Handle collapsible cards manually
+    $('[data-bs-toggle="collapse"]').on('click', function(e) {
+        e.preventDefault();
+        const target = $(this).attr('data-bs-target');
+        const $target = $(target);
+        const $header = $(this);
+
+        // Toggle collapse
+        $target.toggleClass('show');
+
+        // Toggle collapsed class on header
+        $header.toggleClass('collapsed');
+
+        // Update aria-expanded
+        const isExpanded = !$header.hasClass('collapsed');
+        $header.attr('aria-expanded', isExpanded);
+    });
 
     // Show error message with SweetAlert
     @if(session('error'))
@@ -564,7 +1036,7 @@ $(document).ready(function() {
     });
 
     // Initialize Quill Editors
-    const quillOptions = {
+    const quillOptionsRTL = {
         theme: 'snow',
         modules: {
             toolbar: [
@@ -579,26 +1051,39 @@ $(document).ready(function() {
         }
     };
 
-    // Short Description Arabic
-    const shortDescArEditor = new Quill('#short_description_ar_editor', quillOptions);
-    shortDescArEditor.on('text-change', function() {
-        $('#short_description_ar').val(shortDescArEditor.root.innerHTML);
-    });
-    if ($('#short_description_ar').val()) {
-        shortDescArEditor.root.innerHTML = $('#short_description_ar').val();
-    }
+    const quillOptionsLTR = {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'align': [] }],
+                ['link'],
+                ['clean']
+            ]
+        }
+    };
 
-    // Short Description English
-    const shortDescEnEditor = new Quill('#short_description_en_editor', quillOptions);
-    shortDescEnEditor.on('text-change', function() {
-        $('#short_description_en').val(shortDescEnEditor.root.innerHTML);
-    });
-    if ($('#short_description_en').val()) {
-        shortDescEnEditor.root.innerHTML = $('#short_description_en').val();
-    }
+    // Description Arabic (RTL)
+    const descArEditor = new Quill('#description_ar_editor', quillOptionsRTL);
+    descArEditor.root.setAttribute('dir', 'rtl');
 
-    // Full Description Arabic
-    const descArEditor = new Quill('#description_ar_editor', quillOptions);
+    // Adaptive paste handler - Clean external styles
+    descArEditor.clipboard.addMatcher(Node.ELEMENT_NODE, function(node, delta) {
+        const ops = [];
+        delta.ops.forEach(op => {
+            if (op.insert && typeof op.insert === 'string') {
+                ops.push({
+                    insert: op.insert,
+                    attributes: op.attributes || {}
+                });
+            }
+        });
+        return new Quill.imports.delta(ops);
+    });
+
     descArEditor.on('text-change', function() {
         $('#description_ar').val(descArEditor.root.innerHTML);
     });
@@ -606,13 +1091,128 @@ $(document).ready(function() {
         descArEditor.root.innerHTML = $('#description_ar').val();
     }
 
-    // Full Description English
-    const descEnEditor = new Quill('#description_en_editor', quillOptions);
+    // Description English (LTR)
+    const descEnEditor = new Quill('#description_en_editor', quillOptionsLTR);
+    descEnEditor.root.setAttribute('dir', 'ltr');
+    descEnEditor.root.style.textAlign = 'left';
+
+    // Adaptive paste handler - Clean external styles
+    descEnEditor.clipboard.addMatcher(Node.ELEMENT_NODE, function(node, delta) {
+        const ops = [];
+        delta.ops.forEach(op => {
+            if (op.insert && typeof op.insert === 'string') {
+                ops.push({
+                    insert: op.insert,
+                    attributes: op.attributes || {}
+                });
+            }
+        });
+        return new Quill.imports.delta(ops);
+    });
+
     descEnEditor.on('text-change', function() {
         $('#description_en').val(descEnEditor.root.innerHTML);
     });
     if ($('#description_en').val()) {
         descEnEditor.root.innerHTML = $('#description_en').val();
+    }
+
+    // Sizing Info Arabic (RTL)
+    const sizingArEditor = new Quill('#sizing_info_ar_editor', quillOptionsRTL);
+    sizingArEditor.root.setAttribute('dir', 'rtl');
+
+    sizingArEditor.clipboard.addMatcher(Node.ELEMENT_NODE, function(node, delta) {
+        const ops = [];
+        delta.ops.forEach(op => {
+            if (op.insert && typeof op.insert === 'string') {
+                ops.push({
+                    insert: op.insert,
+                    attributes: op.attributes || {}
+                });
+            }
+        });
+        return new Quill.imports.delta(ops);
+    });
+
+    sizingArEditor.on('text-change', function() {
+        $('#sizing_info_ar').val(sizingArEditor.root.innerHTML);
+    });
+    if ($('#sizing_info_ar').val()) {
+        sizingArEditor.root.innerHTML = $('#sizing_info_ar').val();
+    }
+
+    // Sizing Info English (LTR)
+    const sizingEnEditor = new Quill('#sizing_info_en_editor', quillOptionsLTR);
+    sizingEnEditor.root.setAttribute('dir', 'ltr');
+    sizingEnEditor.root.style.textAlign = 'left';
+
+    sizingEnEditor.clipboard.addMatcher(Node.ELEMENT_NODE, function(node, delta) {
+        const ops = [];
+        delta.ops.forEach(op => {
+            if (op.insert && typeof op.insert === 'string') {
+                ops.push({
+                    insert: op.insert,
+                    attributes: op.attributes || {}
+                });
+            }
+        });
+        return new Quill.imports.delta(ops);
+    });
+
+    sizingEnEditor.on('text-change', function() {
+        $('#sizing_info_en').val(sizingEnEditor.root.innerHTML);
+    });
+    if ($('#sizing_info_en').val()) {
+        sizingEnEditor.root.innerHTML = $('#sizing_info_en').val();
+    }
+
+    // Design Details Arabic (RTL)
+    const designArEditor = new Quill('#design_details_ar_editor', quillOptionsRTL);
+    designArEditor.root.setAttribute('dir', 'rtl');
+
+    designArEditor.clipboard.addMatcher(Node.ELEMENT_NODE, function(node, delta) {
+        const ops = [];
+        delta.ops.forEach(op => {
+            if (op.insert && typeof op.insert === 'string') {
+                ops.push({
+                    insert: op.insert,
+                    attributes: op.attributes || {}
+                });
+            }
+        });
+        return new Quill.imports.delta(ops);
+    });
+
+    designArEditor.on('text-change', function() {
+        $('#design_details_ar').val(designArEditor.root.innerHTML);
+    });
+    if ($('#design_details_ar').val()) {
+        designArEditor.root.innerHTML = $('#design_details_ar').val();
+    }
+
+    // Design Details English (LTR)
+    const designEnEditor = new Quill('#design_details_en_editor', quillOptionsLTR);
+    designEnEditor.root.setAttribute('dir', 'ltr');
+    designEnEditor.root.style.textAlign = 'left';
+
+    designEnEditor.clipboard.addMatcher(Node.ELEMENT_NODE, function(node, delta) {
+        const ops = [];
+        delta.ops.forEach(op => {
+            if (op.insert && typeof op.insert === 'string') {
+                ops.push({
+                    insert: op.insert,
+                    attributes: op.attributes || {}
+                });
+            }
+        });
+        return new Quill.imports.delta(ops);
+    });
+
+    designEnEditor.on('text-change', function() {
+        $('#design_details_en').val(designEnEditor.root.innerHTML);
+    });
+    if ($('#design_details_en').val()) {
+        designEnEditor.root.innerHTML = $('#design_details_en').val();
     }
 
     // Auto-generate slug from name (Arabic-friendly)
@@ -635,7 +1235,60 @@ $(document).ready(function() {
     });
 
     // Main image preview
-    $('#image-preview').on('click', function() {
+    // Pica instance for high quality image processing
+    const picaInstance = typeof pica !== 'undefined' ? pica() : null;
+
+    // Function to enhance image quality with Pica
+    function enhanceImageWithPica(imgElement, maxWidth = 800) {
+        if (!picaInstance || !imgElement.complete || imgElement.naturalWidth === 0) {
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve, reject) => {
+            try {
+                const img = imgElement;
+                const aspectRatio = img.naturalWidth / img.naturalHeight;
+
+                // Calculate dimensions maintaining aspect ratio
+                let targetWidth = Math.min(img.naturalWidth, maxWidth);
+                let targetHeight = Math.round(targetWidth / aspectRatio);
+
+                // Don't upscale
+                if (targetWidth >= img.naturalWidth) {
+                    resolve();
+                    return;
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+
+                picaInstance.resize(img, canvas, {
+                    quality: 3,
+                    alpha: true,
+                    unsharpAmount: 160,
+                    unsharpRadius: 0.6,
+                    unsharpThreshold: 1
+                }).then(result => {
+                    return picaInstance.toBlob(result, 'image/jpeg', 0.92);
+                }).then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    img.src = url;
+                    img.dataset.picaProcessed = 'true';
+                    resolve();
+                }).catch(err => {
+                    console.warn('Pica processing failed:', err);
+                    resolve();
+                });
+            } catch (err) {
+                console.warn('Pica enhancement error:', err);
+                resolve();
+            }
+        });
+    }
+
+    // Main Image Preview
+    $('#main-image-preview').on('click', function() {
         $('#main_image').click();
     });
 
@@ -644,7 +1297,41 @@ $(document).ready(function() {
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                $('#image-preview').html('<img src="' + e.target.result + '" alt="Preview">');
+                const imgHtml = '<img src="' + e.target.result + '" alt="Main Image">';
+                $('#main-image-preview').html(imgHtml);
+
+                // Enhance with Pica after image loads
+                const img = $('#main-image-preview img')[0];
+                if (img) {
+                    img.onload = function() {
+                        enhanceImageWithPica(this, 600);
+                    };
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Hover Image Preview
+    $('#hover-image-preview').on('click', function() {
+        $('#hover_image').click();
+    });
+
+    $('#hover_image').on('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgHtml = '<img src="' + e.target.result + '" alt="Hover Image">';
+                $('#hover-image-preview').html(imgHtml);
+
+                // Enhance with Pica after image loads
+                const img = $('#hover-image-preview img')[0];
+                if (img) {
+                    img.onload = function() {
+                        enhanceImageWithPica(this, 600);
+                    };
+                }
             };
             reader.readAsDataURL(file);
         }
@@ -681,6 +1368,14 @@ $(document).ready(function() {
                     `;
                     $('#gallery-preview').append(imageHtml);
 
+                    // Enhance gallery image with Pica
+                    const galleryImg = $(`#gallery-preview .gallery-image-item[data-id="${imageId}"] img`)[0];
+                    if (galleryImg) {
+                        galleryImg.onload = function() {
+                            enhanceImageWithPica(this, 400);
+                        };
+                    }
+
                     loadedCount++;
                     if (loadedCount === totalFiles) {
                         // Update input only after all files are loaded
@@ -711,6 +1406,40 @@ $(document).ready(function() {
             $('#stock_quantity_field, #low_stock_field').hide();
         }
     }).trigger('change');
+
+    // Variant checkboxes handlers
+    $('.size-checkbox').on('change', function() {
+        const sizeId = $(this).val();
+        const stockWrapper = $('#size_stock_' + sizeId);
+        if ($(this).is(':checked')) {
+            stockWrapper.show();
+        } else {
+            stockWrapper.hide();
+            stockWrapper.find('input').val(0);
+        }
+    });
+
+    $('.shoe-size-checkbox').on('change', function() {
+        const shoeSizeId = $(this).val();
+        const stockWrapper = $('#shoe_size_stock_' + shoeSizeId);
+        if ($(this).is(':checked')) {
+            stockWrapper.show();
+        } else {
+            stockWrapper.hide();
+            stockWrapper.find('input').val(0);
+        }
+    });
+
+    $('.color-checkbox').on('change', function() {
+        const colorId = $(this).val();
+        const stockWrapper = $('#color_stock_' + colorId);
+        if ($(this).is(':checked')) {
+            stockWrapper.show();
+        } else {
+            stockWrapper.hide();
+            stockWrapper.find('input').val(0);
+        }
+    });
 });
 
 // Remove gallery image function
@@ -726,5 +1455,44 @@ function removeGalleryImage(imageId) {
     document.getElementById('gallery_images').files = dt.files;
 }
 </script>
+
+<style>
+/* Variant Styles */
+.variant-checkbox-group {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    background: #f9fafb;
+    transition: all 0.3s;
+}
+
+.variant-checkbox-group:hover {
+    background: #fff;
+    border-color: #3b82f6;
+}
+
+.variant-checkbox-group .form-check-label {
+    font-weight: 500;
+    color: #1f2937;
+    cursor: pointer;
+}
+
+.color-circle-preview {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+}
+
+.stock-input-wrapper {
+    margin-top: 8px;
+}
+
+.stock-input-wrapper input {
+    width: 100%;
+    font-size: 13px;
+}
+</style>
 @endpush
 @endsection

@@ -35,7 +35,7 @@ class SizeController extends Controller
         Size::create($validated);
 
         return redirect()->route('admin.sizes.index')
-            ->with('success', __('Size created successfully'));
+            ->with('success', __('labels.sizes.created_successfully'));
     }
 
     /**
@@ -55,7 +55,7 @@ class SizeController extends Controller
         $size->update($validated);
 
         return redirect()->route('admin.sizes.index')
-            ->with('success', __('Size updated successfully'));
+            ->with('success', __('labels.sizes.updated_successfully'));
     }
 
     /**
@@ -66,6 +66,6 @@ class SizeController extends Controller
         $size->delete();
 
         return redirect()->route('admin.sizes.index')
-            ->with('success', __('Size deleted successfully'));
+            ->with('success', __('labels.sizes.deleted_successfully'));
     }
 }

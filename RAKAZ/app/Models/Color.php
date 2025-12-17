@@ -30,4 +30,22 @@ class Color extends Model
         $locale = app()->getLocale();
         return $this->name[$locale] ?? ($this->name['en'] ?? '');
     }
+
+    /**
+     * Get products with this color
+     */
+    public function productColors()
+    {
+        return $this->hasMany(\App\Models\ColorProduct::class, 'color_id');
+    }
+
+    /**
+     * Get products through pivot table
+     */
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'color_product')
+                    ->withPivot('stock_quantity')
+                    ->withTimestamps();
+    }
 }

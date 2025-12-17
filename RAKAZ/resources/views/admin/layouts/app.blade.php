@@ -15,6 +15,9 @@
     <!-- Toastr CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
+    <!-- Custom Select CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/css/custom-select.css') }}">
+
     <!-- Admin Menu Styles -->
     <link rel="stylesheet" href="{{ asset('assets/css/admin-menu.css') }}">
 
@@ -870,11 +873,17 @@
     <!-- Bootstrap JS (if needed for modals) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <!-- Custom Select JS -->
+    <script src="{{ asset('assets/js/custom-select.js') }}"></script>
 
     <script>
         // Toastr Configuration
@@ -912,6 +921,18 @@
         @if(session('warning'))
             toastr.warning("{{ session('warning') }}");
         @endif
+
+        // Initialize Custom Select for all select elements
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof CustomSelect !== 'undefined') {
+                document.querySelectorAll('.form-select, select').forEach(select => {
+                    if (!select.classList.contains('no-custom-select') &&
+                        !select.parentElement.classList.contains('custom-select-wrapper')) {
+                        new CustomSelect(select);
+                    }
+                });
+            }
+        });
     </script>
 
     <!-- Page Specific Scripts -->

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sizes Display</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 2px solid #ddd; border-radius: 6px; }
+        .success { border-color: #4CAF50; background: #f0f9f0; }
+        .error { border-color: #f44336; background: #fff0f0; }
+        .sizes-display { padding: 12px; background: #f8f9fa; border-radius: 6px; margin-top: 10px; }
+        .size-item { display: inline-block; padding: 8px 16px; margin: 5px; background: #007bff; color: white; border-radius: 4px; }
+        h2 { color: #333; margin-top: 0; }
+        pre { background: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>اختبار عرض المقاسات</h1>
+
+        <div class="test-section" id="dbTest">
+            <h2>1️⃣ اختبار قاعدة البيانات</h2>
+            <p>جاري التحميل...</p>
+        </div>
+
+        <div class="test-section" id="apiTest">
+            <h2>2️⃣ اختبار API</h2>
+            <p>جاري التحميل...</p>
+        </div>
+
+        <div class="test-section" id="frontendTest">
+            <h2>3️⃣ اختبار العرض الأمامي</h2>
+            <div id="sizesContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // Test 1: Check database
+        fetch('/test_sizes.php')
+            .then(r => r.text())
+            .then(data => {
+                const dbTest = document.getElementById('dbTest');
+                if (data.includes('Found') && data.includes('products with sizes')) {
+                    dbTest.className = 'test-section success';
+                    dbTest.innerHTML = '<h2>1️⃣ اختبار قاعدة البيانات ✅</h2><pre>' + data + '</pre>';
+                } else {
+                    dbTest.className = 'test-section error';
+                    dbTest.innerHTML = '<h2>1️⃣ اختبار قاعدة البيانات ❌</h2><pre>' + data + '</pre>';
+                }
+            });
+
+        // Test 2: Check API
+        // Get first product URL
+        const productLinks = document.querySelectorAll('a[href*="/product/"]');
+        if (productLinks.length > 0) {
+            const productUrl = productLinks[0].href;
+
+            fetch(productUrl, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                const apiTest = document.getElementById('apiTest');
+                console.log('API Response:', data);
+
+                if (data.sizes && data.sizes.length > 0) {
+                    apiTest.className = 'test-section success';
+                    apiTest.innerHTML = `
+                        <h2>2️⃣ اختبار API ✅</h2>
+                        <p><strong>اسم المنتج:</strong> ${data.name}</p>
+                        <p><strong>عدد المقاسات:</strong> ${data.sizes.length}</p>
+                        <div class="sizes-display">
+                            <strong>المقاسات:</strong><br>
+                            ${data.sizes.map(s => '<span class="size-item">' + s + '</span>').join('')}
+                        </div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    apiTest.className = 'test-section error';
+                    apiTest.innerHTML = `
+                        <h2>2️⃣ اختبار API ❌</h2>
+                        <p>لم يتم العثور على مقاسات في الاستجابة</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            })
+            .catch(err => {
+                document.getElementById('apiTest').innerHTML =
+                    '<h2>2️⃣ اختبار API ⚠️</h2><p>خطأ: ' + err.message + '</p>';
+            });
+        }
+
+        // Test 3: Display sizes
+        const testSizes = ['S', 'M', 'L', 'XL', 'XXL'];
+        const sizesContainer = document.getElementById('sizesContainer');
+        sizesContainer.innerHTML = `
+            <p><strong>مقاسات تجريبية:</strong></p>
+            <div class="sizes-display">
+                ${testSizes.map(s => '<span class="size-item">' + s + '</span>').join('')}
+            </div>
+            <p style="margin-top: 15px;"><strong>نص المقاسات:</strong> ${testSizes.join(' - ')}</p>
+        `;
+    </script>
+</body>
+</html>

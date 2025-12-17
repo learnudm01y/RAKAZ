@@ -194,7 +194,7 @@
     <div class="stat-card">
         <div class="stat-header">
             <div>
-                <div class="stat-value">1,234</div>
+                <div class="stat-value">{{ number_format($stats['total_orders']) }}</div>
                 <div class="stat-label">
                     <span class="ar-text">إجمالي الطلبات</span>
                     <span class="en-text">Total Orders</span>
@@ -207,7 +207,7 @@
     <div class="stat-card">
         <div class="stat-header">
             <div>
-                <div class="stat-value">567</div>
+                <div class="stat-value">{{ number_format($stats['total_products']) }}</div>
                 <div class="stat-label">
                     <span class="ar-text">المنتجات</span>
                     <span class="en-text">Products</span>
@@ -220,7 +220,7 @@
     <div class="stat-card">
         <div class="stat-header">
             <div>
-                <div class="stat-value">89</div>
+                <div class="stat-value">{{ number_format($stats['new_orders']) }}</div>
                 <div class="stat-label">
                     <span class="ar-text">طلبات جديدة</span>
                     <span class="en-text">New Orders</span>
@@ -233,7 +233,7 @@
     <div class="stat-card">
         <div class="stat-header">
             <div>
-                <div class="stat-value">2,456</div>
+                <div class="stat-value">{{ number_format($stats['total_customers']) }}</div>
                 <div class="stat-label">
                     <span class="ar-text">العملاء</span>
                     <span class="en-text">Customers</span>
@@ -288,56 +288,45 @@
 <!-- Recent Activity -->
 <div class="recent-activity">
     <h3 class="section-title">
-        <span class="ar-text">النشاط الأخير</span>
-        <span class="en-text">Recent Activity</span>
+        <span class="ar-text">أحدث الطلبات</span>
+        <span class="en-text">Recent Orders</span>
     </h3>
 
+    @forelse($recent_orders as $order)
     <div class="activity-item">
         <div class="activity-icon" style="background: #e6f2ff; color: #3182ce;">
-            📝
+            📦
         </div>
         <div class="activity-content">
             <div class="activity-title">
-                <span class="ar-text">تم إنشاء صفحة جديدة</span>
-                <span class="en-text">New page created</span>
+                <span class="ar-text">طلب #{{ $order->order_number }}</span>
+                <span class="en-text">Order #{{ $order->order_number }}</span>
+                -
+                <span style="font-size: 0.875rem; color: #666;">
+                    {{ $order->customer_name }}
+                </span>
+                -
+                <strong>{{ number_format($order->total, 0) }} د.إ</strong>
             </div>
             <div class="activity-time">
-                <span class="ar-text">منذ 5 دقائق</span>
-                <span class="en-text">5 minutes ago</span>
+                {{ $order->created_at->locale('ar')->diffForHumans() }}
             </div>
         </div>
+        <a href="{{ route('admin.orders.show', $order->id) }}" style="color: #3182ce; text-decoration: none;">
+            <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+        </a>
     </div>
-
+    @empty
     <div class="activity-item">
-        <div class="activity-icon" style="background: #e6ffed; color: #48bb78;">
-            ✓
-        </div>
         <div class="activity-content">
-            <div class="activity-title">
-                <span class="ar-text">تم تحديث صفحة من نحن</span>
-                <span class="en-text">About page updated</span>
-            </div>
-            <div class="activity-time">
-                <span class="ar-text">منذ ساعة</span>
-                <span class="en-text">1 hour ago</span>
+            <div class="activity-title" style="text-align: center; color: #999;">
+                <span class="ar-text">لا توجد طلبات بعد</span>
+                <span class="en-text">No orders yet</span>
             </div>
         </div>
     </div>
-
-    <div class="activity-item">
-        <div class="activity-icon" style="background: #fff6e6; color: #ed8936;">
-            🛍️
-        </div>
-        <div class="activity-content">
-            <div class="activity-title">
-                <span class="ar-text">طلب جديد #1234</span>
-                <span class="en-text">New order #1234</span>
-            </div>
-            <div class="activity-time">
-                <span class="ar-text">منذ 3 ساعات</span>
-                <span class="en-text">3 hours ago</span>
-            </div>
-        </div>
-    </div>
+    @endforelse
 </div>
 @endsection

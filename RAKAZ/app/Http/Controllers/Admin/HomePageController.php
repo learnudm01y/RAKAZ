@@ -421,6 +421,6 @@ class HomePageController extends Controller
         ]);
 
         return redirect()->route('admin.home.edit', ['locale' => $currentLocale])
-            ->with('success', 'تم تحديث محتوى الصفحة الرئيسية بنجاح');
+            ->with('success', __('labels.homepage.updated_successfully'));
     }
 }

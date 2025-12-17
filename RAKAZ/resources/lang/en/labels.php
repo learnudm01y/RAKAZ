@@ -90,6 +90,73 @@ return [
         'sort_order' => 'Sort Order',
         'status' => 'Status',
 
+        'created_successfully' => 'Category added successfully',
+        'updated_successfully' => 'Category updated successfully',
+        'deleted_successfully' => 'Category deleted successfully',
         'confirm_delete' => 'Are you sure you want to delete this category?',
+    ],
+
+    // Products
+    'products' => [
+        'title' => 'Product Management',
+        'add_new' => 'Add New Product',
+        'edit' => 'Edit Product',
+        'no_products' => 'No products available',
+        'add_first' => 'Add First Product',
+
+        'name_ar' => 'Product Name (Arabic)',
+        'name_en' => 'Product Name (English)',
+        'price' => 'Price',
+        'sale_price' => 'Sale Price',
+        'stock' => 'Stock',
+        'status' => 'Status',
+        'category' => 'Category',
+
+        'created_successfully' => 'Product added successfully',
+        'updated_successfully' => 'Product updated successfully',
+        'deleted_successfully' => 'Product deleted successfully',
+        'confirm_delete' => 'Are you sure you want to delete this product?',
+    ],
+
+    // Sizes
+    'sizes' => [
+        'title' => 'Size Management',
+        'add_new' => 'Add New Size',
+        'edit' => 'Edit Size',
+        'created_successfully' => 'Size added successfully',
+        'updated_successfully' => 'Size updated successfully',
+        'deleted_successfully' => 'Size deleted successfully',
+    ],
+
+    // Shoe Sizes
+    'shoe_sizes' => [
+        'title' => 'Shoe Size Management',
+        'add_new' => 'Add New Shoe Size',
+        'edit' => 'Edit Shoe Size',
+        'created_successfully' => 'Shoe size added successfully',
+        'updated_successfully' => 'Shoe size updated successfully',
+        'deleted_successfully' => 'Shoe size deleted successfully',
+    ],
+
+    // Colors
+    'colors' => [
+        'title' => 'Color Management',
+        'add_new' => 'Add New Color',
+        'edit' => 'Edit Color',
+        'created_successfully' => 'Color added successfully',
+        'updated_successfully' => 'Color updated successfully',
+        'deleted_successfully' => 'Color deleted successfully',
+    ],
+
+    // Pages
+    'pages' => [
+        'created_successfully' => 'Page added successfully',
+        'updated_successfully' => 'Page updated successfully',
+        'deleted_successfully' => 'Page deleted successfully',
+    ],
+
+    // Home Page
+    'homepage' => [
+        'updated_successfully' => 'Homepage content updated successfully',
     ],
 ];

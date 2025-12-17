@@ -114,8 +114,8 @@
                     <span class="cart-subtotal-amount" id="cartSubtotal">0 درهم</span>
                 </div>
                 <p class="cart-shipping-note">الشحن والضرائب يتم حسابها عند الدفع</p>
-                <a href="{{ route('checkout') }}" class="cart-checkout-btn">إتمام الشراء</a>
-                <a href="{{ route('cart') }}" class="cart-view-btn">عرض الحقيبة</a>
+                <a href="{{ route('checkout.index') }}" class="cart-checkout-btn">إتمام الشراء</a>
+                <a href="{{ route('cart.index') }}" class="cart-view-btn">عرض الحقيبة</a>
             </div>
         </div>
     </div>
@@ -228,7 +228,7 @@
                             </path>
                         </svg>
                         <span>المفضلة</span>
-                        <span class="badge">0</span>
+                        <span class="badge">{{ auth()->check() ? \App\Models\Wishlist::where('user_id', auth()->id())->count() : 0 }}</span>
                     </a>
                     <div class="header-link account-dropdown-wrapper">
                         <a href="#" class="header-link account-link">
@@ -267,7 +267,7 @@
                                         <p style="margin: 0 0 5px 0;"><strong>مرحباً، {{ Auth::user()->name }}</strong></p>
                                         <p style="font-size: 12px; color: #666; margin: 0;">{{ Auth::user()->email }}</p>
                                     </div>
-                                    <a href="{{ route('orders') }}" class="account-dropdown-item">
+                                    <a href="{{ route('orders.index') }}" class="account-dropdown-item">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
                                             <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
@@ -580,6 +580,9 @@
             document.querySelectorAll('.custom-select-init').forEach(select => {
                 new CustomSelect(select);
             });
+
+            // Load cart count on page load
+            updateCartCount();
         });
 
         // Handle logout - simple submit
@@ -588,6 +591,27 @@
             if (form) {
                 form.submit();
             }
+        }
+
+        // Update cart count badge
+        function updateCartCount() {
+            fetch('{{ route("cart.count") }}', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const cartBadge = document.getElementById('cartBadge');
+                if (cartBadge && data.count !== undefined) {
+                    cartBadge.textContent = data.count;
+                    console.log('Cart count updated:', data.count);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching cart count:', error);
+            });
         }
     </script>
     @stack('scripts')
