@@ -1,0 +1,644 @@
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: 'تم إرسال رسالتك!',
+                text: 'شكراً لتواصلك معنا. سنرد عليك في أقرب وقت ممكن.',
+                icon: 'success',
+                confirmButtonText: 'حسناً',
+                confirmButtonColor: '#1a1a1a'
+            }).then(() => {
+                this.reset();
+            });
+        });
+    </script>
+
+    <script>
+        // Quantity controls
+        document.querySelectorAll('.quantity-selector').forEach(selector => {
+            const minusBtn = selector.querySelector('.quantity-btn:first-child');
+            const plusBtn = selector.querySelector('.quantity-btn:last-child');
+            const valueSpan = selector.querySelector('.quantity-value');
+
+            minusBtn.addEventListener('click', () => {
+                let value = parseInt(valueSpan.textContent);
+                if (value > 1) {
+                    valueSpan.textContent = value - 1;
+                    updateCartTotal();
+                }
+            });
+
+            plusBtn.addEventListener('click', () => {
+                let value = parseInt(valueSpan.textContent);
+                valueSpan.textContent = value + 1;
+                updateCartTotal();
+            });
+        });
+
+        // Remove item
+        document.querySelectorAll('.remove-item-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const cartItem = this.closest('.cart-item');
+
+                Swal.fire({
+                    title: 'هل أنت متأكد؟',
+                    text: 'هل تريد إزالة هذا المنتج من السلة؟',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'نعم، احذفه',
+                    cancelButtonText: 'إلغاء',
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#666',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        cartItem.remove();
+                        updateCartTotal();
+
+                        Swal.fire({
+                            title: 'تم الحذف!',
+                            text: 'تم إزالة المنتج من السلة',
+                            icon: 'success',
+                            confirmButtonText: 'حسناً',
+                            confirmButtonColor: '#000',
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
+                    }
+                });
+            });
+        });
+
+        function updateCartTotal() {
+            // This would calculate the new total based on quantities
+            console.log('Cart total updated');
+        }
+    </script>
+    <script>
+        // Shipping method selection
+        document.querySelectorAll('.shipping-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.shipping-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                this.classList.add('selected');
+            });
+        });
+
+        // Payment method selection
+        document.querySelectorAll('.payment-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.payment-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                this.classList.add('selected');
+            });
+        });
+
+        // Place Order with SweetAlert2
+        document.getElementById('placeOrderBtn').addEventListener('click', function() {
+            Swal.fire({
+                title: 'تأكيد الطلب',
+                text: 'هل أنت متأكد من رغبتك في إتمام الطلب؟',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'نعم، أكمل الطلب',
+                cancelButtonText: 'المراجعة',
+                confirmButtonColor: '#000',
+                cancelButtonColor: '#666',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'تم إرسال طلبك بنجاح!',
+                        html: 'شكراً لك على طلبك<br>سيتم التواصل معك قريباً لتأكيد التفاصيل',
+                        icon: 'success',
+                        confirmButtonText: 'العودة للرئيسية',
+                        confirmButtonColor: '#000',
+                        allowOutsideClick: false
+                    }).then(() => {
+                        window.location.href = '{{ route('home') }}';
+                    });
+                }
+            });
+        });
+    </script>
+
+
+    <script>
+        // Wishlist functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wishlist buttons
+            const wishlistButtons = document.querySelectorAll('.wishlist-btn');
+            wishlistButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    Swal.fire({
+                        title: 'تمت الإضافة!',
+                        text: 'تم إضافة المنتج إلى قائمة المفضلة',
+                        icon: 'success',
+                        confirmButtonText: 'حسناً',
+                        confirmButtonColor: '#000',
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+                });
+            });
+        });
+    </script>
+    <script>
+        // Check URL parameter on page load to show correct form
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode');
+
+            if (mode === 'register') {
+                switchToRegister(new Event('load'));
+            } else {
+                // Default to login
+                document.getElementById('loginBox').style.display = 'block';
+                document.getElementById('registerBox').style.display = 'none';
+            }
+        });
+
+        function switchToRegister(e) {
+            e.preventDefault();
+            document.getElementById('loginBox').style.display = 'none';
+            document.getElementById('registerBox').style.display = 'block';
+            // Update URL without reload
+            const url = new URL(window.location);
+            url.searchParams.set('mode', 'register');
+            window.history.pushState({}, '', url);
+        }
+
+        function switchToLogin(e) {
+            e.preventDefault();
+            document.getElementById('registerBox').style.display = 'none';
+            document.getElementById('loginBox').style.display = 'block';
+            // Update URL without reload
+            const url = new URL(window.location);
+            url.searchParams.set('mode', 'login');
+            window.history.pushState({}, '', url);
+        }
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'تم تسجيل الدخول بنجاح!',
+                text: 'مرحباً بعودتك',
+                icon: 'success',
+                confirmButtonText: 'حسناً',
+                confirmButtonColor: '#1a1a1a'
+            }).then(() => {
+                window.location.href = 'index.html';
+            });
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                Swal.fire({
+                    title: 'خطأ',
+                    text: 'كلمة المرور غير متطابقة',
+                    icon: 'error',
+                    confirmButtonText: 'حسناً',
+                    confirmButtonColor: '#1a1a1a'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'تم إنشاء الحساب بنجاح!',
+                text: 'مرحباً بك في ركاز',
+                icon: 'success',
+                confirmButtonText: 'حسناً',
+                confirmButtonColor: '#1a1a1a'
+            }).then(() => {
+                window.location.href = 'index.html';
+            });
+        });
+    </script>
+    <script>
+        // Tabs Functionality
+        document.querySelectorAll('.orders-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                document.querySelectorAll('.orders-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                // Add active class to clicked tab
+                this.classList.add('active');
+
+                // Show corresponding content
+                const tabName = this.getAttribute('data-tab');
+                document.getElementById(`${tabName}-orders`).classList.add('active');
+            });
+        });
+
+        // Cancel Order with SweetAlert2
+        document.querySelectorAll('.order-btn').forEach(btn => {
+            if (btn.textContent.includes('إلغاء الطلب')) {
+                btn.addEventListener('click', function() {
+                    Swal.fire({
+                        title: 'إلغاء الطلب',
+                        text: 'هل أنت متأكد من رغبتك في إلغاء هذا الطلب؟',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'نعم، قم بالإلغاء',
+                        cancelButtonText: 'لا، احتفظ بالطلب',
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#000',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'تم الإلغاء',
+                                text: 'تم إلغاء طلبك بنجاح',
+                                icon: 'success',
+                                confirmButtonText: 'حسناً',
+                                confirmButtonColor: '#000',
+                                timer: 2500,
+                                timerProgressBar: true
+                            }).then(() => {
+                                // Remove order or move to past orders
+                                this.closest('.order-card, tr').remove();
+                            });
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            if (password !== confirmPassword) {
+                alert('كلمة المرور غير متطابقة');
+                return;
+            }
+
+            alert('تم إنشاء الحساب بنجاح');
+            window.location.href = 'login.html';
+        });
+    </script>
+    <script>
+        // Mobile Filter Toggle
+        const mobileFilterToggle = document.getElementById('mobileFilterToggle');
+        const shopSidebar = document.getElementById('shopSidebar');
+        const sidebarClose = document.getElementById('sidebarClose');
+
+        if (mobileFilterToggle) {
+            mobileFilterToggle.addEventListener('click', function() {
+                shopSidebar.classList.add('active');
+            });
+        }
+
+        if (sidebarClose) {
+            sidebarClose.addEventListener('click', function() {
+                shopSidebar.classList.remove('active');
+            });
+        }
+
+        // Close sidebar when clicking overlay
+        if (shopSidebar) {
+            shopSidebar.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    shopSidebar.classList.remove('active');
+                }
+            });
+        }
+
+        // Wishlist functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const wishlistButtons = document.querySelectorAll('.wishlist-btn');
+            wishlistButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.classList.toggle('active');
+                });
+            });
+
+            // View toggle
+            const viewButtons = document.querySelectorAll('.view-btn');
+            const productsGrid = document.querySelector('.products-grid');
+
+            viewButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    viewButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const view = this.getAttribute('data-view');
+                    productsGrid.setAttribute('data-view', view);
+                });
+            });
+
+            // Mobile View Toggle (منتج واحد أو منتجين)
+            const mobileViewButtons = document.querySelectorAll('.mobile-view-btn');
+
+            mobileViewButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    mobileViewButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const view = this.getAttribute('data-mobile-view');
+
+                    if (view === 'one') {
+                        // عرض منتج واحد - يملأ الشاشة
+                        productsGrid.setAttribute('data-view', 'list');
+                    } else {
+                        // عرض منتجين بجانب بعض
+                        productsGrid.setAttribute('data-view', 'grid-2');
+                    }
+                });
+            });
+
+            // Size selector
+            document.querySelectorAll('.size-option').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const wrapper = this.closest('.size-options-wrapper');
+                    wrapper.querySelectorAll('.size-option').forEach(b => b.classList.remove(
+                        'selected'));
+                    this.classList.add('selected');
+                });
+            });
+
+            // Size arrows
+            document.querySelectorAll('.size-arrow').forEach(arrow => {
+                arrow.addEventListener('click', function() {
+                    const wrapper = this.parentElement.querySelector('.size-options-wrapper');
+                    const scrollAmount = 50;
+                    if (this.classList.contains('prev')) {
+                        wrapper.scrollLeft -= scrollAmount;
+                    } else {
+                        wrapper.scrollLeft += scrollAmount;
+                    }
+                });
+            });
+
+            // Add to Cart Button functionality - Open Modal
+            document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productCard = this.closest('.product-card');
+                    const productName = productCard.querySelector('.product-name').textContent;
+                    const productBrand = productCard.querySelector('.product-brand').textContent;
+                    const productPrice = productCard.querySelector('.product-price').textContent;
+                    const primaryImage = productCard.querySelector('.product-image-primary').src;
+                    const secondaryImage = productCard.querySelector('.product-image-secondary')
+                    .src;
+                    const hasNewSeasonBadge = productCard.querySelector('.badge.new-season') !==
+                        null;
+
+                    // Get available sizes
+                    const sizes = [];
+                    productCard.querySelectorAll('.size-option').forEach(sizeBtn => {
+                        sizes.push(sizeBtn.getAttribute('data-size'));
+                    });
+
+                    // Open modal with product data
+                    openProductModal({
+                        name: productName,
+                        brand: productBrand,
+                        price: productPrice,
+                        primaryImage: primaryImage,
+                        secondaryImage: secondaryImage,
+                        hasNewSeason: hasNewSeasonBadge,
+                        sizes: sizes
+                    });
+                });
+            });
+
+            // Product Modal Functions
+            function openProductModal(product) {
+                const modal = document.getElementById('productModal');
+                const modalMainImage = document.getElementById('modalMainImage');
+                const modalBrand = document.getElementById('modalBrand');
+                const modalProductName = document.getElementById('modalProductName');
+                const modalPrice = document.getElementById('modalPrice');
+                const modalSeasonBadge = document.getElementById('modalSeasonBadge');
+                const modalThumbnails = document.getElementById('modalThumbnails');
+                const modalSizeButtons = document.getElementById('modalSizeButtons');
+
+                // Set product data
+                modalMainImage.src = product.primaryImage;
+                modalMainImage.alt = product.name;
+                modalBrand.textContent = product.brand;
+                modalProductName.textContent = product.name;
+                modalPrice.textContent = product.price;
+
+                // Show/hide season badge
+                if (product.hasNewSeason) {
+                    modalSeasonBadge.style.display = 'inline-block';
+                } else {
+                    modalSeasonBadge.style.display = 'none';
+                }
+
+                // Add thumbnails
+                modalThumbnails.innerHTML = '';
+                const images = [product.primaryImage, product.secondaryImage];
+                images.forEach((img, index) => {
+                    const thumbnail = document.createElement('img');
+                    thumbnail.src = img;
+                    thumbnail.alt = `صورة ${index + 1}`;
+                    thumbnail.className = `modal-thumbnail ${index === 0 ? 'active' : ''}`;
+                    thumbnail.addEventListener('click', function() {
+                        modalMainImage.src = img;
+                        document.querySelectorAll('.modal-thumbnail').forEach(t => t.classList
+                            .remove('active'));
+                        this.classList.add('active');
+                    });
+                    modalThumbnails.appendChild(thumbnail);
+                });
+
+                // Add size buttons
+                modalSizeButtons.innerHTML = '';
+                product.sizes.forEach(size => {
+                    const sizeBtn = document.createElement('button');
+                    sizeBtn.className = 'modal-size-btn';
+                    sizeBtn.textContent = size;
+                    sizeBtn.addEventListener('click', function() {
+                        document.querySelectorAll('.modal-size-btn').forEach(btn => btn.classList
+                            .remove('selected'));
+                        this.classList.add('selected');
+                    });
+                    modalSizeButtons.appendChild(sizeBtn);
+                });
+
+                // Show modal
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeProductModal() {
+                const modal = document.getElementById('productModal');
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+
+            // Close modal button
+            document.getElementById('productModalClose').addEventListener('click', closeProductModal);
+
+            // Close modal on overlay click
+            document.querySelector('.product-modal-overlay').addEventListener('click', closeProductModal);
+
+            // Modal tabs functionality
+            document.querySelectorAll('.modal-tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetTab = this.getAttribute('data-tab');
+
+                    // Remove active class from all tabs and panels
+                    document.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove(
+                        'active'));
+                    document.querySelectorAll('.modal-tab-panel').forEach(p => p.classList.remove(
+                        'active'));
+
+                    // Add active class to clicked tab and corresponding panel
+                    this.classList.add('active');
+                    document.getElementById(targetTab).classList.add('active');
+                });
+            });
+
+            // Add to bag from modal
+            document.getElementById('modalAddToBag').addEventListener('click', function() {
+                const selectedSize = document.querySelector('.modal-size-btn.selected');
+                const productName = document.getElementById('modalProductName').textContent;
+
+                if (!selectedSize) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'اختر المقاس',
+                        text: 'الرجاء اختيار المقاس أولاً',
+                        confirmButtonText: 'حسناً',
+                        confirmButtonColor: '#1a1a1a'
+                    });
+                    return;
+                }
+
+                // Add visual feedback
+                this.innerHTML =
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> تمت الإضافة';
+                this.style.background = '#4CAF50';
+
+                setTimeout(() => {
+                    this.innerHTML =
+                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> إضافة إلى حقيبة التسوق';
+                    this.style.background = '#1a1a1a';
+                }, 2000);
+
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تمت الإضافة!',
+                    text: `تم إضافة ${productName} للسلة بنجاح`,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+
+                // Close modal after adding
+                setTimeout(() => {
+                    closeProductModal();
+                }, 1500);
+            });
+        });
+    </script>
+    <script>
+        // Wishlist functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Remove item from wishlist with SweetAlert2
+            const removeButtons = document.querySelectorAll('.remove-btn');
+            removeButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const item = this.closest('.wishlist-item');
+
+                    Swal.fire({
+                        title: 'إزالة من المفضلة',
+                        text: 'هل تريد إزالة هذا المنتج من قائمة الأمنيات؟',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'نعم، احذفه',
+                        cancelButtonText: 'إلغاء',
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#666',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            item.style.opacity = '0';
+                            item.style.transform = 'scale(0.8)';
+                            setTimeout(() => {
+                                item.remove();
+                                updateWishlistCount();
+
+                                Swal.fire({
+                                    title: 'تم الحذف!',
+                                    text: 'تم إزالة المنتج من قائمة المفضلة',
+                                    icon: 'success',
+                                    confirmButtonText: 'حسناً',
+                                    confirmButtonColor: '#000',
+                                    timer: 2000,
+                                    timerProgressBar: true
+                                });
+                            }, 300);
+                        }
+                    });
+                });
+            });
+
+            // Add to bag with SweetAlert2
+            const addToBagButtons = document.querySelectorAll('.add-to-bag-btn');
+            addToBagButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    Swal.fire({
+                        title: 'تمت الإضافة!',
+                        text: 'تم إضافة المنتج إلى السلة',
+                        icon: 'success',
+                        confirmButtonText: 'متابعة التسوق',
+                        showCancelButton: true,
+                        cancelButtonText: 'عرض السلة',
+                        confirmButtonColor: '#000',
+                        cancelButtonColor: '#666',
+                        timer: 3000,
+                        timerProgressBar: true
+                    }).then((result) => {
+                        if (result.isDismissed && result.dismiss === Swal.DismissReason
+                            .cancel) {
+                            window.location.href = 'cart.html';
+                        }
+                    });
+                });
+            });
+
+            // Update wishlist count
+            function updateWishlistCount() {
+                const count = document.querySelectorAll('.wishlist-item').length;
+                const countElement = document.querySelector('.wishlist-count');
+                const titleElement = document.querySelector('.wishlist-title');
+                const badge = document.querySelector('.header-link.active .badge');
+
+                if (count === 0) {
+                    document.querySelector('.wishlist-grid').style.display = 'none';
+                    document.querySelector('.empty-wishlist').style.display = 'block';
+                    badge.textContent = '0';
+                } else {
+                    titleElement.textContent = `قائمة أمنياتي (${count})`;
+                    countElement.textContent = count === 1 ? 'لديك منتج واحد في قائمة الأمنيات' :
+                        `لديك ${count} منتجات في قائمة الأمنيات`;
+                    badge.textContent = count;
+                }
+            }
+        });
+    </script>
