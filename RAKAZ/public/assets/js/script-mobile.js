@@ -2,11 +2,22 @@
    Mobile-Specific JavaScript Functionality
    ======================================== */
 
+console.log('🎬 بدء تحميل script-mobile.js');
+
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('✨ DOM جاهز، بدء تهيئة القائمة الجانبية للهاتف...');
+
+    // إعدادات القائمة المنسدلة
+    const MOBILE_SUBMENU_MAX_HEIGHT = 400; // الحد الأقصى لارتفاع القائمة المنسدلة (بكسل)
 
     // Create mobile sidebar menu
     function createMobileSidebar() {
+        console.log('🔧 استدعاء دالة createMobileSidebar');
+        console.log('📐 عرض الشاشة:', window.innerWidth);
+        console.log('🔍 هل توجد قائمة جانبية بالفعل؟', !!document.querySelector('.mobile-sidebar'));
+
         if (window.innerWidth <= 1024 && !document.querySelector('.mobile-sidebar')) {
+            console.log('✅ الشروط متحققة، سيتم إنشاء القائمة الجانبية...');
             // Create overlay
             const overlay = document.createElement('div');
             overlay.className = 'mobile-menu-overlay';
@@ -39,24 +50,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Add account section as a link
             const isArabic = document.documentElement.getAttribute('dir') === 'rtl';
+
+            // التحقق من حالة تسجيل الدخول
+            const isAuthenticated = document.querySelector('meta[name="user-authenticated"]')?.content === 'true';
+            const userName = document.querySelector('meta[name="user-name"]')?.content || '';
+
             const accountSection = document.createElement('a');
             accountSection.className = 'mobile-account-section';
-            accountSection.href = 'login.html';
-            accountSection.innerHTML = `
-                <div class="mobile-account-content">
-                    <div class="mobile-account-header">
-                        <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        <span>${isArabic ? 'سجّل الدخول / اشترك' : 'Sign In / Register'}</span>
+
+            if (isAuthenticated) {
+                // إذا كان مسجل دخول
+                accountSection.href = '/profile';
+                accountSection.classList.add('authenticated');
+                accountSection.innerHTML = `
+                    <div class="mobile-account-content">
+                        <div class="mobile-account-header">
+                            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <span>${userName || (isArabic ? 'حسابي' : 'My Account')}</span>
+                        </div>
+                        <p class="mobile-account-subtitle">${isArabic ? 'مرحباً بك مجدداً' : 'Welcome back'}</p>
                     </div>
-                    <p class="mobile-account-subtitle">${isArabic ? 'للإتمام عملية الشراء بشكل أسرع' : 'To complete your purchase faster'}</p>
-                </div>
-                <svg class="mobile-account-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
-            `;
+                    <svg class="mobile-account-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                `;
+            } else {
+                // إذا لم يكن مسجل دخول
+                accountSection.href = '/login';
+                accountSection.innerHTML = `
+                    <div class="mobile-account-content">
+                        <div class="mobile-account-header">
+                            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <span>${isArabic ? 'سجّل الدخول / اشترك' : 'Sign In / Register'}</span>
+                        </div>
+                        <p class="mobile-account-subtitle">${isArabic ? 'للإتمام عملية الشراء بشكل أسرع' : 'To complete your purchase faster'}</p>
+                    </div>
+                    <svg class="mobile-account-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                `;
+            }
             content.appendChild(accountSection);
 
             // Add tabs for gender selection
@@ -84,116 +123,263 @@ document.addEventListener('DOMContentLoaded', function() {
             dropdownItems.forEach(item => {
                 const navLink = item.querySelector('.nav-link');
                 const dropdownMenu = item.querySelector('.dropdown-menu');
+
+                if (!navLink) return;
+
+                // Get text based on current language
+                const linkText = isArabic
+                    ? (navLink.querySelector('.ar-text') ? navLink.querySelector('.ar-text').textContent : navLink.textContent)
+                    : (navLink.querySelector('.en-text') ? navLink.querySelector('.en-text').textContent : navLink.textContent);
+
+                // Get menu data from JSON
+                const menuDataScript = dropdownMenu ? dropdownMenu.querySelector('.js-mega-menu-data') : null;
+                let menuData = [];
+                let menuId = null;
+                let totalItems = 0;
+                let loadedItems = 0;
+
+                if (menuDataScript) {
+                    try {
+                        menuData = JSON.parse(menuDataScript.textContent);
+                        menuId = menuDataScript.getAttribute('data-menu-id');
+                        totalItems = parseInt(menuDataScript.getAttribute('data-total-items')) || 0;
+                        loadedItems = parseInt(menuDataScript.getAttribute('data-loaded-items')) || 0;
+                        console.log(`📋 Menu "${linkText}" - Total: ${totalItems}, Loaded: ${loadedItems}, Remaining: ${totalItems - loadedItems}, menu_id: ${menuId}`);
+
+                        if (!menuId) {
+                            console.error(`❌ تحذير: menu_id غير موجود للقائمة "${linkText}"`);
+                        }
+                    } catch (e) {
+                        console.error('Error parsing menu data:', e);
+                    }
+                } else {
+                    console.warn(`⚠️ No menu data found for "${linkText}"`);
+                }
+
+                // Get menu image
                 const dropdownImage = dropdownMenu ? dropdownMenu.querySelector('.dropdown-image img') : null;
 
-                if (navLink) {
-                    const mobileItem = document.createElement('div');
-                    mobileItem.className = 'mobile-nav-item expandable';
+                // Create mobile menu item
+                const mobileItem = document.createElement('div');
+                mobileItem.className = 'mobile-nav-item expandable';
 
-                    // Get text based on current language
-                    const isArabic = document.documentElement.getAttribute('dir') === 'rtl';
-                    const linkText = isArabic
-                        ? (navLink.querySelector('.ar-text') ? navLink.querySelector('.ar-text').textContent : navLink.textContent)
-                        : (navLink.querySelector('.en-text') ? navLink.querySelector('.en-text').textContent : navLink.textContent);
+                console.log(`🔨 إنشاء عنصر قائمة: "${linkText}"`);
 
-                    // Create main link with image beside it (not inside dropdown)
-                    const mobileLink = document.createElement('div');
-                    mobileLink.className = 'mobile-nav-link-container';
+                // Create main link with image
+                const mobileLink = document.createElement('div');
+                mobileLink.className = 'mobile-nav-link-container';
 
-                    // Add image beside the category name (outside dropdown)
-                    if (dropdownImage) {
-                        const imageContainer = document.createElement('div');
-                        imageContainer.className = 'mobile-nav-image';
-                        imageContainer.innerHTML = `<img src="${dropdownImage.src}" alt="${linkText}">`;
-                        mobileLink.appendChild(imageContainer);
-                    }
+                // Add image
+                if (dropdownImage) {
+                    const imageContainer = document.createElement('div');
+                    imageContainer.className = 'mobile-nav-image';
+                    imageContainer.innerHTML = `<img src="${dropdownImage.src}" alt="${linkText}">`;
+                    mobileLink.appendChild(imageContainer);
+                }
 
-                    // Add the clickable text with arrow
-                    const textContainer = document.createElement('div');
-                    textContainer.className = 'mobile-nav-link';
-                    textContainer.innerHTML = `
-                        <span>${linkText.trim()}</span>
-                        <svg class="mobile-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="6 9 12 15 18 9"></polyline>
-                        </svg>
-                    `;
-                    mobileLink.appendChild(textContainer);
+                // Add clickable text with arrow
+                const textContainer = document.createElement('div');
+                textContainer.className = 'mobile-nav-link';
+                textContainer.innerHTML = `
+                    <span>${linkText.trim()}</span>
+                    <svg class="mobile-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                `;
+                mobileLink.appendChild(textContainer);
 
-                    // Create submenu (text only, NO image)
-                    if (dropdownMenu) {
-                        const submenu = document.createElement('div');
-                        submenu.className = 'mobile-submenu';
+                // Create submenu
+                const submenu = document.createElement('div');
+                submenu.className = 'mobile-submenu';
+                submenu.style.maxHeight = '0px'; // تعيين قيمة ابتدائية
 
-                        // Add submenu content (text only)
-                        const isArabic = document.documentElement.getAttribute('dir') === 'rtl';
-                        const columns = dropdownMenu.querySelectorAll('.dropdown-column:not(.dropdown-image)');
-                        columns.forEach(column => {
-                            const title = column.querySelector('.dropdown-title');
-                            if (title) {
-                                const subTitle = document.createElement('div');
-                                subTitle.className = 'mobile-submenu-title';
-                                const titleText = isArabic
-                                    ? (title.querySelector('.ar-text') ? title.querySelector('.ar-text').textContent : title.textContent)
-                                    : (title.querySelector('.en-text') ? title.querySelector('.en-text').textContent : title.textContent);
-                                subTitle.textContent = titleText.trim();
-                                submenu.appendChild(subTitle);
+                console.log(`📦 إنشاء submenu لـ "${linkText}"`);
+
+                if (menuData && menuData.length > 0) {
+                    console.log(`📊 البيانات موجودة: ${menuData.length} أعمدة`);
+
+                    // حساب عدد العناصر المحملة
+                    let currentlyShown = loadedItems;
+                    console.log(`📊 العناصر المحملة: ${loadedItems} من ${totalItems}`);
+
+                    const ITEMS_PER_LOAD = 5;
+
+                    // عرض العناصر المحملة من Blade
+                    menuData.forEach(column => {
+                        // Add column title
+                        if (column.title_ar || column.title_en) {
+                            const subTitle = document.createElement('div');
+                            subTitle.className = 'mobile-submenu-title';
+                            subTitle.textContent = isArabic ? (column.title_ar || column.title_en) : (column.title_en || column.title_ar);
+                            submenu.appendChild(subTitle);
+                        }
+
+                        // Add items
+                        if (column.items && column.items.length > 0) {
+                            column.items.forEach(item => {
+                                appendItemToSubmenu(submenu, item, isArabic);
+                            });
+                        }
+                    });
+
+                    console.log(`✅ تم إضافة ${currentlyShown} عنصر فعلياً`);
+
+                    // Add "Load More" button if there are more items
+                    if (totalItems > currentlyShown && menuId) {
+                        const loadMoreBtn = document.createElement('button');
+                        loadMoreBtn.className = 'mobile-submenu-load-more';
+                        loadMoreBtn.setAttribute('data-loading', 'false');
+                        loadMoreBtn.innerHTML = isArabic
+                            ? `تحميل المزيد (${totalItems - currentlyShown})`
+                            : `Load More (${totalItems - currentlyShown})`;
+
+                        loadMoreBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            // منع النقر المتكرر
+                            if (loadMoreBtn.getAttribute('data-loading') === 'true') {
+                                return;
                             }
 
-                            // Get only direct links (exclude nested ul links)
-                            const directLinks = [];
-                            column.querySelectorAll('ul').forEach(ul => {
-                                // Only process the main ul, not nested ones
-                                if (!ul.parentElement.closest('ul')) {
-                                    ul.querySelectorAll(':scope > li').forEach(li => {
-                                        const mainLink = li.querySelector(':scope > a');
-                                        if (mainLink) {
-                                            directLinks.push({ link: mainLink, listItem: li });
-                                        }
-                                    });
-                                }
-                            });
+                            loadMoreBtn.setAttribute('data-loading', 'true');
+                            const originalText = loadMoreBtn.innerHTML;
+                            loadMoreBtn.innerHTML = isArabic ? 'جاري التحميل...' : 'Loading...';
+                            loadMoreBtn.disabled = true;
 
-                            // Add links to submenu
-                            directLinks.forEach(({ link: mainLink, listItem }) => {
-                                const subLink = document.createElement('a');
-                                subLink.href = mainLink.href;
-                                subLink.className = 'mobile-submenu-link';
-                                const linkText = isArabic
-                                    ? (mainLink.querySelector('.ar-text') ? mainLink.querySelector('.ar-text').textContent : mainLink.textContent)
-                                    : (mainLink.querySelector('.en-text') ? mainLink.querySelector('.en-text').textContent : mainLink.textContent);
-                                subLink.textContent = linkText.trim();
-                                submenu.appendChild(subLink);
+                            // استخدام AJAX لجلب المزيد من العناصر من قاعدة البيانات
+                            console.log(`📡 AJAX Request: menu_id=${menuId}, offset=${currentlyShown}, limit=${ITEMS_PER_LOAD}`);
 
-                                // Check if there are child categories (nested ul directly under this li)
-                                const childUl = listItem.querySelector(':scope > ul');
-                                if (childUl) {
-                                    const childItems = childUl.querySelectorAll(':scope > li');
-                                    childItems.forEach(childLi => {
-                                        const childLink = childLi.querySelector(':scope > a');
-                                        if (childLink) {
-                                            const childSubLink = document.createElement('a');
-                                            childSubLink.href = childLink.href;
-                                            childSubLink.className = 'mobile-submenu-link mobile-submenu-child';
-                                            const childLinkText = isArabic
-                                                ? (childLink.querySelector('.ar-text') ? childLink.querySelector('.ar-text').textContent : childLink.textContent)
-                                                : (childLink.querySelector('.en-text') ? childLink.querySelector('.en-text').textContent : childLink.textContent);
-                                            childSubLink.textContent = childLinkText.trim();
-                                            submenu.appendChild(childSubLink);
+                            fetch(`/api/mobile-menu/load-more?menu_id=${menuId}&offset=${currentlyShown}&limit=${ITEMS_PER_LOAD}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success && data.items) {
+                                        console.log('✅ تم جلب المزيد من قاعدة البيانات:', data);
+
+                                        // إضافة العناصر الجديدة
+                                        let lastColumnTitle = '';
+                                        data.items.forEach(itemData => {
+                                            // إضافة عنوان العمود إذا كان مختلف
+                                            const columnTitle = isArabic ? itemData.column_title_ar : itemData.column_title_en;
+                                            if (columnTitle !== lastColumnTitle) {
+                                                lastColumnTitle = columnTitle;
+                                                if (columnTitle) {
+                                                    const titleDiv = document.createElement('div');
+                                                    titleDiv.className = 'mobile-submenu-title';
+                                                    titleDiv.textContent = columnTitle;
+                                                    submenu.insertBefore(titleDiv, loadMoreBtn);
+                                                }
+                                            }
+
+                                            // إضافة العنصر
+                                            appendItemToSubmenu(submenu, itemData.item, isArabic, loadMoreBtn);
+                                        });
+
+                                        currentlyShown += data.loaded;
+
+                                        // Update or remove button
+                                        if (!data.hasMore) {
+                                            loadMoreBtn.remove();
+                                            console.log('🎉 تم تحميل جميع العناصر!');
+                                        } else {
+                                            loadMoreBtn.innerHTML = isArabic
+                                                ? `تحميل المزيد (${data.remaining})`
+                                                : `Load More (${data.remaining})`;
+                                            loadMoreBtn.disabled = false;
+                                            loadMoreBtn.setAttribute('data-loading', 'false');
                                         }
-                                    });
-                                }
-                            });
+
+                                        // Update submenu height
+                                        const parentItem = submenu.closest('.mobile-nav-item');
+                                        if (parentItem && parentItem.classList.contains('open')) {
+                                            submenu.style.maxHeight = MOBILE_SUBMENU_MAX_HEIGHT + 'px';
+                                            submenu.style.setProperty('max-height', MOBILE_SUBMENU_MAX_HEIGHT + 'px', 'important');
+                                        }
+                                    } else {
+                                        console.error('❌ فشل في جلب البيانات:', data);
+                                        alert(isArabic ? 'حدث خطأ في تحميل البيانات' : 'Error loading data');
+                                        loadMoreBtn.innerHTML = originalText;
+                                        loadMoreBtn.disabled = false;
+                                        loadMoreBtn.setAttribute('data-loading', 'false');
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('❌ خطأ في AJAX:', error);
+                                    alert(isArabic ? 'حدث خطأ في تحميل المزيد' : 'Error loading more items');
+                                    loadMoreBtn.innerHTML = originalText;
+                                    loadMoreBtn.disabled = false;
+                                    loadMoreBtn.setAttribute('data-loading', 'false');
+                                });
                         });
 
-                        mobileItem.appendChild(mobileLink);
-                        mobileItem.appendChild(submenu);
-                    } else {
-                        mobileItem.appendChild(mobileLink);
+                        submenu.appendChild(loadMoreBtn);
                     }
-
-                    content.appendChild(mobileItem);
                 }
+
+                mobileItem.appendChild(mobileLink);
+                mobileItem.appendChild(submenu);
+                content.appendChild(mobileItem);
+
+                console.log(`✅ تم إضافة العنصر "${linkText}" إلى القائمة`, {
+                    hasSubmenu: !!submenu,
+                    submenuChildrenCount: submenu.children.length,
+                    submenuHTML: submenu.innerHTML.substring(0, 150)
+                });
             });
+
+            // Helper function to append column to submenu
+            // Helper function to add a single item to submenu
+            function appendItemToSubmenu(submenu, item, isArabic, beforeElement = null) {
+                // Add main item
+                const subLink = document.createElement('a');
+                subLink.href = item.link || '#';
+                subLink.className = 'mobile-submenu-link';
+                subLink.textContent = isArabic ? (item.name_ar || item.name_en) : (item.name_en || item.name_ar);
+
+                if (beforeElement) {
+                    submenu.insertBefore(subLink, beforeElement);
+                } else {
+                    submenu.appendChild(subLink);
+                }
+
+                // Add children if exist
+                if (item.children && item.children.length > 0) {
+                    item.children.forEach(child => {
+                        const childLink = document.createElement('a');
+                        childLink.href = child.link || '#';
+                        childLink.className = 'mobile-submenu-link mobile-submenu-child';
+                        childLink.textContent = isArabic ? (child.name_ar || child.name_en) : (child.name_en || child.name_ar);
+
+                        if (beforeElement) {
+                            submenu.insertBefore(childLink, beforeElement);
+                        } else {
+                            submenu.appendChild(childLink);
+                        }
+                    });
+                }
+            }
+
+            function appendColumnToSubmenu(submenu, column, isArabic, beforeElement = null) {
+                // Add column title
+                if (column.title_ar || column.title_en) {
+                    const subTitle = document.createElement('div');
+                    subTitle.className = 'mobile-submenu-title';
+                    subTitle.textContent = isArabic ? (column.title_ar || column.title_en) : (column.title_en || column.title_ar);
+
+                    if (beforeElement) {
+                        submenu.insertBefore(subTitle, beforeElement);
+                    } else {
+                        submenu.appendChild(subTitle);
+                    }
+                }
+
+                // Add items
+                if (column.items && column.items.length > 0) {
+                    column.items.forEach(item => {
+                        appendItemToSubmenu(submenu, item, isArabic, beforeElement);
+                    });
+                }
+            }
 
             // Add simple nav links with same structure as dropdown items
             const simpleLinks = document.querySelectorAll('.main-nav > .nav-link:not(.dropdown-trigger)');
@@ -232,6 +418,85 @@ document.addEventListener('DOMContentLoaded', function() {
                 mobileItem.appendChild(mobileLink);
                 content.appendChild(mobileItem);
             });
+
+            // Add quick links section (Wishlist, Bag, Track Orders, Shopping Cart)
+            const quickLinksSection = document.createElement('div');
+            quickLinksSection.className = 'mobile-quick-links';
+            quickLinksSection.style.cssText = 'margin: 15px 0; padding: 15px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee;';
+
+            // Wishlist Link
+            const wishlistLink = document.createElement('a');
+            wishlistLink.href = '/wishlist';
+            wishlistLink.className = 'mobile-quick-link';
+            wishlistLink.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 12px 15px; text-decoration: none; color: #333; transition: background 0.2s;';
+            wishlistLink.innerHTML = `
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+                <span style="font-size: 15px; font-weight: 500;">${isArabic ? 'المفضلة' : 'Wishlist'}</span>
+            `;
+            wishlistLink.addEventListener('mouseenter', function() { this.style.background = '#f5f5f5'; });
+            wishlistLink.addEventListener('mouseleave', function() { this.style.background = 'transparent'; });
+            quickLinksSection.appendChild(wishlistLink);
+
+            // Shopping Bag Link
+            const bagLink = document.createElement('a');
+            bagLink.href = '#';
+            bagLink.className = 'mobile-quick-link';
+            bagLink.id = 'mobileBagLink';
+            bagLink.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 12px 15px; text-decoration: none; color: #333; transition: background 0.2s;';
+            bagLink.innerHTML = `
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+                <span style="font-size: 15px; font-weight: 500;">${isArabic ? 'الحقيبة' : 'Bag'}</span>
+            `;
+            bagLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Trigger cart sidebar
+                const cartToggle = document.getElementById('cartToggle');
+                if (cartToggle) cartToggle.click();
+            });
+            bagLink.addEventListener('mouseenter', function() { this.style.background = '#f5f5f5'; });
+            bagLink.addEventListener('mouseleave', function() { this.style.background = 'transparent'; });
+            quickLinksSection.appendChild(bagLink);
+
+            // Track Orders Link
+            const trackOrdersLink = document.createElement('a');
+            trackOrdersLink.href = '/orders';
+            trackOrdersLink.className = 'mobile-quick-link';
+            trackOrdersLink.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 12px 15px; text-decoration: none; color: #333; transition: background 0.2s;';
+            trackOrdersLink.innerHTML = `
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                </svg>
+                <span style="font-size: 15px; font-weight: 500;">${isArabic ? 'تتبع الطلبات' : 'Track Orders'}</span>
+            `;
+            trackOrdersLink.addEventListener('mouseenter', function() { this.style.background = '#f5f5f5'; });
+            trackOrdersLink.addEventListener('mouseleave', function() { this.style.background = 'transparent'; });
+            quickLinksSection.appendChild(trackOrdersLink);
+
+            // Shopping Cart Link
+            const cartLink = document.createElement('a');
+            cartLink.href = '/cart';
+            cartLink.className = 'mobile-quick-link';
+            cartLink.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 12px 15px; text-decoration: none; color: #333; transition: background 0.2s;';
+            cartLink.innerHTML = `
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                <span style="font-size: 15px; font-weight: 500;">${isArabic ? 'سلة التسوق' : 'Shopping Cart'}</span>
+            `;
+            cartLink.addEventListener('mouseenter', function() { this.style.background = '#f5f5f5'; });
+            cartLink.addEventListener('mouseleave', function() { this.style.background = 'transparent'; });
+            quickLinksSection.appendChild(cartLink);
+
+            content.appendChild(quickLinksSection);
 
             // Add language and currency selectors
             const settingsSection = document.createElement('div');
@@ -305,6 +570,77 @@ document.addEventListener('DOMContentLoaded', function() {
 
             content.appendChild(settingsSection);
 
+            // Add logout button for authenticated users
+            if (isAuthenticated) {
+                const logoutSection = document.createElement('div');
+                logoutSection.className = 'mobile-logout-section';
+                logoutSection.style.cssText = 'margin-top: 20px; padding: 15px; border-top: 1px solid #eee;';
+
+                const logoutButton = document.createElement('button');
+                logoutButton.className = 'mobile-logout-btn';
+                logoutButton.style.cssText = `
+                    width: 100%;
+                    padding: 12px 20px;
+                    background: #dc2626;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    transition: background 0.3s;
+                `;
+                logoutButton.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>${isArabic ? 'تسجيل الخروج' : 'Logout'}</span>
+                `;
+
+                logoutButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // Check if handleLogout function exists
+                    if (typeof handleLogout === 'function') {
+                        handleLogout();
+                    } else {
+                        // Fallback: direct form submission
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '/logout';
+
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                        if (csrfToken) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = '_token';
+                            input.value = csrfToken.content;
+                            form.appendChild(input);
+                        }
+
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+
+                // Hover effect
+                logoutButton.addEventListener('mouseenter', function() {
+                    this.style.background = '#b91c1c';
+                });
+                logoutButton.addEventListener('mouseleave', function() {
+                    this.style.background = '#dc2626';
+                });
+
+                logoutSection.appendChild(logoutButton);
+                content.appendChild(logoutSection);
+            }
+
             sidebar.appendChild(header);
             sidebar.appendChild(content);
             document.body.appendChild(sidebar);
@@ -314,6 +650,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (menuBtn) {
                 menuBtn.addEventListener('click', function(e) {
                     e.preventDefault();
+
+                    console.log('🚀 فتح القائمة الجانبية...');
+                    console.log('📱 العناصر القابلة للتوسع:', sidebar.querySelectorAll('.mobile-nav-item.expandable').length);
+
                     sidebar.classList.add('active');
                     overlay.classList.add('active');
 
@@ -325,6 +665,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.body.style.overflow = 'hidden';
                     document.body.style.position = 'fixed';
                     document.body.style.width = '100%';
+
+                    console.log('✅ تم فتح القائمة الجانبية بنجاح');
                 });
             }
 
@@ -348,31 +690,95 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Handle expandable menu items
             const expandableItems = sidebar.querySelectorAll('.mobile-nav-item.expandable');
-            expandableItems.forEach(item => {
-                const link = item.querySelector('.mobile-nav-link');
+
+            console.log('🔍 عدد العناصر القابلة للتوسع:', expandableItems.length);
+            console.log('📝 العناصر المكتشفة:', expandableItems);
+
+            expandableItems.forEach((item, index) => {
+                const textContainer = item.querySelector('.mobile-nav-link');
                 const submenu = item.querySelector('.mobile-submenu');
 
-                if (link && submenu) {
-                    link.addEventListener('click', function(e) {
+                console.log(`📋 العنصر ${index + 1}:`, {
+                    hasTextContainer: !!textContainer,
+                    hasSubmenu: !!submenu,
+                    submenuContent: submenu ? submenu.innerHTML.substring(0, 100) : 'لا يوجد',
+                    element: item
+                });
+
+                if (textContainer && submenu) {
+                    console.log(`✅ إضافة event listener للعنصر ${index + 1}`);
+
+                    // إضافة event listener على الـ text container مباشرة
+                    textContainer.addEventListener('click', function(e) {
+                        console.log('🖱️ تم النقر على القائمة:', {
+                            index: index + 1,
+                            isOpen: item.classList.contains('open'),
+                            submenuHeight: submenu.scrollHeight,
+                            currentMaxHeight: submenu.style.maxHeight,
+                            classList: Array.from(item.classList)
+                        });
+
                         e.preventDefault();
+                        e.stopPropagation();
 
                         // Toggle current item
                         const isOpen = item.classList.contains('open');
 
+                        console.log('📊 حالة القائمة قبل التغيير:', isOpen ? 'مفتوحة' : 'مغلقة');
+
                         // Close all other items
                         expandableItems.forEach(otherItem => {
-                            otherItem.classList.remove('open');
-                            const otherSubmenu = otherItem.querySelector('.mobile-submenu');
-                            if (otherSubmenu) {
-                                otherSubmenu.style.maxHeight = '0';
+                            if (otherItem !== item) {
+                                otherItem.classList.remove('open');
+                                const otherSubmenu = otherItem.querySelector('.mobile-submenu');
+                                if (otherSubmenu) {
+                                    otherSubmenu.style.maxHeight = '0px';
+                                }
                             }
                         });
 
-                        // Open current item if it was closed
+                        // Toggle current item
                         if (!isOpen) {
+                            console.log('🔓 محاولة فتح القائمة...');
+                            console.log('📏 scrollHeight:', submenu.scrollHeight);
+
                             item.classList.add('open');
-                            submenu.style.maxHeight = submenu.scrollHeight + 'px';
+
+                            // استخدام ارتفاع ثابت محدود مع scroll داخلي
+                            setTimeout(() => {
+                                const actualHeight = submenu.scrollHeight;
+
+                                console.log('📐 القيم المحسوبة:', {
+                                    actualHeight,
+                                    maxAllowedHeight: MOBILE_SUBMENU_MAX_HEIGHT,
+                                    willUseScroll: actualHeight > MOBILE_SUBMENU_MAX_HEIGHT
+                                });
+
+                                // استخدام الحد الأقصى المحدد فقط، والباقي scroll
+                                submenu.style.maxHeight = MOBILE_SUBMENU_MAX_HEIGHT + 'px';
+                                submenu.style.setProperty('max-height', MOBILE_SUBMENU_MAX_HEIGHT + 'px', 'important');
+
+                                console.log('✨ تم تعيين maxHeight إلى:', submenu.style.maxHeight);
+                                console.log('🎯 الأنماط الحالية:', {
+                                    maxHeight: window.getComputedStyle(submenu).maxHeight,
+                                    overflow: window.getComputedStyle(submenu).overflow,
+                                    display: window.getComputedStyle(submenu).display
+                                });
+                            }, 10);
+                        } else {
+                            console.log('🔒 إغلاق القائمة...');
+                            item.classList.remove('open');
+                            submenu.style.maxHeight = '0px';
+                            submenu.style.setProperty('max-height', '0px', 'important');
                         }
+
+                        console.log('📊 حالة القائمة بعد التغيير:', item.classList.contains('open') ? 'مفتوحة' : 'مغلقة');
+                    });
+                } else {
+                    console.warn(`⚠️ العنصر ${index + 1} لا يحتوي على textContainer أو submenu`, {
+                        textContainer,
+                        submenu,
+                        item
                     });
                 }
             });
@@ -602,7 +1008,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize mobile functionality based on screen size
     function initMobileFeatures() {
+        console.log('🎯 استدعاء initMobileFeatures...');
+        console.log('📐 عرض الشاشة الحالي:', window.innerWidth);
+
         if (window.innerWidth <= 1024) {
+            console.log('✅ الشاشة صغيرة، سيتم تهيئة الميزات...');
             createMobileSidebar();
             initMobileMenu();
             optimizeImagesForMobile();
@@ -610,6 +1020,9 @@ document.addEventListener('DOMContentLoaded', function() {
             handleMobileSearch();
             initMobileProductInteractions();
             initMobileSizeSelector();
+            console.log('🎉 تم الانتهاء من تهيئة جميع الميزات!');
+        } else {
+            console.log('ℹ️ الشاشة كبيرة، لن يتم تهيئة ميزات الهاتف');
         }
     }
 
@@ -632,8 +1045,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Initial setup
+    console.log('🚀 بدء الإعداد الأولي...');
     setMobileVH();
     initMobileFeatures();
+    console.log('✅ انتهى الإعداد الأولي!');
 
     // Initialize footer accordion on mobile and tablet
     function initFooterAccordion() {

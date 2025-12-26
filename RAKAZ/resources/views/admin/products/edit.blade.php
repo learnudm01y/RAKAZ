@@ -2,6 +2,11 @@
 
 @section('title', app()->getLocale() == 'ar' ? 'تعديل المنتج' : 'Edit Product')
 
+@section('page-title')
+    <span class="ar-text">تعديل المنتج</span>
+    <span class="en-text">Edit Product</span>
+@endsection
+
 @section('content')
 <div class="product-form-container">
     <!-- Page Header -->
@@ -153,7 +158,7 @@
                 </div>
 
                 <!-- Inventory -->
-                <div class="card mb-4">
+                <div class="card mb-4 inventory-card">
                     <div class="card-header">
                         <h3 class="card-title">{{ app()->getLocale() == 'ar' ? 'إدارة المخزون' : 'Inventory Management' }}</h3>
                     </div>
@@ -324,7 +329,14 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <label class="form-label">{{ app()->getLocale() == 'ar' ? 'العلامة التجارية' : 'Brand' }}</label>
-                            <input type="text" name="brand" class="form-control" value="{{ old('brand', $product->brand) }}">
+                            <select name="brand_id" class="form-select">
+                                <option value="">{{ app()->getLocale() == 'ar' ? 'اختر العلامة التجارية' : 'Select Brand' }}</option>
+                                @foreach($brands as $brand)
+                                    <option value="{{ $brand->id }}" {{ old('brand_id', $product->brand_id) == $brand->id ? 'selected' : '' }}>
+                                        {{ $brand->getName() }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="mb-0">
                             <label class="form-label">{{ app()->getLocale() == 'ar' ? 'الشركة المصنعة' : 'Manufacturer' }}</label>
@@ -471,6 +483,30 @@
                             @endforeach
                         </div>
                     </div>
+                    </div>
+                </div>
+
+                <!-- Color Images Card -->
+                <div class="card mb-4" id="colorImagesSection" style="display: none;">
+                    <div class="card-header collapsible-header bg-light" data-bs-toggle="collapse" data-bs-target="#colorImagesCollapse" aria-expanded="true" style="cursor: pointer;">
+                        <h3 class="card-title">
+                            <i class="fas fa-chevron-down me-2"></i>
+                            {{ app()->getLocale() == 'ar' ? 'صور الألوان' : 'Color Images' }}
+                        </h3>
+                    </div>
+                    <div class="collapse show" id="colorImagesCollapse">
+                        <div class="card-body">
+                            <p class="text-muted mb-3">
+                                {{ app()->getLocale() == 'ar' ? 'قم بإضافة صورة خاصة لكل لون محدد' : 'Add a specific image for each selected color' }}
+                            </p>
+                            <div id="colorImagesContainer" class="color-images-grid">
+                                <!-- Color image cards will be dynamically inserted here -->
+                            </div>
+                            <div id="noColorsSelectedMsg" class="text-muted text-center py-4" style="display: none;">
+                                <i class="fas fa-info-circle me-2"></i>
+                                {{ app()->getLocale() == 'ar' ? 'يرجى اختيار ألوان أولاً من قسم الألوان المتاحة' : 'Please select colors first from the Available Colors section' }}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -987,24 +1023,6 @@ textarea.d-none {
 $(document).ready(function() {
     const isArabic = '{{ app()->getLocale() }}' === 'ar';
 
-    // Handle collapsible cards manually
-    $('[data-bs-toggle="collapse"]').on('click', function(e) {
-        e.preventDefault();
-        const target = $(this).attr('data-bs-target');
-        const $target = $(target);
-        const $header = $(this);
-
-        // Toggle collapse
-        $target.toggleClass('show');
-
-        // Toggle collapsed class on header
-        $header.toggleClass('collapsed');
-
-        // Update aria-expanded
-        const isExpanded = !$header.hasClass('collapsed');
-        $header.attr('aria-expanded', isExpanded);
-    });
-
     // Show error message with SweetAlert
     @if(session('error'))
         Swal.fire({
@@ -1492,8 +1510,207 @@ $(document).ready(function() {
             stockWrapper.hide();
             stockWrapper.find('input').val(0);
         }
+
+        // Update color images section
+        updateColorImagesSection();
     });
+
+    // Initialize color images on page load
+    updateColorImagesSection();
 });
+
+// Color images data
+var colorImagesData = {};
+
+// Existing color images from database
+var existingColorImages = {
+    @foreach($product->colorImages as $colorImage)
+    {{ $colorImage->color_id }}: {
+        id: {{ $colorImage->id }},
+        image: "{{ $colorImage->image_url }}",
+        is_primary: {{ $colorImage->is_primary ? 'true' : 'false' }}
+    },
+    @endforeach
+};
+
+// Colors data from PHP
+var colorsData = {
+    @foreach($colors as $color)
+    {{ $color->id }}: {
+        id: {{ $color->id }},
+        name: "{{ $color->translated_name }}",
+        hex: "{{ $color->hex_code }}"
+    },
+    @endforeach
+};
+
+// Update color images section based on selected colors
+function updateColorImagesSection() {
+    var selectedColors = [];
+    $('.color-checkbox:checked').each(function() {
+        selectedColors.push(parseInt($(this).val()));
+    });
+
+    var container = $('#colorImagesContainer');
+    var section = $('#colorImagesSection');
+    var noColorsMsg = $('#noColorsSelectedMsg');
+
+    if (selectedColors.length === 0) {
+        section.hide();
+        container.empty();
+        return;
+    }
+
+    section.show();
+    noColorsMsg.hide();
+
+    // Remove cards for unselected colors
+    container.find('.color-image-card').each(function() {
+        var cardColorId = parseInt($(this).data('color-id'));
+        if (!selectedColors.includes(cardColorId)) {
+            $(this).slideUp(200, function() {
+                $(this).remove();
+            });
+            delete colorImagesData[cardColorId];
+        }
+    });
+
+    // Add cards for newly selected colors
+    selectedColors.forEach(function(colorId) {
+        if (container.find('[data-color-id="' + colorId + '"]').length === 0) {
+            var color = colorsData[colorId];
+            if (color) {
+                var existingImage = existingColorImages[colorId] || null;
+                var cardHtml = createColorImageCard(color, existingImage);
+                container.append(cardHtml);
+            }
+        }
+    });
+}
+
+// Create color image card HTML
+function createColorImageCard(color, existingImage) {
+    var arText = '{{ app()->getLocale() }}' === 'ar';
+    var uploadText = arText ? 'اختر صورة' : 'Choose Image';
+    var changeText = arText ? 'تغيير الصورة' : 'Change Image';
+    var removeText = arText ? 'حذف' : 'Remove';
+    var primaryText = arText ? 'صورة رئيسية لهذا اللون' : 'Primary image for this color';
+    var currentImageText = arText ? 'الصورة الحالية' : 'Current Image';
+
+    var hasExisting = existingImage && existingImage.image;
+    var cardClass = hasExisting ? 'has-image' : '';
+
+    var existingImageHtml = '';
+    if (hasExisting) {
+        existingImageHtml = `
+            <div class="existing-color-image">
+                <img src="${existingImage.image}" alt="${color.name}">
+                <span class="existing-color-image-info">${currentImageText}</span>
+            </div>
+        `;
+    }
+
+    var previewContent = hasExisting
+        ? `<img src="${existingImage.image}" alt="${color.name}">`
+        : `<i class="fas fa-image placeholder-icon"></i>`;
+
+    var isPrimaryChecked = hasExisting && existingImage.is_primary ? 'checked' : '';
+
+    return `
+        <div class="color-image-card ${cardClass}" data-color-id="${color.id}">
+            <div class="color-image-header">
+                <div class="color-image-color-preview" style="background-color: ${color.hex};"></div>
+                <span class="color-image-name">${color.name}</span>
+            </div>
+            <div class="color-image-upload-area">
+                <div class="color-image-preview-container" id="color_image_preview_${color.id}">
+                    ${previewContent}
+                </div>
+                <div class="color-image-upload-controls">
+                    <div class="color-image-input-wrapper">
+                        <label class="color-image-upload-btn">
+                            <i class="fas fa-upload"></i>
+                            ${hasExisting ? changeText : uploadText}
+                            <input type="file" name="color_images[${color.id}]" accept="image/*" onchange="handleColorImageSelect(this, ${color.id})">
+                        </label>
+                    </div>
+                    <button type="button" class="color-image-remove-btn" onclick="removeColorImage(${color.id})">
+                        <i class="fas fa-trash-alt"></i> ${removeText}
+                    </button>
+                    <div class="color-image-filename" id="color_image_filename_${color.id}"></div>
+                    <label class="color-image-primary-label">
+                        <input type="checkbox" name="color_image_primary[${color.id}]" value="1" ${isPrimaryChecked}>
+                        ${primaryText}
+                    </label>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Handle color image selection
+function handleColorImageSelect(input, colorId) {
+    var file = input.files[0];
+    if (!file) return;
+
+    var card = $('[data-color-id="' + colorId + '"]');
+    var previewContainer = $('#color_image_preview_' + colorId);
+    var filenameDisplay = $('#color_image_filename_' + colorId);
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        alert('{{ app()->getLocale() == "ar" ? "يرجى اختيار ملف صورة" : "Please select an image file" }}');
+        input.value = '';
+        return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        alert('{{ app()->getLocale() == "ar" ? "حجم الملف كبير جداً (الحد الأقصى 5 ميجابايت)" : "File size too large (max 5MB)" }}');
+        input.value = '';
+        return;
+    }
+
+    // Store file reference
+    colorImagesData[colorId] = file;
+
+    // Show preview
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        previewContainer.html('<img src="' + e.target.result + '" alt="Preview">');
+        card.addClass('has-image');
+        filenameDisplay.text(file.name);
+    };
+    reader.readAsDataURL(file);
+}
+
+// Remove color image
+function removeColorImage(colorId) {
+    var card = $('[data-color-id="' + colorId + '"]');
+    var previewContainer = $('#color_image_preview_' + colorId);
+    var filenameDisplay = $('#color_image_filename_' + colorId);
+    var input = card.find('input[type="file"]');
+
+    // Clear file input
+    input.val('');
+
+    // Remove from data
+    delete colorImagesData[colorId];
+
+    // Mark for deletion if has existing image
+    if (existingColorImages[colorId]) {
+        // Add hidden input to mark for deletion
+        if (!$('#remove_color_image_' + colorId).length) {
+            card.append('<input type="hidden" id="remove_color_image_' + colorId + '" name="remove_color_images[]" value="' + colorId + '">');
+        }
+        delete existingColorImages[colorId];
+    }
+
+    // Reset preview
+    previewContainer.html('<i class="fas fa-image placeholder-icon"></i>');
+    card.removeClass('has-image');
+    filenameDisplay.text('');
+}
 
 // Remove gallery image function for new images
 function removeGalleryImage(imageId) {
@@ -1542,6 +1759,22 @@ function removeExistingGalleryImage(imagePath, button) {
     cursor: pointer;
 }
 
+.variant-checkbox-group .form-check {
+    align-items: flex-start;
+}
+
+.variant-checkbox-group .form-check-input {
+    flex: 0 0 auto;
+    margin-top: 0.2rem;
+}
+
+.variant-checkbox-group .form-check-label {
+    flex: 1;
+    min-width: 0;
+    white-space: normal !important;
+    word-break: break-word;
+}
+
 .color-circle-preview {
     display: inline-block;
     width: 20px;
@@ -1557,6 +1790,173 @@ function removeExistingGalleryImage(imagePath, button) {
 .stock-input-wrapper input {
     width: 100%;
     font-size: 13px;
+}
+
+/* Color Images Styles */
+.color-images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.color-image-card {
+    border: 2px dashed #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    background: #f9fafb;
+    transition: all 0.3s ease;
+}
+
+.color-image-card:hover {
+    border-color: #3b82f6;
+    background: #fff;
+}
+
+.color-image-card.has-image {
+    border-style: solid;
+    border-color: #10b981;
+    background: #f0fdf4;
+}
+
+.color-image-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.color-image-color-preview {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.color-image-name {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 14px;
+}
+
+.color-image-upload-area {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.color-image-preview-container {
+    width: 100px;
+    height: 100px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    flex-shrink: 0;
+}
+
+.color-image-preview-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.color-image-preview-container .placeholder-icon {
+    font-size: 32px;
+    color: #d1d5db;
+}
+
+.color-image-upload-controls {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.color-image-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.color-image-upload-btn:hover {
+    background: #2563eb;
+}
+
+.color-image-upload-btn input[type="file"] {
+    display: none;
+}
+
+.color-image-remove-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.color-image-remove-btn:hover {
+    background: #fecaca;
+}
+
+.color-image-filename {
+    font-size: 11px;
+    color: #6b7280;
+    word-break: break-all;
+}
+
+.color-image-primary-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #4b5563;
+    cursor: pointer;
+}
+
+.color-image-primary-label input {
+    margin: 0;
+}
+
+.existing-color-image {
+    margin-bottom: 8px;
+    padding: 8px;
+    background: #e0f2fe;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.existing-color-image img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.existing-color-image-info {
+    flex: 1;
+    font-size: 12px;
+    color: #0369a1;
 }
 </style>
 @endpush

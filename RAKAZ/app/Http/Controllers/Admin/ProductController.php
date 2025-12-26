@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\ProductColorImage;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -30,16 +33,24 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search');
-        $perPage = $request->get('per_page', 15);
+        $perPage = (int) $request->get('per_page', 15);
+        $allowedPerPage = [10, 15, 30, 50, 100];
+        if (!in_array($perPage, $allowedPerPage, true)) {
+            $perPage = 15;
+        }
         $categoryId = $request->get('category_id');
+        $brandId = $request->get('brand_id');
         $status = $request->get('status');
 
-        $products = Product::with(['category', 'productSizes', 'productShoeSizes', 'productColors'])
+        $products = Product::with(['category', 'brand', 'productSizes', 'productShoeSizes', 'productColors'])
             ->when($search, function($query) use ($search) {
                 $query->search($search);
             })
             ->when($categoryId, function($query) use ($categoryId) {
                 $query->where('category_id', $categoryId);
+            })
+            ->when($brandId, function($query) use ($brandId) {
+                $query->where('brand_id', $brandId);
             })
             ->when($status !== null, function($query) use ($status) {
                 if ($status === 'active') {
@@ -55,7 +66,7 @@ class ProductController extends Controller
             })
             ->orderBy('sort_order')
             ->orderBy('created_at', 'desc')
-            ->paginate(10)
+            ->paginate($perPage)
             ->withQueryString();
 
         $categories = Category::where('is_active', true)
@@ -63,7 +74,11 @@ class ProductController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        return view('admin.products.index', compact('products', 'categories', 'search'));
+        $brands = \App\Models\Brand::where('is_active', true)
+            ->orderBy('name_ar')
+            ->get();
+
+        return view('admin.products.index', compact('products', 'categories', 'brands', 'search'));
     }
 
     /**
@@ -73,6 +88,10 @@ class ProductController extends Controller
     {
         $categories = Category::where('is_active', true)
             ->orderBy('sort_order')
+            ->get();
+
+        $brands = \App\Models\Brand::where('is_active', true)
+            ->orderBy('name_ar')
             ->get();
 
         $sizes = \App\Models\Size::where('is_active', true)
@@ -87,7 +106,7 @@ class ProductController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        return view('admin.products.create', compact('categories', 'sizes', 'shoeSizes', 'colors'));
+        return view('admin.products.create', compact('categories', 'brands', 'sizes', 'shoeSizes', 'colors'));
     }
 
     /**
@@ -96,7 +115,7 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         try {
-            \Log::info('Product creation attempt', [
+            Log::info('Product creation attempt', [
                 'user_id' => auth()->id(),
                 'data' => $request->except(['main_image', 'gallery_images'])
             ]);
@@ -148,13 +167,13 @@ class ProductController extends Controller
             // Handle gallery images upload
             $galleryImages = [];
             if ($request->hasFile('gallery_images')) {
-                \Log::info('Gallery images received:', [
+                Log::info('Gallery images received:', [
                     'count' => count($request->file('gallery_images'))
                 ]);
                 foreach ($request->file('gallery_images') as $image) {
                     $galleryImages[] = $image->store('products/gallery', 'public');
                 }
-                \Log::info('Gallery images stored:', [
+                Log::info('Gallery images stored:', [
                     'count' => count($galleryImages),
                     'paths' => $galleryImages
                 ]);
@@ -236,9 +255,27 @@ class ProductController extends Controller
                     ];
                 }
                 $product->productColors()->sync($colorsData);
+
+                // Handle color-specific images
+                if ($request->hasFile('color_images')) {
+                    foreach ($request->file('color_images') as $colorId => $imageFile) {
+                        // Check if this color is selected
+                        if (in_array($colorId, $request->colors)) {
+                            $imagePath = $imageFile->store('products/colors', 'public');
+
+                            ProductColorImage::create([
+                                'product_id' => $product->id,
+                                'color_id' => $colorId,
+                                'image' => $imagePath,
+                                'is_primary' => isset($request->color_image_primary[$colorId]),
+                                'sort_order' => 0
+                            ]);
+                        }
+                    }
+                }
             }
 
-            \Log::info('Product created successfully', [
+            Log::info('Product created successfully', [
                 'product_id' => $product->id,
                 'user_id' => auth()->id()
             ]);
@@ -246,7 +283,7 @@ class ProductController extends Controller
             return redirect()->route('admin.products.index')
                 ->with('success', __('labels.products.created_successfully'));
         } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::warning('Product validation failed', [
+            Log::warning('Product validation failed', [
                 'errors' => $e->errors(),
                 'input' => $request->except(['main_image', 'gallery_images']),
                 'user_id' => auth()->id()
@@ -256,8 +293,8 @@ class ProductController extends Controller
                 ->withErrors($e->errors())
                 ->withInput()
                 ->with('error', 'يرجى التحقق من البيانات المدخلة');
-        } catch (\Exception $e) {
-            \Log::error('Product creation error', [
+        } catch (Exception $e) {
+            Log::error('Product creation error', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'input' => $request->except(['main_image', 'gallery_images']),
@@ -279,6 +316,10 @@ class ProductController extends Controller
             ->orderBy('sort_order')
             ->get();
 
+        $brands = \App\Models\Brand::where('is_active', true)
+            ->orderBy('name_ar')
+            ->get();
+
         $sizes = \App\Models\Size::where('is_active', true)
             ->orderBy('sort_order')
             ->get();
@@ -294,7 +335,7 @@ class ProductController extends Controller
         // Load existing relationships
         $product->load(['productSizes', 'productShoeSizes', 'productColors']);
 
-        return view('admin.products.edit', compact('product', 'categories', 'sizes', 'shoeSizes', 'colors'));
+        return view('admin.products.edit', compact('product', 'categories', 'brands', 'sizes', 'shoeSizes', 'colors'));
     }
 
     /**
@@ -303,7 +344,7 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         try {
-            \Log::info('Product update attempt', [
+            Log::info('Product update attempt', [
                 'product_id' => $product->id,
                 'user_id' => auth()->id(),
                 'data' => $request->except(['main_image', 'gallery_images'])
@@ -380,14 +421,14 @@ class ProductController extends Controller
 
             // Add new gallery images
             if ($request->hasFile('gallery_images')) {
-                \Log::info('Gallery images received for update:', [
+                Log::info('Gallery images received for update:', [
                     'count' => count($request->file('gallery_images')),
                     'existing_count' => count($galleryImages)
                 ]);
                 foreach ($request->file('gallery_images') as $image) {
                     $galleryImages[] = $image->store('products/gallery', 'public');
                 }
-                \Log::info('Gallery images after update:', [
+                Log::info('Gallery images after update:', [
                     'total_count' => count($galleryImages),
                     'paths' => $galleryImages
                 ]);
@@ -471,11 +512,66 @@ class ProductController extends Controller
                     ];
                 }
                 $product->productColors()->sync($colorsData);
+
+                // Handle color-specific images
+                if ($request->hasFile('color_images')) {
+                    foreach ($request->file('color_images') as $colorId => $imageFile) {
+                        // Check if this color is selected
+                        if (in_array($colorId, $request->colors)) {
+                            // Delete old image if exists
+                            $existingImage = ProductColorImage::where('product_id', $product->id)
+                                ->where('color_id', $colorId)
+                                ->first();
+
+                            if ($existingImage) {
+                                Storage::disk('public')->delete($existingImage->image);
+                                $existingImage->delete();
+                            }
+
+                            $imagePath = $imageFile->store('products/colors', 'public');
+
+                            ProductColorImage::create([
+                                'product_id' => $product->id,
+                                'color_id' => $colorId,
+                                'image' => $imagePath,
+                                'is_primary' => isset($request->color_image_primary[$colorId]),
+                                'sort_order' => 0
+                            ]);
+                        }
+                    }
+                }
+
+                // Handle manually removed color images
+                if ($request->has('remove_color_images')) {
+                    foreach ($request->remove_color_images as $colorId) {
+                        $imgToRemove = ProductColorImage::where('product_id', $product->id)
+                            ->where('color_id', $colorId)
+                            ->first();
+                        if ($imgToRemove) {
+                            Storage::disk('public')->delete($imgToRemove->image);
+                            $imgToRemove->delete();
+                        }
+                    }
+                }
+
+                // Delete color images for unselected colors
+                ProductColorImage::where('product_id', $product->id)
+                    ->whereNotIn('color_id', $request->colors)
+                    ->get()
+                    ->each(function ($img) {
+                        Storage::disk('public')->delete($img->image);
+                        $img->delete();
+                    });
             } else {
+                // Delete all color images if no colors selected
+                $product->colorImages()->get()->each(function ($img) {
+                    Storage::disk('public')->delete($img->image);
+                    $img->delete();
+                });
                 $product->productColors()->detach();
             }
 
-            \Log::info('Product updated successfully', [
+            Log::info('Product updated successfully', [
                 'product_id' => $product->id,
                 'user_id' => auth()->id()
             ]);
@@ -483,7 +579,7 @@ class ProductController extends Controller
             return redirect()->route('admin.products.index')
                 ->with('success', __('labels.products.updated_successfully'));
         } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::warning('Product update validation failed', [
+            Log::warning('Product update validation failed', [
                 'product_id' => $product->id,
                 'errors' => $e->errors(),
                 'input' => $request->except(['main_image', 'gallery_images']),
@@ -494,8 +590,8 @@ class ProductController extends Controller
                 ->withErrors($e->errors())
                 ->withInput()
                 ->with('error', app()->getLocale() == 'ar' ? 'يرجى التحقق من البيانات المدخلة' : 'Please check the entered data');
-        } catch (\Exception $e) {
-            \Log::error('Product update error', [
+        } catch (Exception $e) {
+            Log::error('Product update error', [
                 'product_id' => $product->id,
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),

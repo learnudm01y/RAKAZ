@@ -23,6 +23,13 @@ class User extends Authenticatable
         'phone',
         'password',
         'role',
+        'is_admin',
+        'email_verified_at',
+        'address',
+        'city',
+        'state',
+        'country',
+        'postal_code',
     ];
 
     /**
@@ -43,5 +50,30 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'is_admin' => 'boolean',
     ];
+
+    /**
+     * Relationship: User has many orders
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Relationship: User has many wishlists
+     */
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
+    /**
+     * Relationship: User has many carts
+     */
+    public function carts()
+    {
+        return $this->hasMany(Cart::class);
+    }
 }

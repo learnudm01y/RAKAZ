@@ -51,12 +51,21 @@
     }
 
     .shoe-sizes-table th {
-        background: var(--hover-bg);
-        padding: 1rem;
-        text-align: left;
+        background: #1a1a1a;
+        color: white;
+        padding: 16px 20px;
         font-weight: 600;
-        color: var(--text-color);
-        border-bottom: 2px solid var(--border-color);
+        border-bottom: 3px solid #000;
+        text-transform: none;
+        letter-spacing: 0.3px;
+        font-size: 14px;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .shoe-sizes-table th svg {
+        margin-inline-end: 8px;
+        vertical-align: middle;
     }
 
     [dir="rtl"] .shoe-sizes-table th {
@@ -261,13 +270,48 @@
     <table class="shoe-sizes-table">
         <thead>
             <tr>
-                <th><span class="ar-text">المقاس</span><span class="en-text">Size (EU)</span></th>
-                <th><span class="ar-text">الاسم بالعربية</span><span class="en-text">Arabic Name</span></th>
-                <th><span class="ar-text">الاسم بالإنجليزية</span><span class="en-text">English Name</span></th>
-                <th><span class="ar-text">الترتيب</span><span class="en-text">Sort Order</span></th>
-                <th><span class="ar-text">عدد المنتجات</span><span class="en-text">Products</span></th>
-                <th><span class="ar-text">الحالة</span><span class="en-text">Status</span></th>
-                <th><span class="ar-text">الإجراءات</span><span class="en-text">Actions</span></th>
+                <th>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                    <span class="ar-text">المقاس</span><span class="en-text">Size (EU)</span>
+                </th>
+                <th>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                    </svg>
+                    <span class="ar-text">الاسم بالعربية</span><span class="en-text">Arabic Name</span>
+                </th>
+                <th>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                    </svg>
+                    <span class="ar-text">الاسم بالإنجليزية</span><span class="en-text">English Name</span>
+                </th>
+                <th>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                    </svg>
+                    <span class="ar-text">الترتيب</span><span class="en-text">Sort Order</span>
+                </th>
+                <th>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                    </svg>
+                    <span class="ar-text">عدد المنتجات</span><span class="en-text">Products</span>
+                </th>
+                <th>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="ar-text">الحالة</span><span class="en-text">Status</span>
+                </th>
+                <th>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                    </svg>
+                    <span class="ar-text">الإجراءات</span><span class="en-text">Actions</span>
+                </th>
             </tr>
         </thead>
         <tbody>

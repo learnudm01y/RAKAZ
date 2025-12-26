@@ -14,15 +14,57 @@ class ContactMessageController extends Controller
     {
         $query = ContactMessage::orderBy('created_at', 'desc');
 
+        $search = trim((string) $request->get('search', ''));
+        if ($search !== '') {
+            $like = '%' . $search . '%';
+            $terms = preg_split('/\s+/', $search, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+            $query->where(function ($q) use ($like, $terms) {
+                $q->where('first_name', 'like', $like)
+                    ->orWhere('last_name', 'like', $like)
+                    ->orWhere('email', 'like', $like);
+
+                if (count($terms) >= 2) {
+                    $first = $terms[0];
+                    $last = $terms[count($terms) - 1];
+                    $q->orWhere(function ($qq) use ($first, $last) {
+                        $qq->where('first_name', 'like', '%' . $first . '%')
+                            ->where('last_name', 'like', '%' . $last . '%');
+                    })->orWhere(function ($qq) use ($first, $last) {
+                        $qq->where('first_name', 'like', '%' . $last . '%')
+                            ->where('last_name', 'like', '%' . $first . '%');
+                    });
+                }
+            });
+        }
+
         // Filter by status if provided
         if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
 
-        $messages = $query->paginate(20);
-        $newCount = ContactMessage::where('status', 'new')->count();
+        $messages = $query->paginate(20)->withQueryString();
 
-        return view('admin.customers.messages.index', compact('messages', 'newCount'));
+        // Global stats (independent of pagination and the current filter)
+        $statusCounts = ContactMessage::query()
+            ->selectRaw('status, COUNT(*) as aggregate')
+            ->groupBy('status')
+            ->pluck('aggregate', 'status')
+            ->map(fn ($v) => (int) $v)
+            ->all();
+
+        $newCount = $statusCounts['new'] ?? 0;
+        $readCount = $statusCounts['read'] ?? 0;
+        $repliedCount = $statusCounts['replied'] ?? 0;
+        $archivedCount = $statusCounts['archived'] ?? 0;
+
+        return view('admin.customers.messages.index', compact(
+            'messages',
+            'newCount',
+            'readCount',
+            'repliedCount',
+            'archivedCount'
+        ));
     }
 
     public function show($id)

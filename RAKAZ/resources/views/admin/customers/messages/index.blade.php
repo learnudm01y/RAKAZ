@@ -2,6 +2,28 @@
 
 @section('title', app()->getLocale() == 'ar' ? 'رسائل العملاء' : 'Customer Messages')
 
+@push('styles')
+<style>
+    .messages-table thead th {
+        background: #1a1a1a !important;
+        color: white !important;
+        padding: 16px 20px !important;
+        font-weight: 600 !important;
+        border-bottom: 3px solid #000 !important;
+        text-transform: none !important;
+        letter-spacing: 0.3px !important;
+        font-size: 14px !important;
+        white-space: nowrap !important;
+        vertical-align: middle !important;
+    }
+
+    .messages-table thead th svg {
+        margin-inline-end: 8px;
+        vertical-align: middle;
+    }
+</style>
+@endpush
+
 @section('content')
 <style>
     .messages-page {
@@ -32,9 +54,24 @@
     }
 
     .header-controls {
-        display: flex;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(170px, 220px);
         gap: 12px;
         align-items: center;
+        min-width: 0;
+        flex: 1 1 900px;
+        width: 100%;
+        max-width: 1400px;
+    }
+
+    .search-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        width: 100%;
+        max-width: none;
+        flex-wrap: nowrap;
     }
 
     .stats-cards {
@@ -136,7 +173,92 @@
         color: #4a5568;
         cursor: pointer;
         transition: all 0.2s;
-        min-width: 180px;
+        min-width: 160px;
+    }
+
+    /* The status filter is upgraded by JS into .custom-select-wrapper.
+       Force it to stay compact and not take the full row width. */
+    .header-controls .custom-select-wrapper {
+        justify-self: end;
+        width: 210px !important;
+        min-width: 170px;
+        max-width: 240px;
+        flex: 0 0 auto;
+    }
+
+    .header-controls .custom-select-trigger {
+        height: 46px;
+        display: flex;
+        align-items: center;
+    }
+
+    .header-controls .custom-select-options {
+        width: 100% !important;
+        max-width: 240px;
+    }
+
+    .search-input {
+        padding: 12px 18px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        background: white;
+        font-size: 15px;
+        color: #4a5568;
+        transition: all 0.2s;
+        min-width: 0;
+        width: 100%;
+        height: 46px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        flex: 1 1 auto;
+    }
+
+    /* Stack filters only on narrow screens */
+    @media (max-width: 720px) {
+        .header-controls {
+            grid-template-columns: 1fr;
+        }
+
+        .header-controls .custom-select-wrapper {
+            justify-self: stretch;
+            width: 100% !important;
+            max-width: none;
+        }
+
+        .header-controls .custom-select-options {
+            max-width: none;
+        }
+    }
+
+    .search-input:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #3182ce;
+        box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.12);
+    }
+
+    .search-btn {
+        padding: 10px 14px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: white;
+        font-size: 14px;
+        color: #1a202c;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 42px;
+        flex-shrink: 0;
+    }
+
+    .search-btn:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
     }
 
     .filter-select:focus {
@@ -156,21 +278,6 @@
     .messages-table {
         width: 100%;
         border-collapse: collapse;
-    }
-
-    .messages-table thead {
-        background: #f7fafc;
-        border-bottom: 2px solid #e2e8f0;
-    }
-
-    .messages-table th {
-        padding: 16px 20px;
-        text-align: start;
-        font-size: 13px;
-        font-weight: 600;
-        color: #4a5568;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
     }
 
     .messages-table tbody tr {
@@ -330,10 +437,128 @@
     }
 
     .pagination-wrapper {
-        padding: 20px;
-        border-top: 1px solid #e2e8f0;
         display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        background: white;
+        border-top: 2px solid #f0f0f0;
+        margin-top: 0;
+    }
+
+    [dir="rtl"] .pagination-wrapper {
+        flex-direction: row;
+    }
+
+    .pagination-wrapper .pagination-info {
+        color: #6b7280;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    html[lang="ar"] .en-text,
+    html[data-locale="ar"] .en-text,
+    [dir="rtl"] .en-text {
+        display: none !important;
+    }
+
+    html[lang="en"] .ar-text,
+    html[data-locale="en"] .ar-text,
+    [dir="ltr"] .ar-text {
+        display: none !important;
+    }
+
+    .pagination-links {
+        display: flex;
+        align-items: center;
+    }
+
+    .pagination-links nav > div:first-child {
+        display: none !important;
+    }
+
+    .pagination-links nav {
+        display: block !important;
+    }
+
+    .pagination-links .d-none.flex-sm-fill div:first-child,
+    .pagination-links .small.text-muted,
+    .pagination-links p.small {
+        display: none !important;
+    }
+
+    .pagination-links nav.d-flex {
+        display: flex !important;
+        justify-content: flex-end !important;
+    }
+
+    .pagination-links nav.d-flex > div:last-child {
+        display: flex !important;
+    }
+
+    .pagination-wrapper .pagination {
+        display: flex;
+        gap: 6px;
+        margin: 0;
+        list-style: none;
+        padding: 0;
+    }
+
+    [dir="rtl"] .pagination-wrapper .pagination {
+        flex-direction: row-reverse;
+    }
+
+    .pagination .page-item {
+        margin: 0;
+    }
+
+    .pagination-wrapper .page-link {
+        padding: 8px 14px;
+        border: 2px solid #e5e7eb;
+        background: white;
+        color: #374151;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 14px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        min-width: 40px;
+        text-align: center;
+        display: flex;
+        align-items: center;
         justify-content: center;
+    }
+
+    .pagination .page-link:hover {
+        background: #1a1a1a;
+        border-color: #1a1a1a;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .pagination .page-item.active .page-link {
+        background: #1a1a1a;
+        border-color: #1a1a1a;
+        color: white;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(26, 26, 26, 0.2);
+    }
+
+    .pagination .page-item.disabled .page-link {
+        background: #f9fafb;
+        border-color: #e5e7eb;
+        color: #9ca3af;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .pagination .page-item.disabled .page-link:hover {
+        background: #f9fafb;
+        border-color: #e5e7eb;
+        color: #9ca3af;
+        transform: none;
+        box-shadow: none;
     }
 
     /* Modal Styles */
@@ -698,7 +923,7 @@
     }
 
     /* Responsive */
-    @media (max-width: 768px) {
+    @media (max-width: 540px) {
         .messages-header {
             flex-direction: column;
             align-items: stretch;
@@ -730,30 +955,33 @@
             <span class="ar-text">رسائل العملاء</span>
             <span class="en-text">Customer Messages</span>
         </h1>
-        <div class="header-controls">
-            <select id="statusFilter" class="filter-select">
-                <option value="">
-                    <span class="ar-text">جميع الحالات</span>
-                    <span class="en-text">All Status</span>
+        <form class="header-controls" method="GET" action="{{ route('admin.customers.messages.index') }}" id="messagesFiltersForm">
+            <div class="search-group">
+                <input
+                    type="text"
+                    name="search"
+                    class="search-input"
+                    value="{{ request('search') }}"
+                    placeholder="{{ app()->getLocale() == 'ar' ? 'ابحث بالاسم أو الإيميل...' : 'Search by name or email...' }}"
+                />
+
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-search"></i>
+                    <span class="ar-text">بحث</span>
+                    <span class="en-text">Search</span>
+                </button>
+            </div>
+
+            <select id="statusFilter" name="status" class="filter-select">
+                <option value="" {{ request('status') === null || request('status') === '' ? 'selected' : '' }}>
+                    {{ app()->getLocale() == 'ar' ? 'جميع الحالات' : 'All Status' }}
                 </option>
-                <option value="new">
-                    <span class="ar-text">🔵 جديد</span>
-                    <span class="en-text">🔵 New</span>
-                </option>
-                <option value="read">
-                    <span class="ar-text">✅ مقروء</span>
-                    <span class="en-text">✅ Read</span>
-                </option>
-                <option value="replied">
-                    <span class="ar-text">💬 تم الرد</span>
-                    <span class="en-text">💬 Replied</span>
-                </option>
-                <option value="archived">
-                    <span class="ar-text">📦 مؤرشف</span>
-                    <span class="en-text">📦 Archived</span>
-                </option>
+                <option value="new" {{ request('status') === 'new' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? '🔵 جديد' : '🔵 New' }}</option>
+                <option value="read" {{ request('status') === 'read' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? '✅ مقروء' : '✅ Read' }}</option>
+                <option value="replied" {{ request('status') === 'replied' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? '💬 تم الرد' : '💬 Replied' }}</option>
+                <option value="archived" {{ request('status') === 'archived' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? '📦 مؤرشف' : '📦 Archived' }}</option>
             </select>
-        </div>
+        </form>
     </div>
 
     <div class="stats-cards">
@@ -769,7 +997,7 @@
                     </div>
                 </div>
             </div>
-            <div class="stat-card-value">{{ $messages->where('status', 'new')->count() }}</div>
+            <div class="stat-card-value">{{ $newCount ?? 0 }}</div>
         </div>
 
         <div class="stat-card read">
@@ -784,7 +1012,7 @@
                     </div>
                 </div>
             </div>
-            <div class="stat-card-value">{{ $messages->where('status', 'read')->count() }}</div>
+            <div class="stat-card-value">{{ $readCount ?? 0 }}</div>
         </div>
 
         <div class="stat-card replied">
@@ -799,7 +1027,7 @@
                     </div>
                 </div>
             </div>
-            <div class="stat-card-value">{{ $messages->where('status', 'replied')->count() }}</div>
+            <div class="stat-card-value">{{ $repliedCount ?? 0 }}</div>
         </div>
 
         <div class="stat-card archived">
@@ -814,7 +1042,7 @@
                     </div>
                 </div>
             </div>
-            <div class="stat-card-value">{{ $messages->where('status', 'archived')->count() }}</div>
+            <div class="stat-card-value">{{ $archivedCount ?? 0 }}</div>
         </div>
     </div>
 
@@ -824,30 +1052,51 @@
                 <thead>
                     <tr>
                         <th>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                            </svg>
                             <span class="ar-text">رقم</span>
                             <span class="en-text">ID</span>
                         </th>
                         <th>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
                             <span class="ar-text">الاسم</span>
                             <span class="en-text">Name</span>
                         </th>
                         <th>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
                             <span class="ar-text">البريد الإلكتروني</span>
                             <span class="en-text">Email</span>
                         </th>
                         <th>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            </svg>
                             <span class="ar-text">الموضوع</span>
                             <span class="en-text">Subject</span>
                         </th>
                         <th>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
                             <span class="ar-text">الحالة</span>
                             <span class="en-text">Status</span>
                         </th>
                         <th>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
                             <span class="ar-text">التاريخ</span>
                             <span class="en-text">Date</span>
                         </th>
                         <th>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                            </svg>
                             <span class="ar-text">الإجراءات</span>
                             <span class="en-text">Actions</span>
                         </th>
@@ -897,7 +1146,13 @@
             </table>
 
             <div class="pagination-wrapper">
-                {{ $messages->links() }}
+                <div class="pagination-info">
+                    <span class="ar-text">عرض {{ $messages->firstItem() }} إلى {{ $messages->lastItem() }} من إجمالي {{ $messages->total() }} رسالة</span>
+                    <span class="en-text">Showing {{ $messages->firstItem() }} to {{ $messages->lastItem() }} of {{ $messages->total() }} total messages</span>
+                </div>
+                <div class="pagination-links">
+                    {{ $messages->onEachSide(1)->links('pagination::bootstrap-5') }}
+                </div>
             </div>
         @else
         <div class="empty-state">
@@ -1381,18 +1636,10 @@ $(document).ready(function() {
         });
     });
 
-    // Filter by status
+    // Filter by status (keep search + other params via GET form)
     $('#statusFilter').change(function() {
-        const status = $(this).val();
-        window.location.href = status ? `?status=${status}` : '{{ route("admin.customers.messages.index") }}';
+        $('#messagesFiltersForm').submit();
     });
-
-    // Set current filter
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentStatus = urlParams.get('status');
-    if (currentStatus) {
-        $('#statusFilter').val(currentStatus);
-    }
 });
 </script>
 @endpush

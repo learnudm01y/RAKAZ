@@ -114,7 +114,6 @@
 .toggle-password {
     position: absolute;
     top: 50%;
-    right: 18px;
     transform: translateY(-50%);
     background: none;
     border: none;
@@ -123,6 +122,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* RTL - Arabic: Eye on LEFT side */
+[dir="rtl"] .toggle-password {
+    left: 18px;
+    right: auto;
+}
+
+/* LTR - English: Eye on RIGHT side */
+[dir="ltr"] .toggle-password {
+    right: 18px;
+    left: auto;
 }
 
 .toggle-password svg,
@@ -170,11 +181,35 @@
 }
 
 .checkbox-label input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     cursor: pointer;
     margin-top: 2px;
     flex-shrink: 0;
+    border: 2.5px solid #000000 !important;
+    border-radius: 4px;
+    accent-color: #000000;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: white;
+    position: relative;
+}
+
+.checkbox-label input[type="checkbox"]:checked {
+    background-color: #000000 !important;
+    border-color: #000000 !important;
+}
+
+.checkbox-label input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .checkbox-label span {

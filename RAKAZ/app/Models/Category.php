@@ -44,6 +44,14 @@ class Category extends Model
     }
 
     /**
+     * Get all products in this category.
+     */
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    /**
      * Get all descendants (children, grandchildren, etc.)
      */
     public function descendants()
@@ -81,7 +89,11 @@ class Category extends Model
     public function getName($locale = null)
     {
         $locale = $locale ?? app()->getLocale();
-        return $this->name[$locale] ?? $this->name['ar'] ?? '';
+        if ($locale === 'ar') {
+            return $this->name['ar'] ?? $this->name['en'] ?? '';
+        }
+
+        return $this->name[$locale] ?? $this->name['en'] ?? '';
     }
 
     /**
@@ -90,7 +102,11 @@ class Category extends Model
     public function getSlug($locale = null)
     {
         $locale = $locale ?? app()->getLocale();
-        return $this->slug[$locale] ?? $this->slug['ar'] ?? '';
+        if ($locale === 'ar') {
+            return $this->slug['ar'] ?? $this->slug['en'] ?? '';
+        }
+
+        return $this->slug[$locale] ?? $this->slug['en'] ?? '';
     }
 
     /**
@@ -99,7 +115,11 @@ class Category extends Model
     public function getDescription($locale = null)
     {
         $locale = $locale ?? app()->getLocale();
-        return $this->description[$locale] ?? $this->description['ar'] ?? '';
+        if ($locale === 'ar') {
+            return $this->description['ar'] ?? $this->description['en'] ?? '';
+        }
+
+        return $this->description[$locale] ?? $this->description['en'] ?? '';
     }
 
     /**

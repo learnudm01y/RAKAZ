@@ -4,13 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', app()->getLocale() == 'ar' ? 'لوحة التحكم' : 'Dashboard') - Rakaz Dashboard</title>
+    <title>@yield('title', __('admin.dashboard')) - Rakaz Dashboard</title>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Toastr CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
@@ -23,11 +26,9 @@
 
     <!-- Base Styles -->
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
+
+        body { margin: 0; }
 
         :root {
             --primary-color: #3182ce;
@@ -48,6 +49,12 @@
             background: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
+        }
+
+        /* Fix for modal close button alignment */
+        .modal-header .btn-close {
+            padding: calc(var(--bs-modal-header-padding-y) * .5) calc(var(--bs-modal-header-padding-x) * .5);
+            margin: 0;
         }
 
         /* Language Support - Based on data-locale attribute */
@@ -92,26 +99,40 @@
         .sidebar.collapsed .sidebar-logo span,
         .sidebar.collapsed .menu-title,
         .sidebar.collapsed .menu-item span,
-        .sidebar.collapsed .dropdown-icon {
+        .sidebar.collapsed .sidebar-dropdown-icon {
             display: none;
         }
 
         .sidebar.collapsed .menu-item {
             justify-content: center;
+            align-items: center;
             padding: 0.75rem;
+            gap: 0;
         }
 
-        .sidebar.collapsed .dropdown-menu {
+        .sidebar.collapsed .menu-item svg {
+            margin: 0;
+        }
+
+        .sidebar.collapsed .sidebar-dropdown-menu {
             display: none;
+        }
+
+        .sidebar.collapsed .menu-dropdown .menu-item {
+            justify-content: center;
+            align-items: center;
         }
 
         .sidebar.collapsed .sidebar-header {
             justify-content: center;
+            align-items: center;
             padding: 1rem;
         }
 
         .sidebar.collapsed .sidebar-toggle-btn {
             margin: 0;
+            position: static;
+            transform: none;
         }
 
         .sidebar-header {
@@ -158,11 +179,6 @@
 
         [dir="ltr"] .sidebar-toggle-btn {
             right: 1.5rem;
-        }
-
-        .sidebar.collapsed .sidebar-toggle-btn {
-            position: static;
-            transform: none;
         }
 
         .sidebar-toggle-btn:hover {
@@ -219,42 +235,71 @@
             flex-shrink: 0;
         }
 
-        /* Dropdown Menu Styles */
+        /* Sidebar Dropdown Menu Styles */
         .menu-dropdown {
             position: relative;
         }
 
-        .dropdown-toggle {
+        .sidebar-dropdown-toggle {
             cursor: pointer;
             position: relative;
+            display: grid !important;
+            grid-template-columns: 24px 1fr 20px;
+            align-items: center;
+            gap: 12px;
+            padding-left: 12px !important;
+            padding-right: 12px !important;
         }
 
-        .dropdown-icon {
-            margin-left: auto;
+        .sidebar.collapsed .sidebar-dropdown-toggle {
+            display: flex !important;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+            padding: 0.75rem !important;
+        }
+
+        .sidebar-dropdown-toggle > svg:first-child {
+            grid-column: 1;
+            width: 24px;
+            height: 24px;
+        }
+
+        .sidebar-dropdown-toggle > span {
+            grid-column: 2;
+            text-align: right;
+        }
+
+        [dir="ltr"] .sidebar-dropdown-toggle > span {
+            text-align: left;
+        }
+
+        .sidebar-dropdown-icon {
+            grid-column: 3;
             transition: transform 0.3s ease;
             width: 12px;
             height: 12px;
+            flex-shrink: 0;
             transform: rotate(-90deg);
+            justify-self: end;
         }
 
-        [dir="rtl"] .dropdown-icon {
-            margin-left: 0;
-            margin-right: auto;
+        [dir="rtl"] .sidebar-dropdown-icon {
             transform: rotate(90deg);
         }
 
-        .dropdown-toggle.active .dropdown-icon {
+        .sidebar-dropdown-toggle.active .sidebar-dropdown-icon {
             transform: rotate(0deg);
         }
 
-        .dropdown-menu {
+        .sidebar-dropdown-menu {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.3s ease;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgb(0 0 0 / 60%);
         }
 
-        .dropdown-menu.show {
+        .sidebar-dropdown-menu.show {
             max-height: 500px;
         }
 
@@ -706,7 +751,12 @@
                         </svg>
                     </button>
                     <h1 style="font-size: 1.25rem; font-weight: 600;">
-                        @yield('page-title', 'لوحة التحكم')
+                        @hasSection('page-title')
+                            @yield('page-title')
+                        @else
+                            <span class="ar-text">لوحة التحكم</span>
+                            <span class="en-text">Dashboard</span>
+                        @endif
                     </h1>
                 </div>
 
@@ -790,11 +840,11 @@
             const dropdown = element.nextElementSibling;
             const isOpen = dropdown.classList.contains('show');
 
-            // Close all dropdowns
-            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            // Close all sidebar dropdowns
+            document.querySelectorAll('.sidebar-dropdown-menu').forEach(menu => {
                 menu.classList.remove('show');
             });
-            document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            document.querySelectorAll('.sidebar-dropdown-toggle').forEach(toggle => {
                 toggle.classList.remove('active');
             });
 
@@ -870,8 +920,8 @@
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- Bootstrap JS (if needed for modals) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

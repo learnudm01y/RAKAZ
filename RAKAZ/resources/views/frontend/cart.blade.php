@@ -399,37 +399,33 @@
     <!-- Cart Content -->
     <div class="cart-container">
         <div class="cart-header">
-            <h1 class="cart-title">سلة التسوق</h1>
-            <p class="cart-count">
-                @if($cartItems && count($cartItems) > 0)
-                    لديك {{ count($cartItems) }} {{ count($cartItems) == 1 ? 'منتج' : 'منتجات' }} في سلة التسوق
-                @else
-                    السلة فارغة
-                @endif
-            </p>
-            <div class="wishlist-actions">
-                <a href="{{ route('wishlist') }}" class="wishlist-action-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
-                    المفضلة
-                </a>
-                <a href="{{ route('orders.index') }}" class="wishlist-action-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                        <line x1="1" y1="10" x2="23" y2="10"></line>
-                    </svg>
-                    طلباتي
-                </a>
-                <a href="{{ route('cart.index') }}" class="wishlist-action-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="9" cy="21" r="1"></circle>
-                        <circle cx="20" cy="21" r="1"></circle>
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                    </svg>
-                    السلة
-                </a>
-            </div>
+            @php
+                $isAr = app()->getLocale() == 'ar';
+                $currencyLabel = $isAr ? 'د.إ' : 'AED';
+                $sanitizeText = function ($value) use ($isAr) {
+                    if ($isAr) {
+                        return $value;
+                    }
+                    if (!is_string($value)) {
+                        return $value;
+                    }
+
+                    return preg_match('/[\x{0600}-\x{06FF}]/u', $value) ? '' : $value;
+                };
+                $cartCount = $cartItems ? count($cartItems) : 0;
+                $cartSubtitle = $cartCount > 0
+                    ? (
+                        $isAr
+                            ? ('لديك ' . $cartCount . ' ' . ($cartCount === 1 ? 'منتج' : 'منتجات') . ' في سلة التسوق')
+                            : ('You have ' . $cartCount . ' ' . ($cartCount === 1 ? 'item' : 'items') . ' in your cart')
+                    )
+                    : ($isAr ? 'السلة فارغة' : 'Your cart is empty');
+            @endphp
+
+            <x-account-nav-header
+                :title="($isAr ? 'سلة التسوق' : 'Shopping Cart') . ' (' . $cartCount . ')'"
+                :subtitle="$cartSubtitle"
+            />
         </div>
 
         @if($cartItems && count($cartItems) > 0)
@@ -452,32 +448,46 @@
 
                         // Get product name (handle if it's array or string)
                         $productName = is_array($product->name)
-                            ? ($product->name[app()->getLocale()] ?? $product->name['ar'] ?? $product->name['en'] ?? 'منتج')
+                            ? (
+                                $isAr
+                                    ? ($product->name['ar'] ?? $product->name['en'] ?? 'منتج')
+                                    : ($product->name['en'] ?? 'Product')
+                            )
                             : $product->name;
+
+                        if (!$isAr && is_string($productName) && preg_match('/[\x{0600}-\x{06FF}]/u', $productName)) {
+                            $productName = 'Product';
+                        }
                     @endphp
 
                     <img src="{{ $mainImage }}" alt="{{ $productName }}" class="cart-item-image">
                     <div class="cart-item-details">
-                        <div class="cart-item-brand">{{ $product->brand ?? 'ركاز' }}</div>
+                        <div class="cart-item-brand">{{ $product->brand ?? ($isAr ? 'ركاز' : 'Rakaz') }}</div>
                         <div class="cart-item-name">{{ $productName }}</div>
                         <div class="cart-item-specs">
                             @if($item->size)
-                                <span class="cart-item-spec">المقاس: {{ $item->size }}</span>
+                                <span class="cart-item-spec">{{ $isAr ? 'المقاس:' : 'Size:' }} {{ $item->size }}</span>
                             @endif
                             @if($item->shoe_size)
-                                <span class="cart-item-spec">مقاس الحذاء: {{ $item->shoe_size }}</span>
+                                <span class="cart-item-spec">{{ $isAr ? 'مقاس الحذاء:' : 'Shoe size:' }} {{ $item->shoe_size }}</span>
                             @endif
                             @if($item->color)
-                                <span class="cart-item-spec">اللون: {{ $item->color }}</span>
+                                @php $colorText = $sanitizeText($item->color); @endphp
+                                @if($colorText !== '')
+                                    <span class="cart-item-spec">{{ $isAr ? 'اللون:' : 'Color:' }} {{ $colorText }}</span>
+                                @endif
                             @endif
                             @if($product->fabric)
-                                <span class="cart-item-spec">القماش: {{ $product->fabric }}</span>
+                                @php $fabricText = $sanitizeText($product->fabric); @endphp
+                                @if($fabricText !== '')
+                                    <span class="cart-item-spec">{{ $isAr ? 'القماش:' : 'Fabric:' }} {{ $fabricText }}</span>
+                                @endif
                             @endif
                         </div>
-                        <div class="cart-item-price">{{ number_format($item->price, 0) }} د.إ</div>
+                        <div class="cart-item-price">{{ number_format($item->price, 0) }} {{ $currencyLabel }}</div>
                     </div>
                     <div class="cart-item-actions">
-                        <button class="remove-item-btn" data-cart-id="{{ $item->id }}" title="إزالة من السلة">
+                        <button class="remove-item-btn" data-cart-id="{{ $item->id }}" title="{{ $isAr ? 'إزالة من السلة' : 'Remove from cart' }}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
                             </svg>
@@ -494,31 +504,31 @@
 
             <!-- Cart Summary -->
             <div class="cart-summary">
-                <h3 class="summary-title">ملخص الطلب</h3>
+                <h3 class="summary-title">{{ $isAr ? 'ملخص الطلب' : 'Order Summary' }}</h3>
                 <div class="summary-row">
-                    <span>المجموع الفرعي</span>
-                    <span id="subtotal">{{ number_format($cartTotal, 2) }} د.إ</span>
+                    <span>{{ $isAr ? 'المجموع الفرعي' : 'Subtotal' }}</span>
+                    <span id="subtotal">{{ number_format($cartTotal, 2) }} {{ $currencyLabel }}</span>
                 </div>
                 <div class="summary-row">
-                    <span>الشحن</span>
-                    <span>مجاني</span>
+                    <span>{{ $isAr ? 'الشحن' : 'Shipping' }}</span>
+                    <span>{{ $isAr ? 'مجاني' : 'Free' }}</span>
                 </div>
                 <div class="summary-row">
-                    <span>الضريبة (5%)</span>
-                    <span id="tax">{{ number_format($cartTotal * 0.05, 2) }} د.إ</span>
+                    <span>{{ $isAr ? 'الضريبة (5%)' : 'Tax (5%)' }}</span>
+                    <span id="tax">{{ number_format($cartTotal * 0.05, 2) }} {{ $currencyLabel }}</span>
                 </div>
                 <div class="summary-total">
-                    <span>المجموع الكلي</span>
-                    <span id="total">{{ number_format($cartTotal * 1.05, 2) }} د.إ</span>
+                    <span>{{ $isAr ? 'المجموع الكلي' : 'Total' }}</span>
+                    <span id="total">{{ number_format($cartTotal * 1.05, 2) }} {{ $currencyLabel }}</span>
                 </div>
-                <button class="checkout-btn" onclick="window.location.href='{{ route('checkout.index') }}'">إتمام الطلب</button>
-                <a href="{{ route('home') }}" class="continue-shopping">متابعة التسوق</a>
+                <button class="checkout-btn" onclick="window.location.href='{{ route('checkout.index') }}'">{{ $isAr ? 'إتمام الطلب' : 'Checkout' }}</button>
+                <a href="{{ route('home') }}" class="continue-shopping">{{ $isAr ? 'متابعة التسوق' : 'Continue shopping' }}</a>
 
                 <div class="promo-code">
-                    <div class="promo-code-title">هل لديك كود خصم؟</div>
+                    <div class="promo-code-title">{{ $isAr ? 'هل لديك كود خصم؟' : 'Have a promo code?' }}</div>
                     <div class="promo-code-input">
-                        <input type="text" placeholder="أدخل الكود" id="promoCodeInput">
-                        <button onclick="applyPromoCode()">تطبيق</button>
+                        <input type="text" placeholder="{{ $isAr ? 'أدخل الكود' : 'Enter code' }}" id="promoCodeInput">
+                        <button onclick="applyPromoCode()">{{ $isAr ? 'تطبيق' : 'Apply' }}</button>
                     </div>
                 </div>
             </div>
@@ -531,9 +541,9 @@
                 <circle cx="20" cy="21" r="1"></circle>
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
             </svg>
-            <h2 style="font-size: 28px; color: #333; margin-bottom: 15px;">سلة التسوق فارغة</h2>
-            <p style="color: #666; margin-bottom: 30px;">لم تقم بإضافة أي منتجات إلى سلة التسوق بعد</p>
-            <a href="{{ route('shop') }}" class="checkout-btn" style="display: inline-block; width: auto; min-width: 200px; text-decoration: none;">تصفح المنتجات</a>
+            <h2 style="font-size: 28px; color: #333; margin-bottom: 15px;">{{ $isAr ? 'سلة التسوق فارغة' : 'Your cart is empty' }}</h2>
+            <p style="color: #666; margin-bottom: 30px;">{{ $isAr ? 'لم تقم بإضافة أي منتجات إلى سلة التسوق بعد' : "You haven't added any items to your cart yet." }}</p>
+            <a href="{{ route('shop') }}" class="checkout-btn" style="display: inline-block; width: auto; min-width: 200px; text-decoration: none;">{{ $isAr ? 'تصفح المنتجات' : 'Browse products' }}</a>
         </div>
         @endif
     </div>
@@ -542,20 +552,24 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const isArabic = @json(app()->getLocale() == 'ar');
+    const currencyLabel = @json($currencyLabel);
+    const __t = (ar, en) => (isArabic ? ar : en);
+
     // Remove item from cart
     document.querySelectorAll('.remove-item-btn').forEach(button => {
         button.addEventListener('click', async function() {
             const cartId = this.dataset.cartId;
 
             const result = await Swal.fire({
-                title: 'هل أنت متأكد؟',
-                text: 'سيتم إزالة المنتج من سلة التسوق',
+                title: __t('هل أنت متأكد؟', 'Are you sure?'),
+                text: __t('سيتم إزالة المنتج من سلة التسوق', 'This item will be removed from your cart.'),
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#333',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'نعم، احذف',
-                cancelButtonText: 'إلغاء'
+                confirmButtonText: __t('نعم، احذف', 'Yes, remove'),
+                cancelButtonText: __t('إلغاء', 'Cancel')
             });
 
             if (result.isConfirmed) {
@@ -574,7 +588,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.success) {
                         Swal.fire({
                             icon: 'success',
-                            title: 'تم الحذف!',
+                            title: __t('تم الحذف!', 'Removed!'),
                             text: data.message,
                             timer: 1500,
                             showConfirmButton: false
@@ -598,8 +612,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error('Error:', error);
                     Swal.fire({
                         icon: 'error',
-                        title: 'خطأ',
-                        text: 'حدث خطأ أثناء حذف المنتج'
+                        title: __t('خطأ', 'Error'),
+                        text: __t('حدث خطأ أثناء حذف المنتج', 'An error occurred while removing the item.')
                     });
                 }
             }
@@ -656,8 +670,8 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             Swal.fire({
                 icon: 'error',
-                title: 'خطأ',
-                text: 'حدث خطأ أثناء تحديث الكمية'
+                title: __t('خطأ', 'Error'),
+                text: __t('حدث خطأ أثناء تحديث الكمية', 'An error occurred while updating quantity.')
             });
         }
     }
@@ -667,9 +681,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const tax = subtotal * 0.05;
         const grandTotal = subtotal + tax;
 
-        document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' د.إ';
-        document.getElementById('tax').textContent = tax.toFixed(2) + ' د.إ';
-        document.getElementById('total').textContent = grandTotal.toFixed(2) + ' د.إ';
+        document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' ' + currencyLabel;
+        document.getElementById('tax').textContent = tax.toFixed(2) + ' ' + currencyLabel;
+        document.getElementById('total').textContent = grandTotal.toFixed(2) + ' ' + currencyLabel;
     }
 
     function updateCartCount() {
@@ -690,16 +704,16 @@ function applyPromoCode() {
     if (!code) {
         Swal.fire({
             icon: 'warning',
-            title: 'تنبيه',
-            text: 'الرجاء إدخال كود الخصم'
+            title: __t('تنبيه', 'Notice'),
+            text: __t('الرجاء إدخال كود الخصم', 'Please enter a promo code.')
         });
         return;
     }
 
     Swal.fire({
         icon: 'info',
-        title: 'قريباً',
-        text: 'ميزة رموز الخصم ستكون متاحة قريباً'
+        title: __t('قريباً', 'Coming soon'),
+        text: __t('ميزة رموز الخصم ستكون متاحة قريباً', 'Promo codes will be available soon.')
     });
 }
 </script>

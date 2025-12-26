@@ -1,5 +1,11 @@
 <li class="category-item">
-    <div class="category-row {{ $level == 1 ? 'subcategory-row' : ($level == 2 ? 'sub-subcategory-row' : '') }}">
+    <div
+        class="category-row {{ $level == 1 ? 'subcategory-row' : ($level == 2 ? 'sub-subcategory-row' : '') }} drop-target draggable-item {{ $level === 0 ? 'drop-zone' : '' }}"
+        data-category-id="{{ $category->id }}"
+        data-level="{{ $level }}"
+        data-parent-id="{{ $category->parent_id ?? '' }}"
+        draggable="true"
+    >
         <div class="category-info">
             <div class="category-icon">
                 @if($category->image)

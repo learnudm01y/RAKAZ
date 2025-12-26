@@ -17,6 +17,7 @@ class Menu extends Model
         'link',
         'sort_order',
         'is_active',
+        'menu_data',
     ];
 
     protected $casts = [
@@ -50,18 +51,30 @@ class Menu extends Model
     public function getName($locale = null)
     {
         $locale = $locale ?? app()->getLocale();
-        return $this->name[$locale] ?? $this->name['ar'] ?? '';
+        if ($locale === 'ar') {
+            return $this->name['ar'] ?? $this->name['en'] ?? '';
+        }
+
+        return $this->name[$locale] ?? $this->name['en'] ?? '';
     }
 
     public function getImageTitle($locale = null)
     {
         $locale = $locale ?? app()->getLocale();
-        return $this->image_title[$locale] ?? $this->image_title['ar'] ?? '';
+        if ($locale === 'ar') {
+            return $this->image_title['ar'] ?? $this->image_title['en'] ?? '';
+        }
+
+        return $this->image_title[$locale] ?? $this->image_title['en'] ?? '';
     }
 
     public function getImageDescription($locale = null)
     {
         $locale = $locale ?? app()->getLocale();
-        return $this->image_description[$locale] ?? $this->image_description['ar'] ?? '';
+        if ($locale === 'ar') {
+            return $this->image_description['ar'] ?? $this->image_description['en'] ?? '';
+        }
+
+        return $this->image_description[$locale] ?? $this->image_description['en'] ?? '';
     }
 }

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار Lazy Loading مع Skeleton Screens</title>
+    <link rel="stylesheet" href="/assets/css/skeleton-loading.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .info-box {
+            background: #f0f8ff;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-box h2 {
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-right: 20px;
+        }
+
+        .info-box li {
+            margin: 8px 0;
+            padding-right: 20px;
+            position: relative;
+        }
+
+        .info-box li:before {
+            content: "⏱️";
+            position: absolute;
+            right: 0;
+        }
+
+        .section {
+            margin: 40px 0;
+            padding: 30px 0;
+            border-top: 2px solid #eee;
+        }
+
+        .section-title {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        /* Demo Sections */
+        .must-have-section,
+        .perfect-gift-section,
+        .main-footer {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .products-slider {
+            position: relative;
+        }
+
+        .products-container {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+
+        .product-card {
+            min-width: 280px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 350px;
+            background: #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .main-footer {
+            background: #f9f9f9;
+            margin-top: 60px;
+        }
+
+        .footer-newsletter {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .console-log {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10000;
+        }
+
+        .console-log div {
+            margin: 5px 0;
+        }
+
+        .success {
+            color: #0f0;
+        }
+
+        .warning {
+            color: #ff0;
+        }
+
+        .error {
+            color: #f00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 اختبار نظام Lazy Loading مع Skeleton Screens</h1>
+
+        <div class="info-box">
+            <h2>📋 معلومات الاختبار</h2>
+            <ul>
+                <li>القسم الأول (Featured): يتم تحميله بعد <strong>2 ثانية</strong></li>
+                <li>القسم الثاني (Perfect Gift): يتم تحميله بعد <strong>4 ثواني</strong></li>
+                <li>القسم الثالث (Footer): يتم تحميله بعد <strong>7 ثواني</strong></li>
+            </ul>
+            <p style="margin-top: 15px; color: #666;">
+                راقب الشاشة وسترى Skeleton Loading يختفي تدريجياً ويظهر المحتوى الفعلي
+            </p>
+        </div>
+
+        <!-- Section 1: Featured Section -->
+        <div class="section">
+            <h2>القسم الأول: المنتجات المميزة</h2>
+
+            <!-- Skeleton -->
+            <section class="must-have-section skeleton-loading" id="featured-skeleton">
+                <div class="section-header">
+                    <div class="skeleton skeleton-title"></div>
+                    <div class="skeleton skeleton-link"></div>
+                </div>
+                <div class="products-slider">
+                    <div class="skeleton skeleton-slider-btn"></div>
+                    <div class="products-container">
+                        <div class="skeleton-product-card">
+                            <div class="skeleton skeleton-image"></div>
+                            <div class="skeleton skeleton-text"></div>
+                            <div class="skeleton skeleton-text-small"></div>
+                            <div class="skeleton skeleton-price"></div>
+                        </div>
+                        <div class="skeleton-product-card">
+                            <div class="skeleton skeleton-image"></div>
+                            <div class="skeleton skeleton-text"></div>
+                            <div class="skeleton skeleton-text-small"></div>
+                            <div class="skeleton skeleton-price"></div>
+                        </div>
+                        <div class="skeleton-product-card">
+                            <div class="skeleton skeleton-image"></div>
+                            <div class="skeleton skeleton-text"></div>
+                            <div class="skeleton skeleton-text-small"></div>
+                            <div class="skeleton skeleton-price"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton skeleton-slider-btn"></div>
+                </div>
+            </section>
+
+            <!-- Actual Content -->
+            <div id="featured-content">
+                <section class="must-have-section">
+                    <div class="section-header">
+                        <h2 class="section-title">منتجاتنا المميزة</h2>
+                        <a href="#" class="shop-all">تسوق الكل</a>
+                    </div>
+                    <div class="products-slider">
+                        <div class="products-container">
+                            <div class="product-card">
+                                <div class="product-image"></div>
+                                <h3>منتج 1</h3>
+                                <p>599 درهم</p>
+                            </div>
+                            <div class="product-card">
+                                <div class="product-image"></div>
+                                <h3>منتج 2</h3>
+                                <p>799 درهم</p>
+                            </div>
+                            <div class="product-card">
+                                <div class="product-image"></div>
+                                <h3>منتج 3</h3>
+                                <p>999 درهم</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Section 2: Perfect Gift Section -->
+        <div class="section">
+            <h2>القسم الثاني: الهدية المثالية</h2>
+
+            <!-- Skeleton -->
+            <section class="perfect-gift-section skeleton-loading" id="perfect-gift-skeleton">
+                <div class="section-header">
+                    <div class="skeleton skeleton-title"></div>
+                    <div class="skeleton skeleton-link"></div>
+                </div>
+                <div class="products-slider">
+                    <div class="skeleton skeleton-slider-btn"></div>
+                    <div class="products-container">
+                        <div class="skeleton-product-card">
+                            <div class="skeleton skeleton-image"></div>
+                            <div class="skeleton skeleton-text"></div>
+                            <div class="skeleton skeleton-text-small"></div>
+                            <div class="skeleton skeleton-price"></div>
+                        </div>
+                        <div class="skeleton-product-card">
+                            <div class="skeleton skeleton-image"></div>
+                            <div class="skeleton skeleton-text"></div>
+                            <div class="skeleton skeleton-text-small"></div>
+                            <div class="skeleton skeleton-price"></div>
+                        </div>
+                        <div class="skeleton-product-card">
+                            <div class="skeleton skeleton-image"></div>
+                            <div class="skeleton skeleton-text"></div>
+                            <div class="skeleton skeleton-text-small"></div>
+                            <div class="skeleton skeleton-price"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton skeleton-slider-btn"></div>
+                </div>
+            </section>
+
+            <!-- Actual Content -->
+            <div id="perfect-gift-content">
+                <section class="perfect-gift-section">
+                    <div class="section-header">
+                        <h2 class="section-title">الهدية المثالية</h2>
+                        <a href="#" class="shop-all">تسوق الكل</a>
+                    </div>
+                    <div class="products-slider">
+                        <div class="products-container">
+                            <div class="product-card">
+                                <div class="product-image"></div>
+                                <h3>هدية 1</h3>
+                                <p>499 درهم</p>
+                            </div>
+                            <div class="product-card">
+                                <div class="product-image"></div>
+                                <h3>هدية 2</h3>
+                                <p>699 درهم</p>
+                            </div>
+                            <div class="product-card">
+                                <div class="product-image"></div>
+                                <h3>هدية 3</h3>
+                                <p>899 درهم</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Section 3: Footer -->
+        <div class="section">
+            <h2>القسم الثالث: الفوتر</h2>
+
+            <!-- Skeleton -->
+            <footer class="main-footer skeleton-loading" id="footer-skeleton">
+                <div class="footer-newsletter">
+                    <div class="skeleton skeleton-title"></div>
+                    <div class="newsletter-form">
+                        <div class="skeleton skeleton-input"></div>
+                        <div class="skeleton skeleton-button"></div>
+                    </div>
+                </div>
+                <div class="footer-social">
+                    <div class="skeleton skeleton-text"></div>
+                    <div class="social-icons">
+                        <div class="skeleton skeleton-icon"></div>
+                        <div class="skeleton skeleton-icon"></div>
+                        <div class="skeleton skeleton-icon"></div>
+                        <div class="skeleton skeleton-icon"></div>
+                    </div>
+                </div>
+            </footer>
+
+            <!-- Actual Content -->
+            <div id="footer-content">
+                <footer class="main-footer">
+                    <div class="footer-newsletter">
+                        <h3>اشترك في نشرتنا الإخبارية</h3>
+                        <p>احصل على آخر العروض والأخبار</p>
+                    </div>
+                    <div class="footer-social">
+                        <p>تابعنا على وسائل التواصل الاجتماعي</p>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <!-- Console Log Display -->
+    <div class="console-log" id="console-log">
+        <div class="success">🚀 تم بدء نظام Lazy Loading</div>
+    </div>
+
+    <script src="/assets/js/lazy-loading.js"></script>
+    <script>
+        // Custom console logging for demo
+        const consoleDiv = document.getElementById('console-log');
+        const originalLog = console.log;
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.join(' ');
+            const div = document.createElement('div');
+
+            if (message.includes('✓')) {
+                div.className = 'success';
+            } else if (message.includes('⚠')) {
+                div.className = 'warning';
+            } else if (message.includes('Error')) {
+                div.className = 'error';
+            }
+
+            div.textContent = `[${new Date().toLocaleTimeString('ar-SA')}] ${message}`;
+            consoleDiv.appendChild(div);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        };
+
+        // Log start time
+        console.log('⏰ وقت البدء: ' + new Date().toLocaleTimeString('ar-SA'));
+    </script>
+</body>
+</html>

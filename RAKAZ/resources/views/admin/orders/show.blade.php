@@ -29,8 +29,10 @@
                         <label class="form-label">الحالة الحالية</label>
                         <select class="form-select" id="orderStatus">
                             <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>قيد الانتظار</option>
+                            <option value="confirmed" {{ $order->status == 'confirmed' ? 'selected' : '' }}>قيد التحضير</option>
                             <option value="processing" {{ $order->status == 'processing' ? 'selected' : '' }}>قيد المعالجة</option>
-                            <option value="completed" {{ $order->status == 'completed' ? 'selected' : '' }}>مكتمل</option>
+                            <option value="shipped" {{ $order->status == 'shipped' ? 'selected' : '' }}>تم الشحن</option>
+                            <option value="delivered" {{ $order->status == 'delivered' ? 'selected' : '' }}>تم التوصيل</option>
                             <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>ملغي</option>
                         </select>
                     </div>
@@ -199,10 +201,25 @@ async function updateOrderStatus() {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: JSON.stringify({ status: newStatus })
             });
+
+            // Check if response is OK before parsing JSON
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Server Error:', errorText);
+                throw new Error(`خطأ في الخادم (${response.status}): ${response.statusText}`);
+            }
+
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const htmlResponse = await response.text();
+                console.error('Expected JSON but received:', htmlResponse.substring(0, 200));
+                throw new Error('الخادم لم يرجع استجابة JSON صحيحة');
+            }
 
             const data = await response.json();
 

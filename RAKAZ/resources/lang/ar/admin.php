@@ -2,6 +2,7 @@
 
 return [
     // Common
+    'dashboard' => 'لوحة التحكم',
     'save' => 'حفظ التغييرات',
     'preview' => 'معاينة',
     'close' => 'إغلاق',
@@ -81,5 +82,77 @@ return [
         'hours_section' => 'أوقات العمل',
         'weekdays' => 'أيام الأسبوع',
         'weekend' => 'عطلة نهاية الأسبوع',
+    ],
+
+    // Orders
+    'orders' => [
+        'title' => 'إدارة الطلبات',
+        'total_orders' => 'إجمالي الطلبات',
+        'search' => 'بحث',
+        'search_placeholder' => 'رقم الطلب، اسم العميل...',
+        'date_from' => 'من تاريخ',
+        'date_to' => 'إلى تاريخ',
+        'status' => 'الحالة',
+        'all_statuses' => 'كل الحالات',
+        'filter' => 'بحث',
+        'reset' => 'إعادة تعيين',
+        'no_orders' => 'لا توجد طلبات',
+        'order_details' => 'تفاصيل الطلب',
+        'loading' => 'جاري التحميل...',
+        'close' => 'إغلاق',
+
+        'table' => [
+            'order_number' => 'رقم الطلب',
+            'customer' => 'العميل',
+            'products' => 'المنتجات',
+            'total' => 'الإجمالي',
+            'status' => 'الحالة',
+            'date' => 'التاريخ',
+            'view' => 'عرض',
+        ],
+
+        'statuses' => [
+            'pending' => 'قيد الانتظار',
+            'confirmed' => 'قيد التحضير',
+            'processing' => 'قيد المعالجة',
+            'shipped' => 'تم الشحن',
+            'delivered' => 'تم التوصيل',
+            'cancelled' => 'ملغي',
+        ],
+
+        'messages' => [
+            'confirm_status_change' => 'تأكيد تغيير الحالة',
+            'change_status_text' => 'هل تريد تغيير حالة الطلب إلى :status؟',
+            'yes_change' => 'نعم، قم بالتغيير',
+            'cancel' => 'إلغاء',
+            'updated' => 'تم التحديث',
+            'status_updated_success' => 'تم تغيير حالة الطلب بنجاح',
+            'error' => 'خطأ',
+            'error_occurred' => 'حدث خطأ',
+            'load_error' => 'حدث خطأ أثناء تحميل تفاصيل الطلب.',
+            'updating' => 'جاري التحديث...',
+        ],
+
+        'modal' => [
+            'customer_info' => 'معلومات العميل',
+            'name' => 'الاسم',
+            'phone' => 'رقم الهاتف',
+            'email' => 'البريد الإلكتروني',
+            'payment_method' => 'طريقة الدفع',
+            'cash_on_delivery' => 'الدفع عند الاستلام',
+            'shipping_address' => 'عنوان الشحن',
+            'change_status' => 'تغيير حالة الطلب',
+            'save' => 'حفظ',
+            'products_count' => 'المنتجات (:count)',
+            'product' => 'المنتج',
+            'attributes' => 'الخصائص',
+            'quantity' => 'الكمية',
+            'total' => 'الإجمالي',
+            'subtotal' => 'المجموع الفرعي',
+            'shipping' => 'الشحن',
+            'discount' => 'الخصم',
+            'grand_total' => 'الإجمالي الكلي',
+            'deleted_product' => 'منتج محذوف',
+        ]
     ],
 ];

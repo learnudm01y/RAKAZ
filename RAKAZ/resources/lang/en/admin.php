@@ -2,6 +2,7 @@
 
 return [
     // Common
+    'dashboard' => 'Dashboard',
     'save' => 'Save Changes',
     'preview' => 'Preview',
     'close' => 'Close',
@@ -81,5 +82,77 @@ return [
         'hours_section' => 'Working Hours',
         'weekdays' => 'Weekdays',
         'weekend' => 'Weekend',
+    ],
+
+    // Orders
+    'orders' => [
+        'title' => 'Order Management',
+        'total_orders' => 'Total Orders',
+        'search' => 'Search',
+        'search_placeholder' => 'Order #, Customer Name...',
+        'date_from' => 'Date From',
+        'date_to' => 'Date To',
+        'status' => 'Status',
+        'all_statuses' => 'All Statuses',
+        'filter' => 'Search',
+        'reset' => 'Reset',
+        'no_orders' => 'No orders found',
+        'order_details' => 'Order Details',
+        'loading' => 'Loading...',
+        'close' => 'Close',
+        
+        'table' => [
+            'order_number' => 'Order #',
+            'customer' => 'Customer',
+            'products' => 'Products',
+            'total' => 'Total',
+            'status' => 'Status',
+            'date' => 'Date',
+            'view' => 'View',
+        ],
+
+        'statuses' => [
+            'pending' => 'Pending',
+            'confirmed' => 'Confirmed',
+            'processing' => 'Processing',
+            'shipped' => 'Shipped',
+            'delivered' => 'Delivered',
+            'cancelled' => 'Cancelled',
+        ],
+
+        'messages' => [
+            'confirm_status_change' => 'Confirm Status Change',
+            'change_status_text' => 'Do you want to change the order status to :status?',
+            'yes_change' => 'Yes, Change it',
+            'cancel' => 'Cancel',
+            'updated' => 'Updated',
+            'status_updated_success' => 'Order status updated successfully',
+            'error' => 'Error',
+            'error_occurred' => 'An error occurred',
+            'load_error' => 'Error loading order details.',
+            'updating' => 'Updating...',
+        ],
+
+        'modal' => [
+            'customer_info' => 'Customer Info',
+            'name' => 'Name',
+            'phone' => 'Phone',
+            'email' => 'Email',
+            'payment_method' => 'Payment Method',
+            'cash_on_delivery' => 'Cash on Delivery',
+            'shipping_address' => 'Shipping Address',
+            'change_status' => 'Change Order Status',
+            'save' => 'Save',
+            'products_count' => 'Products (:count)',
+            'product' => 'Product',
+            'attributes' => 'Attributes',
+            'quantity' => 'Quantity',
+            'total' => 'Total',
+            'subtotal' => 'Subtotal',
+            'shipping' => 'Shipping',
+            'discount' => 'Discount',
+            'grand_total' => 'Grand Total',
+            'deleted_product' => 'Deleted Product',
+        ]
     ],
 ];

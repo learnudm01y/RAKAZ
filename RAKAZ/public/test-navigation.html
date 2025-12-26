@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Featured Section Navigation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 50px;
+            background: #f5f5f5;
+        }
+
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1a1a1a;
+        }
+
+        .test-section {
+            margin-bottom: 50px;
+            padding: 30px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        .test-section h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 20px;
+        }
+
+        /* Gallery Test */
+        .overlay-gallery-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            position: relative;
+            z-index: 100;
+        }
+
+        .overlay-gallery-images {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            scroll-behavior: smooth;
+            max-width: calc(60px * 3 + 8px * 2);
+            justify-content: flex-start;
+        }
+
+        .overlay-gallery-images::-webkit-scrollbar {
+            display: none;
+        }
+
+        .overlay-gallery-thumb {
+            width: 60px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .overlay-gallery-thumb:hover {
+            transform: scale(1.05);
+        }
+
+        .overlay-gallery-nav {
+            width: 28px !important;
+            height: 28px !important;
+            background: #ffffff !important;
+            border: 2px solid #1a1a1a !important;
+            border-radius: 50% !important;
+            cursor: pointer !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            opacity: 1 !important;
+            transition: all 0.2s ease !important;
+            padding: 0 !important;
+            flex-shrink: 0 !important;
+            z-index: 99999 !important;
+            pointer-events: all !important;
+            position: relative !important;
+        }
+
+        .overlay-gallery-nav:hover {
+            background: #1a1a1a !important;
+            transform: scale(1.1) !important;
+        }
+
+        .overlay-gallery-nav:hover svg {
+            stroke: #ffffff !important;
+        }
+
+        .overlay-gallery-nav svg {
+            width: 16px !important;
+            height: 16px !important;
+            stroke: #1a1a1a !important;
+            fill: none !important;
+            stroke-width: 2.5 !important;
+            pointer-events: none !important;
+        }
+
+        .overlay-gallery-nav svg path,
+        .overlay-gallery-nav svg * {
+            pointer-events: none !important;
+        }
+
+        /* Sizes Test */
+        .overlay-sizes-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            position: relative;
+            z-index: 100;
+        }
+
+        .overlay-sizes-section {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            scroll-behavior: smooth;
+            max-width: calc(28px * 3 + 8px * 2);
+            justify-content: flex-start;
+        }
+
+        .overlay-sizes-section::-webkit-scrollbar {
+            display: none;
+        }
+
+        .overlay-size-item {
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 28px;
+            height: 28px;
+            border: 1px solid #1a1a1a;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .overlay-size-item:hover {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .overlay-sizes-nav {
+            width: 28px !important;
+            height: 28px !important;
+            background: #ffffff !important;
+            border: 2px solid #1a1a1a !important;
+            border-radius: 50% !important;
+            cursor: pointer !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            opacity: 1 !important;
+            transition: all 0.2s ease !important;
+            padding: 0 !important;
+            flex-shrink: 0 !important;
+            z-index: 99999 !important;
+            pointer-events: all !important;
+            position: relative !important;
+        }
+
+        .overlay-sizes-nav:hover {
+            background: #1a1a1a !important;
+            transform: scale(1.1) !important;
+        }
+
+        .overlay-sizes-nav:hover svg {
+            stroke: #ffffff !important;
+        }
+
+        .overlay-sizes-nav svg {
+            width: 16px !important;
+            height: 16px !important;
+            stroke: #1a1a1a !important;
+            fill: none !important;
+            stroke-width: 2.5 !important;
+            pointer-events: none !important;
+        }
+
+        .overlay-sizes-nav svg path,
+        .overlay-sizes-nav svg * {
+            pointer-events: none !important;
+        }
+
+        .info-box {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .info-box p {
+            margin: 5px 0;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status.error {
+            background: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Featured Section Navigation Test</h1>
+
+        <!-- Gallery Navigation Test -->
+        <div class="test-section">
+            <h2>📸 Gallery Navigation Test (6 images, show 3)</h2>
+            <div class="overlay-gallery-section">
+                <button class="overlay-gallery-nav prev-gallery" data-direction="prev">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+                <div class="overlay-gallery-images" id="galleryImages">
+                    <div class="overlay-gallery-thumb">1</div>
+                    <div class="overlay-gallery-thumb">2</div>
+                    <div class="overlay-gallery-thumb">3</div>
+                    <div class="overlay-gallery-thumb">4</div>
+                    <div class="overlay-gallery-thumb">5</div>
+                    <div class="overlay-gallery-thumb">6</div>
+                </div>
+                <button class="overlay-gallery-nav next-gallery" data-direction="next">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="info-box">
+                <p><strong>التعليمات:</strong> اضغط على الأزرار للتمرير بين الصور</p>
+                <p><strong>المتوقع:</strong> عرض 3 صور فقط في وقت واحد مع إمكانية التمرير</p>
+                <p id="galleryStatus">الحالة: <span class="status">...</span></p>
+                <p id="galleryScroll">Scroll Position: <span>0</span></p>
+            </div>
+        </div>
+
+        <!-- Sizes Navigation Test -->
+        <div class="test-section">
+            <h2>📏 Sizes Navigation Test (9 sizes, show 3)</h2>
+            <div class="overlay-sizes-wrapper">
+                <button class="overlay-sizes-nav prev-sizes" data-direction="prev">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+                <div class="overlay-sizes-section" id="sizesSection">
+                    <span class="overlay-size-item">XS</span>
+                    <span class="overlay-size-item">S</span>
+                    <span class="overlay-size-item">M</span>
+                    <span class="overlay-size-item">L</span>
+                    <span class="overlay-size-item">XL</span>
+                    <span class="overlay-size-item">XXL</span>
+                    <span class="overlay-size-item">3XL</span>
+                    <span class="overlay-size-item">4XL</span>
+                    <span class="overlay-size-item">5XL</span>
+                </div>
+                <button class="overlay-sizes-nav next-sizes" data-direction="next">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="info-box">
+                <p><strong>التعليمات:</strong> اضغط على الأزرار للتمرير بين الأحجام</p>
+                <p><strong>المتوقع:</strong> عرض 3 أحجام فقط في وقت واحد مع إمكانية التمرير</p>
+                <p id="sizesStatus">الحالة: <span class="status">...</span></p>
+                <p id="sizesScroll">Scroll Position: <span>0</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gallery Navigation Test
+        document.addEventListener('click', function(e) {
+            console.log('🔥 CLICK EVENT:', e.target);
+            console.log('🔥 Target tagName:', e.target.tagName);
+            console.log('🔥 Target className:', e.target.className);
+
+            // Try multiple ways to find the button
+            let galleryNav = e.target.closest('.overlay-gallery-nav');
+
+            // If clicking on SVG or path, go up to button
+            if (!galleryNav && (e.target.tagName === 'svg' || e.target.tagName === 'path')) {
+                galleryNav = e.target.closest('button.overlay-gallery-nav');
+            }
+
+            // If still not found, check if target IS the button
+            if (!galleryNav && e.target.classList.contains('overlay-gallery-nav')) {
+                galleryNav = e.target;
+            }
+
+            console.log('🔥 Gallery nav button found:', galleryNav);
+
+            if (galleryNav) {
+                console.log('✅ GALLERY BUTTON CLICKED!');
+                e.stopPropagation();
+                e.preventDefault();
+
+                const section = galleryNav.closest('.overlay-gallery-section');
+                const wrapper = section ? section.querySelector('.overlay-gallery-images') : null;
+
+                if (!wrapper) {
+                    console.error('❌ Gallery wrapper not found!');
+                    document.querySelector('#galleryStatus .status').className = 'status error';
+                    document.querySelector('#galleryStatus .status').textContent = '❌ خطأ';
+                    return;
+                }
+
+                const direction = galleryNav.getAttribute('data-direction');
+                const thumbWidth = 60;
+                const gap = 8;
+                const scrollAmount = thumbWidth + gap;
+
+                console.log('📊 Gallery Info:');
+                console.log('   Direction:', direction);
+                console.log('   Current scroll:', wrapper.scrollLeft);
+                console.log('   Scroll amount:', scrollAmount);
+                console.log('   Total width:', wrapper.scrollWidth);
+                console.log('   Visible width:', wrapper.clientWidth);
+
+                const moveAmount = direction === 'prev' ? -scrollAmount : scrollAmount;
+                console.log('   Moving by:', moveAmount);
+
+                wrapper.scrollBy({
+                    left: moveAmount,
+                    behavior: 'smooth'
+                });
+
+                document.querySelector('#galleryStatus .status').className = 'status success';
+                document.querySelector('#galleryStatus .status').textContent = '✅ يعمل';
+
+                setTimeout(() => {
+                    console.log('   After scroll:', wrapper.scrollLeft);
+                    document.querySelector('#galleryScroll span').textContent = Math.round(wrapper.scrollLeft) + 'px';
+                }, 300);
+            }
+        });
+
+        // Sizes Navigation Test
+        document.addEventListener('click', function(e) {
+            let sizesNav = e.target.closest('.overlay-sizes-nav');
+
+            if (!sizesNav && (e.target.tagName === 'svg' || e.target.tagName === 'path')) {
+                sizesNav = e.target.closest('button.overlay-sizes-nav');
+            }
+
+            if (!sizesNav && e.target.classList.contains('overlay-sizes-nav')) {
+                sizesNav = e.target;
+            }
+
+            console.log('🔥 Sizes nav button found:', sizesNav);
+
+            if (sizesNav) {
+                console.log('✅ SIZES BUTTON CLICKED!');
+                e.stopPropagation();
+                e.preventDefault();
+
+                const wrapper = sizesNav.closest('.overlay-sizes-wrapper');
+                const section = wrapper ? wrapper.querySelector('.overlay-sizes-section') : null;
+
+                if (!section) {
+                    console.error('❌ Sizes section not found!');
+                    document.querySelector('#sizesStatus .status').className = 'status error';
+                    document.querySelector('#sizesStatus .status').textContent = '❌ خطأ';
+                    return;
+                }
+
+                const direction = sizesNav.getAttribute('data-direction');
+                const sizeWidth = 28;
+                const gap = 8;
+                const scrollAmount = sizeWidth + gap;
+
+                console.log('📊 Sizes Info:');
+                console.log('   Direction:', direction);
+                console.log('   Current scroll:', section.scrollLeft);
+                console.log('   Scroll amount:', scrollAmount);
+                console.log('   Total width:', section.scrollWidth);
+                console.log('   Visible width:', section.clientWidth);
+
+                const moveAmount = direction === 'prev' ? -scrollAmount : scrollAmount;
+                console.log('   Moving by:', moveAmount);
+
+                section.scrollBy({
+                    left: moveAmount,
+                    behavior: 'smooth'
+                });
+
+                document.querySelector('#sizesStatus .status').className = 'status success';
+                document.querySelector('#sizesStatus .status').textContent = '✅ يعمل';
+
+                setTimeout(() => {
+                    console.log('   After scroll:', section.scrollLeft);
+                    document.querySelector('#sizesScroll span').textContent = Math.round(section.scrollLeft) + 'px';
+                }, 300);
+            }
+        });
+
+        // Update scroll positions on scroll
+        document.getElementById('galleryImages').addEventListener('scroll', function() {
+            document.querySelector('#galleryScroll span').textContent = Math.round(this.scrollLeft) + 'px';
+        });
+
+        document.getElementById('sizesSection').addEventListener('scroll', function() {
+            document.querySelector('#sizesScroll span').textContent = Math.round(this.scrollLeft) + 'px';
+        });
+    </script>
+</body>
+</html>

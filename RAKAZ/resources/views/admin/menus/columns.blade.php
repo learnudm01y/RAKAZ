@@ -2,6 +2,23 @@
 
 @section('title', __('labels.menus.manage_columns') . ' - ' . $menu->getName(app()->getLocale()))
 
+@push('styles')
+<style>
+    @media (min-width: 768px) {
+        .col-md-10 {
+            flex: 0 0 auto;
+            width: 59.333333%;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .col-md-1 {
+            width: 13.333333%;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="page-header">
     <div class="page-header-content">
@@ -184,19 +201,14 @@
                         <div class="row align-items-end">
                             <div class="col-md-10 mb-2">
                                 <label class="form-label">{{ __('labels.menus.link_to_category') }} <span style="color: #dc2626;">*</span></label>
-                                <div style="position: relative;">
-                                    <select name="category_id" class="form-control" required style="appearance: none; -webkit-appearance: none; -moz-appearance: none; padding-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }}: 2.5rem;">
-                                        <option value="">{{ __('labels.menus.select_category') }}</option>
-                                        @foreach($categories->whereNull('parent_id') as $category)
-                                            <option value="{{ $category->id }}">
-                                                {{ $category->getName(app()->getLocale()) }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <svg style="position: absolute; top: 50%; {{ app()->getLocale() == 'ar' ? 'left' : 'right' }}: 0.75rem; transform: translateY(-50%); width: 16px; height: 16px; pointer-events: none; color: #6b7280;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </div>
+                                <select name="category_id" class="form-control" required>
+                                    <option value="">{{ __('labels.menus.select_category') }}</option>
+                                    @foreach($categories->whereNull('parent_id') as $category)
+                                        <option value="{{ $category->id }}">
+                                            {{ $category->getName(app()->getLocale()) }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
 
                             <div class="col-md-1 mb-2">

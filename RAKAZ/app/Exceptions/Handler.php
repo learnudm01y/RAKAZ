@@ -36,13 +36,18 @@ class Handler extends ExceptionHandler
         // Handle CSRF token mismatch (419)
         if ($exception instanceof \Illuminate\Session\TokenMismatchException) {
             // If it's a logout request, just logout and redirect
-            if ($request->is('user/logout')) {
+            if ($request->is('user/logout') || $request->is('logout')) {
                 auth()->logout();
                 return redirect()->route('home')->with('message', 'تم تسجيل الخروج بنجاح');
             }
 
-            // For other requests, redirect to login with message
-            return redirect()->route('user.login')
+            // For other requests, redirect to appropriate login page
+            if ($request->is('admin/*') || $request->is('dashboard')) {
+                return redirect()->route('admin.login')
+                    ->with('error', 'انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.');
+            }
+
+            return redirect()->route('login')
                 ->with('error', 'انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.');
         }
 

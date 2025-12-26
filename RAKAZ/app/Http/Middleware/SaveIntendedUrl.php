@@ -24,8 +24,8 @@ class SaveIntendedUrl
             && !$request->is('livewire/*')
             && !$request->is('login')
             && !$request->is('register')
-            && !$request->is('user/login')
-            && !$request->is('user/register')
+            && !$request->is('admin/login')
+            && !$request->is('admin/register')
             && !$request->ajax()
             && !$request->wantsJson()
         ) {

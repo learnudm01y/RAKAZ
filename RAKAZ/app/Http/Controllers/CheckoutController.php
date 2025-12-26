@@ -49,7 +49,11 @@ class CheckoutController extends Controller
             'customer_phone' => 'required|string|max:20',
             'shipping_address' => 'required|string',
             'shipping_city' => 'required|string|max:100',
+            'shipping_country' => 'required|string|max:100',
+            'shipping_state' => 'nullable|string|max:100',
             'shipping_postal_code' => 'nullable|string|max:20',
+            'shipping_method' => 'required|in:standard,express,same-day',
+            'payment_method' => 'required|in:cash',
             'notes' => 'nullable|string|max:1000',
         ]);
 
@@ -61,8 +65,22 @@ class CheckoutController extends Controller
         }
 
         $cartTotal = Cart::getCartTotal($identifier['user_id'], $identifier['session_id']);
+
+        // Calculate shipping cost based on method
         $shippingCost = 0;
-        $tax = 0;
+        switch ($request->shipping_method) {
+            case 'express':
+                $shippingCost = 50;
+                break;
+            case 'same-day':
+                $shippingCost = 100;
+                break;
+            default:
+                $shippingCost = 0;
+        }
+
+        // Calculate tax (5% VAT)
+        $tax = ($cartTotal + $shippingCost) * 0.05;
         $total = $cartTotal + $shippingCost + $tax;
 
         DB::beginTransaction();
@@ -78,13 +96,13 @@ class CheckoutController extends Controller
                 'shipping_city' => $request->shipping_city,
                 'shipping_state' => $request->shipping_state,
                 'shipping_postal_code' => $request->shipping_postal_code,
-                'shipping_country' => $request->shipping_country ?? 'UAE',
+                'shipping_country' => $request->shipping_country,
                 'subtotal' => $cartTotal,
                 'shipping_cost' => $shippingCost,
                 'tax' => $tax,
                 'discount' => 0,
                 'total' => $total,
-                'payment_method' => 'cash',
+                'payment_method' => $request->payment_method,
                 'payment_status' => 'pending',
                 'status' => 'pending',
                 'notes' => $request->notes,
@@ -108,14 +126,25 @@ class CheckoutController extends Controller
             }
 
             // Clear cart
-            Cart::where($identifier['user_id'] ? 'user_id' : 'session_id', $identifier['user_id'] ?: $identifier['session_id'])->delete();
+            if ($identifier['user_id']) {
+                Cart::where('user_id', $identifier['user_id'])->delete();
+            } else {
+                Cart::where('session_id', $identifier['session_id'])->delete();
+            }
 
             DB::commit();
+
+            // Store order ID in session for guest access
+            if (!auth()->check()) {
+                $guestOrderIds = session('guest_order_ids', []);
+                $guestOrderIds[] = $order->id;
+                session(['guest_order_ids' => $guestOrderIds]);
+            }
 
             // Send confirmation email (optional)
             // Mail::to($order->customer_email)->send(new OrderConfirmation($order));
 
-            return redirect()->route('orders.show', $order->id)->with('success', app()->getLocale() == 'ar' ? 'تم إنشاء الطلب بنجاح' : 'Order placed successfully');
+            return redirect()->route('orders.show', $order->id)->with('success', app()->getLocale() == 'ar' ? 'تم إنشاء الطلب بنجاح! رقم الطلب: ' . $order->order_number : 'Order placed successfully! Order number: ' . $order->order_number);
 
         } catch (\Exception $e) {
             DB::rollBack();

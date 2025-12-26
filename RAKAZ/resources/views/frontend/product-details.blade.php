@@ -54,6 +54,7 @@
 
 @push('scripts')
     <script src="/assets/js/product-details.js" defer></script>
+    <script src="/assets/js/related-products.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/pica@9.0.1/dist/pica.min.js"></script>
     <script>
@@ -62,18 +63,107 @@
         // CSS handles image quality optimization better without distortion
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Check for selected color or image from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const selectedColorId = urlParams.get('color');
+            const imageFromUrl = urlParams.get('image');
+            const imageFromSession = sessionStorage.getItem('selectedProductImage');
+            let selectedImageIndex = imageFromUrl || imageFromSession;
+
+            console.log('🎨 Selected color ID:', selectedColorId);
+            console.log('🔍 Selected image from URL:', imageFromUrl);
+            console.log('🔍 Selected image from session:', imageFromSession);
+
+            // Clear session storage after reading
+            if (imageFromSession) {
+                sessionStorage.removeItem('selectedProductImage');
+            }
+
             // Image navigation setup
             const allImages = [];
             const mainImage = document.getElementById('mainProductImage');
-            const thumbnails = document.querySelectorAll('.thumbnail');
+            const thumbnailsWrapper = document.getElementById('thumbnailsWrapper');
+            const thumbnailsExtra = document.getElementById('thumbnailsExtra');
+            let thumbnails = document.querySelectorAll('.thumbnail');
+
+            // If color is selected, find the first image with that color
+            if (selectedColorId && !selectedImageIndex) {
+                const colorThumbnails = document.querySelectorAll('.thumbnail[data-color-id="' + selectedColorId + '"]');
+                if (colorThumbnails.length > 0) {
+                    // Find index of first color image
+                    const allThumbnails = Array.from(thumbnails);
+                    selectedImageIndex = allThumbnails.indexOf(colorThumbnails[0]);
+                    console.log('🎨 Found color image at index:', selectedImageIndex);
+                }
+            }
+
+            console.log('🔍 Final selected index:', selectedImageIndex);
 
             // Collect all image sources
             thumbnails.forEach(thumb => {
                 allImages.push(thumb.src);
             });
 
-            let currentIndex = 0;
+            const maxVisibleThumbnails = 5;
             const totalImages = allImages.length;
+            let currentIndex = selectedImageIndex ? parseInt(selectedImageIndex) : 0;
+
+            // Function to reorganize thumbnails
+            function organizeThumbnails() {
+                if (totalImages <= maxVisibleThumbnails) return;
+
+                const thumbsArray = Array.from(thumbnails);
+                const visibleThumbs = thumbsArray.slice(0, maxVisibleThumbnails);
+                const extraThumbs = thumbsArray.slice(maxVisibleThumbnails);
+
+                // Clear wrapper
+                thumbnailsWrapper.innerHTML = '';
+
+                // Add visible thumbnails
+                visibleThumbs.forEach((thumb, index) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'thumbnail-wrapper';
+                    wrapper.appendChild(thumb.cloneNode(true));
+
+                    // Add overlay on last visible thumbnail
+                    if (index === visibleThumbs.length - 1) {
+                        const overlay = document.createElement('div');
+                        overlay.className = 'thumbnail-overlay';
+                        overlay.innerHTML = `<span class="thumbnail-overlay-text">+${extraThumbs.length}</span>`;
+                        overlay.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            loadExtraThumbnails(extraThumbs);
+                        });
+                        wrapper.appendChild(overlay);
+                    }
+
+                    thumbnailsWrapper.appendChild(wrapper);
+                });
+
+                // Update thumbnails reference
+                thumbnails = document.querySelectorAll('.thumbnail');
+                attachThumbnailEvents();
+            }
+
+            // Function to load extra thumbnails
+            function loadExtraThumbnails(extraThumbs) {
+                // Remove overlay
+                const overlay = document.querySelector('.thumbnail-overlay');
+                if (overlay) overlay.remove();
+
+                // Show extra container
+                thumbnailsExtra.style.display = 'flex';
+
+                // Add extra thumbnails
+                extraThumbs.forEach(thumb => {
+                    const clonedThumb = thumb.cloneNode(true);
+                    thumbnailsExtra.appendChild(clonedThumb);
+                });
+
+                // Update thumbnails reference and reattach events
+                thumbnails = document.querySelectorAll('.thumbnail');
+                attachThumbnailEvents();
+            }
 
             function updateImage(index) {
                 if (index >= 0 && index < totalImages) {
@@ -89,6 +179,15 @@
                     document.getElementById('prevImage').disabled = currentIndex === 0;
                     document.getElementById('nextImage').disabled = currentIndex === totalImages - 1;
                 }
+            }
+
+            // Attach events to thumbnails
+            function attachThumbnailEvents() {
+                thumbnails.forEach((thumbnail, index) => {
+                    thumbnail.addEventListener('click', function() {
+                        updateImage(index);
+                    });
+                });
             }
 
             // Previous button
@@ -107,19 +206,37 @@
                 }
             });
 
-            // Update thumbnails click to use updateImage
-            thumbnails.forEach((thumbnail, index) => {
-                thumbnail.addEventListener('click', function() {
-                    updateImage(index);
-                });
-            });
+            // Initialize
+            organizeThumbnails();
 
-            // Initialize button states
-            updateImage(0);
+            // Set the selected image (from URL or session)
+            if (selectedImageIndex !== null && selectedImageIndex !== undefined) {
+                const index = parseInt(selectedImageIndex);
+                console.log('🎯 Setting initial image to index:', index);
+                updateImage(index);
+            } else {
+                updateImage(0);
+            }
 
             // Color selection
             const colorOptions = document.querySelectorAll('.color-option');
             const selectedColorSpan = document.getElementById('selectedColor');
+
+            // Auto-select color from URL parameter
+            if (selectedColorId && colorOptions.length > 0) {
+                colorOptions.forEach(option => {
+                    if (option.dataset.colorId === selectedColorId) {
+                        option.classList.add('active');
+                        if (selectedColorSpan) {
+                            const colorName = isArabic ? option.dataset.colorAr : option.dataset.colorEn;
+                            selectedColorSpan.textContent = colorName;
+                        }
+                        console.log('🎨 Auto-selected color:', option.dataset.colorAr || option.dataset.colorEn);
+                    } else {
+                        option.classList.remove('active');
+                    }
+                });
+            }
 
             colorOptions.forEach(option => {
                 option.addEventListener('click', function() {
@@ -129,6 +246,51 @@
                     if (selectedColorSpan) {
                         const colorName = isArabic ? this.dataset.colorAr : this.dataset.colorEn;
                         selectedColorSpan.textContent = colorName;
+                    }
+                });
+            });
+
+            // Color Images Selection (New Style)
+            const colorImageThumbs = document.querySelectorAll('.color-image-thumb');
+            const selectedColorNameSpan = document.getElementById('selectedColorName');
+
+            // Auto-select color image from URL parameter
+            if (selectedColorId && colorImageThumbs.length > 0) {
+                colorImageThumbs.forEach(thumb => {
+                    if (thumb.dataset.colorId === selectedColorId) {
+                        thumb.classList.add('active');
+                        if (selectedColorNameSpan) {
+                            const colorName = isArabic ? thumb.dataset.colorAr : thumb.dataset.colorEn;
+                            selectedColorNameSpan.textContent = colorName;
+                        }
+                        // Update main image to color image
+                        const colorImage = thumb.dataset.image;
+                        if (colorImage && mainImage) {
+                            mainImage.src = colorImage;
+                        }
+                        console.log('🎨 Auto-selected color image:', thumb.dataset.colorAr || thumb.dataset.colorEn);
+                    } else {
+                        thumb.classList.remove('active');
+                    }
+                });
+            }
+
+            colorImageThumbs.forEach(thumb => {
+                thumb.addEventListener('click', function() {
+                    // Update active state
+                    colorImageThumbs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Update color name
+                    if (selectedColorNameSpan) {
+                        const colorName = isArabic ? this.dataset.colorAr : this.dataset.colorEn;
+                        selectedColorNameSpan.textContent = colorName;
+                    }
+
+                    // Optionally update main product image
+                    const colorImage = this.dataset.image;
+                    if (colorImage && mainImage) {
+                        mainImage.src = colorImage;
                     }
                 });
             });
@@ -226,9 +388,9 @@
             }
 
             // Add to wishlist
-            const addToWishlistBtn = document.getElementById('addToWishlistBtn');
+            var addToWishlistBtn = document.getElementById('addToWishlistBtn');
             if (addToWishlistBtn) {
-                addToWishlistBtn.addEventListener('click', async function() {
+                addToWishlistBtn.addEventListener('click', function() {
                     @guest
                         Swal.fire({
                             icon: 'warning',
@@ -237,7 +399,7 @@
                             confirmButtonText: isArabic ? 'تسجيل الدخول' : 'Login',
                             showCancelButton: true,
                             cancelButtonText: isArabic ? 'إلغاء' : 'Cancel'
-                        }).then((result) => {
+                        }).then(function(result) {
                             if (result.isConfirmed) {
                                 window.location.href = '{{ route("login") }}';
                             }
@@ -245,24 +407,59 @@
                         return;
                     @endguest
 
-                    const productId = this.dataset.productId;
-                    const button = this;
+                    var productId = this.dataset.productId;
+                    var button = this;
+                    var wasActive = button.classList.contains('active');
 
-                    try {
-                        const response = await fetch('{{ route("wishlist.toggle") }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({ product_id: productId })
-                        });
-
-                        const data = await response.json();
-
+                    fetch('{{ route("wishlist.toggle") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ product_id: productId })
+                    })
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(data) {
                         if (data.success) {
+                            // Toggle button state
                             button.classList.toggle('active');
+
+                            // Update wishlist count in header - Real-time update
+                            var wishlistBadges = document.querySelectorAll('.header-link .badge');
+                            for (var i = 0; i < wishlistBadges.length; i++) {
+                                (function(badge) {
+                                    var currentCount = parseInt(badge.textContent) || 0;
+                                    if (wasActive) {
+                                        // Removing from wishlist
+                                        badge.textContent = Math.max(0, currentCount - 1);
+                                    } else {
+                                        // Adding to wishlist
+                                        badge.textContent = currentCount + 1;
+                                    }
+
+                                    // Add pulse animation
+                                    badge.style.animation = 'none';
+                                    setTimeout(function() {
+                                        badge.style.animation = 'pulse 0.3s ease-in-out';
+                                    }, 10);
+                                })(wishlistBadges[i]);
+                            }
+
+                            // Update heart icon fill
+                            var heartIcon = button.querySelector('svg path');
+                            if (heartIcon) {
+                                if (!wasActive) {
+                                    // Fill the heart
+                                    heartIcon.setAttribute('fill', 'currentColor');
+                                } else {
+                                    // Unfill the heart
+                                    heartIcon.setAttribute('fill', 'none');
+                                }
+                            }
 
                             Swal.fire({
                                 icon: 'success',
@@ -271,33 +468,193 @@
                                 showConfirmButton: false
                             });
                         }
-                    } catch (error) {
+                    })
+                    .catch(function(error) {
                         console.error('Error:', error);
                         Swal.fire({
                             icon: 'error',
                             title: isArabic ? 'خطأ!' : 'Error!',
                             text: isArabic ? 'حدث خطأ أثناء الإضافة للمفضلة' : 'Error adding to wishlist'
                         });
-                    }
+                    });
                 });
             }
 
             // Wishlist buttons in related products
-            const wishlistBtns = document.querySelectorAll('.wishlist-btn-small');
-            wishlistBtns.forEach(btn => {
-                btn.addEventListener('click', function(e) {
+            var wishlistBtns = document.querySelectorAll('.wishlist-btn-small');
+            for (var i = 0; i < wishlistBtns.length; i++) {
+                wishlistBtns[i].addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
                     this.classList.toggle('active');
                 });
-            });
+            }
 
             // Initialize custom select for size dropdown
-            const sizeSelect = document.getElementById('sizeSelect');
+            var sizeSelect = document.getElementById('sizeSelect');
             if (sizeSelect && typeof CustomSelect !== 'undefined') {
                 new CustomSelect(sizeSelect);
             }
+
+            // Lazy load related products sections after 3 seconds
+            setTimeout(function() {
+                loadRelatedProducts();
+                loadBrandProducts();
+            }, 3000);
+
+            // Function to load related products
+            function loadRelatedProducts() {
+                var productId = {{ $product->id }};
+                var section = document.getElementById('related-products-section');
+
+                if (!section) return;
+
+                fetch('/api/lazy-load/related-products/' + productId)
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) {
+                        if (data.success && data.html) {
+                            section.innerHTML = data.html;
+                            initializeProductSlider(section);
+                            initializeOverlays(section);
+                        }
+                    })
+                    .catch(function(error) {
+                        console.error('Error loading related products:', error);
+                        section.style.display = 'none';
+                    });
+            }
+
+            // Function to load brand products
+            function loadBrandProducts() {
+                var productId = {{ $product->id }};
+                var section = document.getElementById('brand-products-section');
+
+                if (!section) return;
+
+                fetch('/api/lazy-load/brand-products/' + productId)
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) {
+                        if (data.success && data.html) {
+                            section.innerHTML = data.html;
+                            initializeProductSlider(section);
+                            initializeOverlays(section);
+                        }
+                    })
+                    .catch(function(error) {
+                        console.error('Error loading brand products:', error);
+                        section.style.display = 'none';
+                    });
+            }
+
+            // Function to initialize product slider for a section
+            function initializeProductSlider(section) {
+                var slider = section.querySelector('.products-slider');
+                if (!slider) return;
+
+                var container = slider.querySelector('.products-container');
+                var prevBtn = slider.querySelector('.slider-btn.prev');
+                var nextBtn = slider.querySelector('.slider-btn.next');
+
+                if (!container || !prevBtn || !nextBtn) return;
+
+                var scrollAmount = 300;
+
+                prevBtn.addEventListener('click', function() {
+                    container.scrollBy({
+                        left: -scrollAmount,
+                        behavior: 'smooth'
+                    });
+                });
+
+                nextBtn.addEventListener('click', function() {
+                    container.scrollBy({
+                        left: scrollAmount,
+                        behavior: 'smooth'
+                    });
+                });
+            }
+
+            // Function to initialize overlays for products
+            function initializeOverlays(section) {
+                var productCards = section.querySelectorAll('.product-card');
+
+                for (var i = 0; i < productCards.length; i++) {
+                    (function(card) {
+                        card.addEventListener('mouseenter', function() {
+                            var overlay = card.querySelector('.featured-product-overlay');
+                            if (overlay) {
+                                overlay.classList.add('active');
+                            }
+                        });
+
+                        card.addEventListener('mouseleave', function() {
+                            var overlay = card.querySelector('.featured-product-overlay');
+                            if (overlay) {
+                                overlay.classList.remove('active');
+                            }
+                        });
+                    })(productCards[i]);
+                }
+            }
         });
+
+        // Load related products
+        function loadRelatedProducts() {
+            var productId = {{ $product->id }};
+            var section = document.getElementById('related-products-section');
+            if (!section) return;
+
+            fetch('/api/lazy-load/related-products/' + productId)
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.success && data.html) {
+                        section.innerHTML = data.html;
+
+                        // Re-initialize sliders and overlays
+                        if (typeof initializeProductSliders === 'function') {
+                            initializeProductSliders();
+                        }
+                        if (typeof initializeProductOverlays === 'function') {
+                            initializeProductOverlays();
+                        }
+                    } else {
+                        section.style.display = 'none';
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error loading related products:', error);
+                    section.style.display = 'none';
+                });
+        }
+
+        // Load brand products
+        function loadBrandProducts() {
+            var productId = {{ $product->id }};
+            var section = document.getElementById('brand-products-section');
+            if (!section) return;
+
+            fetch('/api/lazy-load/brand-products/' + productId)
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.success && data.html) {
+                        section.innerHTML = data.html;
+
+                        // Re-initialize sliders and overlays
+                        if (typeof initializeProductSliders === 'function') {
+                            initializeProductSliders();
+                        }
+                        if (typeof initializeProductOverlays === 'function') {
+                            initializeProductOverlays();
+                        }
+                    } else {
+                        section.style.display = 'none';
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error loading brand products:', error);
+                    section.style.display = 'none';
+                });
+        }
     </script>
 @endpush
 
@@ -328,20 +685,26 @@
 
                 <!-- Thumbnail Images -->
                 <div class="thumbnail-gallery">
-                    <div class="thumbnails-wrapper">
+                    <div class="thumbnails-wrapper" id="thumbnailsWrapper">
+                        {{-- Main Product Image --}}
                         @if($product->main_image)
                         <img src="{{ asset('storage/' . $product->main_image) }}"
                              alt="{{ $product->getName() }}"
-                             class="thumbnail active">
+                             class="thumbnail active"
+                             data-image-type="main">
                         @endif
 
+                        {{-- Product Gallery Images --}}
                         @if($product->gallery_images && is_array($product->gallery_images))
-                            @foreach($product->gallery_images as $image)
-                            <img src="{{ asset('storage/' . $image) }}"
+                            @foreach($product->gallery_images as $galleryImage)
+                            <img src="{{ asset('storage/' . $galleryImage) }}"
                                  alt="{{ $product->getName() }}"
-                                 class="thumbnail">
+                                 class="thumbnail"
+                                 data-image-type="gallery">
                             @endforeach
                         @endif
+                    </div>
+                    <div class="thumbnails-extra" id="thumbnailsExtra" style="display: none;">
                     </div>
                 </div>
             </div>
@@ -413,7 +776,34 @@
 
                 <!-- Color & Size Selection -->
                 <div class="product-options">
-                    @if($product->colors && is_array($product->colors) && count($product->colors) > 0)
+                    @if($product->productColors && $product->productColors->count() > 0 && $product->colorImages->count() > 0)
+                    <!-- Color Images Selection (New Style) -->
+                    <div class="option-group color-images-selection">
+                        <label class="option-label">
+                            {{ app()->getLocale() == 'ar' ? 'اللون:' : 'Color:' }}
+                            <span class="selected-option selected-color-name" id="selectedColorName">
+                                {{ $product->productColors->first()->translated_name }}
+                            </span>
+                        </label>
+                        <div class="color-images-row">
+                            @foreach($product->productColors as $index => $color)
+                                @php
+                                    $colorImage = $product->colorImages->where('color_id', $color->id)->first();
+                                @endphp
+                                @if($colorImage)
+                                <div class="color-image-thumb {{ $index === 0 ? 'active' : '' }}"
+                                     data-color-id="{{ $color->id }}"
+                                     data-color-ar="{{ $color->name['ar'] ?? $color->translated_name }}"
+                                     data-color-en="{{ $color->name['en'] ?? $color->translated_name }}"
+                                     data-color-hex="{{ $color->hex_code }}"
+                                     data-image="{{ $colorImage->image_url }}">
+                                    <img src="{{ $colorImage->image_url }}" alt="{{ $color->translated_name }}">
+                                </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                    @elseif($product->colors && is_array($product->colors) && count($product->colors) > 0)
                     <div class="option-group">
                         <label class="option-label">
                             {{ app()->getLocale() == 'ar' ? 'اللون:' : 'Color:' }}
@@ -445,13 +835,13 @@
                     @endphp
 
                     @if($hasSizes)
-                    <div class="option-group" style="background: #fff3cd; padding: 15px; border-radius: 8px; border: 2px solid #ffc107;">
+                    <div class="option-group" style=" padding: 15px; border-radius: 8px; ">
                         <div class="size-header">
                             <label class="option-label" style="font-size: 16px; font-weight: bold; color: #000;">{{ app()->getLocale() == 'ar' ? 'اختيار المقاس:' : 'Select Size:' }}</label>
                             <a href="#" class="size-guide-link">{{ app()->getLocale() == 'ar' ? 'جدول المقاسات' : 'Size Guide' }}</a>
                         </div>
-                        <!-- Available Sizes Display -->
-                        <div style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 6px; border: 2px solid #28a745;">
+                        <!-- Available Sizes Display - Hidden -->
+                        <div style="display: none !important;">
                             <div style="font-size: 14px; font-weight: 700; color: #28a745; margin-bottom: 10px;">
                                 ✅ {{ app()->getLocale() == 'ar' ? 'المقاسات المتوفرة:' : 'Available Sizes:' }} ({{ count($product->sizes) }})
                             </div>
@@ -471,13 +861,6 @@
                             </option>
                             @endforeach
                         </select>
-                    </div>
-                    @else
-                    <div style="padding: 15px; background: #f8d7da; border: 2px solid #dc3545; border-radius: 8px; margin: 10px 0;">
-                        <strong style="color: #dc3545;">⚠️ تحذير: لا توجد مقاسات متاحة لهذا المنتج</strong>
-                        <div style="margin-top: 10px; font-size: 13px;">
-                            Debug: sizes = {{ json_encode($product->sizes) }}
-                        </div>
                     </div>
                     @endif
                 </div>
@@ -573,153 +956,52 @@
         </div>
 
         <!-- You May Also Like Section -->
-        @if($relatedProducts && $relatedProducts->count() > 0)
-        <section class="related-products-section">
-            <div class="section-header">
-                <h2 class="section-title">{{ app()->getLocale() == 'ar' ? 'قد يعجبك أيضاً' : 'You May Also Like' }}</h2>
-            </div>
-            <div class="products-carousel">
-                <button class="carousel-nav prev">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M15 19l-7-7 7-7"/>
-                    </svg>
-                </button>
-                <div class="products-slider">
-                    @foreach($relatedProducts as $relatedProduct)
-                    <div class="product-card-small">
-                        <a href="{{ route('product.details', $relatedProduct->getSlug()) }}">
-                            <div class="product-image-wrapper-small">
-                                <img src="{{ $relatedProduct->main_image ? asset('storage/' . $relatedProduct->main_image) : asset('assets/images/placeholder.jpg') }}"
-                                     alt="{{ $relatedProduct->getName() }}"
-                                     class="product-image-small">
-                                <button class="wishlist-btn-small" onclick="event.preventDefault();" data-product-id="{{ $relatedProduct->id }}">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                                    </svg>
-                                </button>
-                                @if($relatedProduct->sale_price && $relatedProduct->sale_price < $relatedProduct->price)
-                                    @php
-                                        $discountPercent = round((($relatedProduct->price - $relatedProduct->sale_price) / $relatedProduct->price) * 100);
-                                    @endphp
-                                    <div class="discount-badge-wrapper">
-                                        <img src="{{ asset('assets/images/discount.png') }}" alt="Discount" class="discount-badge-image">
-                                        <div class="discount-badge-text">
-                                            <span class="discount-text-ar">تخفيض</span>
-                                            <span class="discount-text-en">DISCOUNT</span>
-                                            <span class="discount-percent">{{ $discountPercent }}%</span>
-                                        </div>
-                                    </div>
-                                @elseif($relatedProduct->is_new)
-                                    <span class="badge-new">{{ app()->getLocale() == 'ar' ? 'جديد' : 'New' }}</span>
-                                @elseif($relatedProduct->is_on_sale)
-                                    <span class="badge-discount">{{ app()->getLocale() == 'ar' ? 'عرض خاص' : 'Sale' }}</span>
-                                @endif
-                            </div>
-                            <div class="product-info-small">
-                                @if($relatedProduct->brand)
-                                <p class="product-brand-small">{{ $relatedProduct->brand }}</p>
-                                @endif
-                                <h3 class="product-name-small">{{ Str::limit($relatedProduct->getName(), 50) }}</h3>
-                                @if($relatedProduct->sale_price && $relatedProduct->sale_price < $relatedProduct->price)
-                                <div class="price-group-small">
-                                    <span class="price-original">{{ number_format($relatedProduct->price, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</span>
-                                    <span class="price-sale">{{ number_format($relatedProduct->sale_price, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</span>
-                                </div>
-                                @else
-                                <p class="product-price-small">{{ number_format($relatedProduct->price, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</p>
-                                @endif
-                            </div>
-                        </a>
-                    </div>
-                    @endforeach
+        <section class="related-products-section" id="related-products-section">
+            <!-- Skeleton Loader -->
+            <div class="skeleton-loader">
+                <div class="section-header">
+                    <div class="skeleton skeleton-title" style="width: 200px; height: 32px;"></div>
                 </div>
-                <button class="carousel-nav next">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 5l7 7-7 7"/>
-                    </svg>
-                </button>
+                <div class="products-slider">
+                    <div class="products-container">
+                        @for($i = 0; $i < 4; $i++)
+                            <div class="product-card skeleton-card">
+                                <div class="skeleton skeleton-image" style="width: 100%; height: 400px;"></div>
+                                <div class="product-info">
+                                    <div class="skeleton skeleton-text" style="width: 60%; height: 16px; margin-bottom: 8px;"></div>
+                                    <div class="skeleton skeleton-text" style="width: 80%; height: 20px; margin-bottom: 8px;"></div>
+                                    <div class="skeleton skeleton-text" style="width: 40%; height: 18px;"></div>
+                                </div>
+                            </div>
+                        @endfor
+                    </div>
+                </div>
             </div>
         </section>
-        @endif
 
         <!-- Additional Brand Products Section -->
-        @if($product->brand && $brandProducts && $brandProducts->count() > 0)
-        <section class="related-products-section">
-            <div class="section-header">
-                <h2 class="section-title">
-                    {{ app()->getLocale() == 'ar' ? 'منتجات إضافية من ' . $product->brand : 'More from ' . $product->brand }}
-                </h2>
-                <a href="#" class="view-all-link">{{ app()->getLocale() == 'ar' ? 'عرض الكل' : 'View All' }}</a>
-            </div>
-            <div class="products-carousel">
-                <button class="carousel-nav prev">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M15 19l-7-7 7-7"/>
-                    </svg>
-                </button>
-                <div class="products-slider">
-                    @foreach($brandProducts as $brandProduct)
-                    <div class="product-card-small">
-                        <a href="{{ route('product.details', $brandProduct->getSlug()) }}">
-                            <div class="product-image-wrapper-small">
-                                <img src="{{ $brandProduct->main_image ? asset('storage/' . $brandProduct->main_image) : asset('assets/images/placeholder.jpg') }}"
-                                     alt="{{ $brandProduct->getName() }}"
-                                     class="product-image-small">
-                                <button class="wishlist-btn-small" onclick="event.preventDefault();" data-product-id="{{ $brandProduct->id }}">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                                    </svg>
-                                </button>
-                                @if($brandProduct->sale_price && $brandProduct->sale_price < $brandProduct->price)
-                                    @php
-                                        $discountPercent = round((($brandProduct->price - $brandProduct->sale_price) / $brandProduct->price) * 100);
-                                    @endphp
-                                    <div class="discount-badge-wrapper">
-                                        <img src="{{ asset('assets/images/discount.png') }}" alt="Discount" class="discount-badge-image">
-                                        <div class="discount-badge-text">
-                                            <span class="discount-text-ar">تخفيض</span>
-                                            <span class="discount-text-en">DISCOUNT</span>
-                                            <span class="discount-percent">{{ $discountPercent }}%</span>
-                                        </div>
-                                    </div>
-                                @elseif($brandProduct->is_new)
-                                    <span class="badge-new">{{ app()->getLocale() == 'ar' ? 'جديد' : 'New' }}</span>
-                                @elseif($brandProduct->is_on_sale)
-                                    <span class="badge-new" style="background: #dc2626;">{{ app()->getLocale() == 'ar' ? 'عرض' : 'Sale' }}</span>
-                                @endif
-                            </div>
-                            <div class="product-info-small">
-                                <p class="product-brand-small">{{ $brandProduct->brand }}</p>
-                                <h3 class="product-name-small">{{ Str::limit($brandProduct->getName(), 50) }}</h3>
-                                @if($brandProduct->sale_price && $brandProduct->sale_price < $brandProduct->price)
-                                <div class="price-group-small">
-                                    <span class="price-original">{{ number_format($brandProduct->price, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</span>
-                                    <span class="price-sale">{{ number_format($brandProduct->sale_price, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</span>
-                                </div>
-                                @else
-                                <p class="product-price-small">{{ number_format($brandProduct->price, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</p>
-                                @endif
-
-                                @if($brandProduct->colors && is_array($brandProduct->colors) && count($brandProduct->colors) > 0)
-                                <div class="color-dots">
-                                    @foreach(array_slice($brandProduct->colors, 0, 4) as $color)
-                                    <span class="color-dot" style="background: {{ $color['hex'] ?? '#ccc' }};"></span>
-                                    @endforeach
-                                </div>
-                                @endif
-                            </div>
-                        </a>
-                    </div>
-                    @endforeach
+        <section class="related-products-section" id="brand-products-section">
+            <!-- Skeleton Loader -->
+            <div class="skeleton-loader">
+                <div class="section-header">
+                    <div class="skeleton skeleton-title" style="width: 250px; height: 32px;"></div>
                 </div>
-                <button class="carousel-nav next">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 5l7 7-7 7"/>
-                    </svg>
-                </button>
+                <div class="products-slider">
+                    <div class="products-container">
+                        @for($i = 0; $i < 4; $i++)
+                            <div class="product-card skeleton-card">
+                                <div class="skeleton skeleton-image" style="width: 100%; height: 400px;"></div>
+                                <div class="product-info">
+                                    <div class="skeleton skeleton-text" style="width: 60%; height: 16px; margin-bottom: 8px;"></div>
+                                    <div class="skeleton skeleton-text" style="width: 80%; height: 20px; margin-bottom: 8px;"></div>
+                                    <div class="skeleton skeleton-text" style="width: 40%; height: 18px;"></div>
+                                </div>
+                            </div>
+                        @endfor
+                    </div>
+                </div>
             </div>
         </section>
-        @endif
     </main>
 
 @endsection

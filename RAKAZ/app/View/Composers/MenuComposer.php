@@ -9,7 +9,7 @@ class MenuComposer
 {
     public function compose(View $view)
     {
-        $menus = Menu::with(['activeColumns.items.category'])
+        $menus = Menu::with(['activeColumns.items.category.children'])
             ->active()
             ->ordered()
             ->get();

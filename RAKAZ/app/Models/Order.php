@@ -67,7 +67,7 @@ class Order extends Model
         $prefix = 'ORD';
         $date = now()->format('Ymd');
         $random = str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
-        
+
         return $prefix . '-' . $date . '-' . $random;
     }
 
@@ -75,8 +75,8 @@ class Order extends Model
     {
         $labels = [
             'pending' => app()->getLocale() == 'ar' ? 'قيد الانتظار' : 'Pending',
-            'confirmed' => app()->getLocale() == 'ar' ? 'مؤكد' : 'Confirmed',
-            'processing' => app()->getLocale() == 'ar' ? 'قيد التجهيز' : 'Processing',
+            'confirmed' => app()->getLocale() == 'ar' ? 'قيد التحضير' : 'Confirmed',
+            'processing' => app()->getLocale() == 'ar' ? 'قيد المعالجة' : 'Processing',
             'shipped' => app()->getLocale() == 'ar' ? 'تم الشحن' : 'Shipped',
             'delivered' => app()->getLocale() == 'ar' ? 'تم التوصيل' : 'Delivered',
             'cancelled' => app()->getLocale() == 'ar' ? 'ملغي' : 'Cancelled',

@@ -51,12 +51,21 @@
     }
 
     .colors-table th {
-        background: var(--hover-bg);
-        padding: 1rem;
-        text-align: left;
+        background: #1a1a1a;
+        color: white;
+        padding: 16px 20px;
         font-weight: 600;
-        color: var(--text-color);
-        border-bottom: 2px solid var(--border-color);
+        border-bottom: 3px solid #000;
+        text-transform: none;
+        letter-spacing: 0.3px;
+        font-size: 14px;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .colors-table th svg {
+        margin-inline-end: 8px;
+        vertical-align: middle;
     }
 
     [dir="rtl"] .colors-table th {
@@ -284,11 +293,36 @@
     <table class="colors-table">
         <thead>
             <tr>
-                <th><span class="ar-text">اللون</span><span class="en-text">Color</span></th>
-                <th><span class="ar-text">الاسم بالعربية</span><span class="en-text">Arabic Name</span></th>
-                <th><span class="ar-text">الاسم بالإنجليزية</span><span class="en-text">English Name</span></th>
-                <th><span class="ar-text">الكود</span><span class="en-text">Hex Code</span></th>
-                <th><span class="ar-text">الترتيب</span><span class="en-text">Sort Order</span></th>
+                <th>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                    </svg>
+                    <span class="ar-text">اللون</span><span class="en-text">Color</span>
+                </th>
+                <th>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                    </svg>
+                    <span class="ar-text">الاسم بالعربية</span><span class="en-text">Arabic Name</span>
+                </th>
+                <th>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                    </svg>
+                    <span class="ar-text">الاسم بالإنجليزية</span><span class="en-text">English Name</span>
+                </th>
+                <th>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                    </svg>
+                    <span class="ar-text">الكود</span><span class="en-text">Hex Code</span>
+                </th>
+                <th>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                    </svg>
+                    <span class="ar-text">الترتيب</span><span class="en-text">Sort Order</span>
+                </th>
                 <th><span class="ar-text">عدد المنتجات</span><span class="en-text">Products</span></th>
                 <th><span class="ar-text">الحالة</span><span class="en-text">Status</span></th>
                 <th><span class="ar-text">الإجراءات</span><span class="en-text">Actions</span></th>

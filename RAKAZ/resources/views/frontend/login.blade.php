@@ -238,8 +238,33 @@
                 }
             })
             .then(response => response.json())
-            .then(data => {
+            .then(async data => {
                 if (data.success) {
+                    console.log('✅ Login successful');
+
+                    // التحقق من وجود منتجات معلقة في localStorage
+                    const STORAGE_KEY = 'rakaz_pending_wishlist';
+                    const pendingWishlist = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+                    console.log('🔍 Checking for pending wishlist items...');
+                    console.log('📦 Found items:', pendingWishlist);
+
+                    if (pendingWishlist.length > 0) {
+                        // توجيه المستخدم مباشرة للمفضلة - سيتم الحفظ هناك تلقائياً
+                        console.log('🔄 Redirecting to wishlist page for auto-save...');
+                        Swal.fire({
+                            title: 'تم تسجيل الدخول بنجاح!',
+                            text: 'جاري حفظ المنتجات في المفضلة...',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = "{{ route('wishlist') }}";
+                        });
+                        return;
+                    }
+
+                    // إذا لم يكن هناك منتجات معلقة، انتقل للصفحة الافتراضية
                     Swal.fire({
                         title: 'تم تسجيل الدخول بنجاح!',
                         text: data.message,
@@ -300,8 +325,33 @@
                 }
             })
             .then(response => response.json())
-            .then(data => {
+            .then(async data => {
                 if (data.success) {
+                    console.log('✅ Registration successful');
+
+                    // التحقق من وجود منتجات معلقة في localStorage
+                    const STORAGE_KEY = 'rakaz_pending_wishlist';
+                    const pendingWishlist = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+                    console.log('🔍 Checking for pending wishlist items...');
+                    console.log('📦 Found items:', pendingWishlist);
+
+                    if (pendingWishlist.length > 0) {
+                        // توجيه المستخدم مباشرة للمفضلة - سيتم الحفظ هناك تلقائياً
+                        console.log('🔄 Redirecting to wishlist page for auto-save...');
+                        Swal.fire({
+                            title: 'تم إنشاء الحساب بنجاح!',
+                            text: 'جاري حفظ المنتجات في المفضلة...',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = "{{ route('wishlist') }}";
+                        });
+                        return;
+                    }
+
+                    // إذا لم يكن هناك منتجات معلقة، انتقل للصفحة الافتراضية
                     Swal.fire({
                         title: 'تم إنشاء الحساب بنجاح!',
                         text: data.message,

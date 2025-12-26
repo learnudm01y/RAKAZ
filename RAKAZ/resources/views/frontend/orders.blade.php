@@ -111,13 +111,33 @@
             align-self: flex-start;
         }
 
-        /* توحيد ألوان جميع الحالات النشطة باللون الأخضر */
-        .order-badge.pending,
-        .order-badge.processing,
-        .order-badge.on-delivery,
-        .order-badge.delivered {
+        .order-badge svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        /* ألوان مختلفة لكل حالة */
+        .order-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .order-badge.processing {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .order-badge.shipped {
             background: #d4edda;
             color: #155724;
+        }
+
+        .order-badge.delivered {
+            background: #28a745;
+            color: white;
         }
 
         .order-badge.cancelled {
@@ -141,8 +161,9 @@
         .timeline-line {
             position: absolute;
             top: 16px;
-            left: 8%;
-            right: 8%;
+            /* 5 steps => centers are at 10% and 90% */
+            left: 10%;
+            right: 10%;
             height: 2px;
             background: #e5e5e5;
             z-index: 0;
@@ -156,6 +177,12 @@
             background: #28a745;
             transition: width 0.5s ease;
             border-radius: 2px;
+        }
+
+        /* RTL: progress should start from the right edge */
+        html[dir="rtl"] .timeline-progress {
+            right: 0;
+            left: auto;
         }
 
         .timeline-step {
@@ -434,9 +461,29 @@
             display: inline-block;
         }
 
-        .status-badge-table.delivered {
+        .status-badge-table.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge-table.confirmed {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-badge-table.processing {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-badge-table.shipped {
             background: #d4edda;
             color: #155724;
+        }
+
+        .status-badge-table.delivered {
+            background: #28a745;
+            color: white;
         }
 
         .status-badge-table.cancelled {
@@ -530,10 +577,60 @@
                 display: none;
             }
         }
+
+        /* تعديلات للهواتف الصغيرة جداً فقط */
+        @media (max-width: 480px) {
+            .order-timeline {
+                margin: 0px 0;
+                position: relative;
+            }
+
+            .order-items {
+                margin: 6px 0;
+                border-top: 1px solid #f0f0f0;
+                padding-top: 15px;
+                flex: 1;
+            }
+
+            .order-header {
+                display: block;
+                position: relative;
+                min-height: 60px;
+                margin-bottom: 0px;
+            }
+
+            .order-info {
+                position: relative;
+                z-index: 1;
+            }
+
+            .order-header > div:last-child {
+                position: absolute;
+                left: 0;
+                top: 0;
+                z-index: 2;
+            }
+
+            .order-badge {
+                margin-left: 0 !important;
+            }
+        }
     </style>
 @endpush
 
 <div class="orders-page">
+    @php
+        $ordersCount = $orders ? $orders->count() : 0;
+        $ordersSubtitle = $ordersCount > 0
+            ? ('لديك ' . $ordersCount . ' ' . ($ordersCount === 1 ? 'طلب' : 'طلبات'))
+            : 'لا توجد طلبات حتى الآن';
+    @endphp
+
+    <x-account-nav-header
+        :title="'طلباتي (' . $ordersCount . ')'"
+        :subtitle="$ordersSubtitle"
+    />
+
     <!-- Tabs Navigation -->
     <div class="orders-tabs">
         <button class="tab-button active" onclick="switchTab('current')">الطلبات الحية</button>
@@ -551,25 +648,39 @@
             @foreach($currentOrders as $order)
                 <div class="order-card">
                     <!-- Order Header -->
+                    @php
+                        // توحيد عرض الحالات مع لوحة الإدارة
+                        $statusMap = [
+                            'pending' => ['label' => 'قيد الانتظار', 'class' => 'pending'],
+                            'confirmed' => ['label' => 'قيد التحضير', 'class' => 'processing'],
+                            'processing' => ['label' => 'قيد المعالجة', 'class' => 'processing'],
+                            'shipped' => ['label' => 'تم الشحن', 'class' => 'shipped'],
+                            'delivered' => ['label' => 'تم التوصيل', 'class' => 'delivered'],
+                            'cancelled' => ['label' => 'ملغي', 'class' => 'cancelled'],
+                        ];
+                        $statusInfo = $statusMap[$order->status] ?? ['label' => $order->status, 'class' => 'processing'];
+
+                        $statusIconMap = [
+                            'pending' => 'M12 8v4l3 3',
+                            'confirmed' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
+                            'processing' => 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
+                            'shipped' => 'M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4',
+                            'delivered' => 'M5 13l4 4L19 7',
+                            'cancelled' => 'M6 18L18 6M6 6l12 12',
+                        ];
+                        $statusIconPath = $statusIconMap[$order->status] ?? 'M12 8v4l3 3';
+                    @endphp
                     <div class="order-header">
                         <div class="order-info">
                             <h3>طلب #{{ $order->order_number }}</h3>
                             <p class="order-date">{{ $order->created_at->locale('ar')->translatedFormat('d F Y') }}</p>
                         </div>
-                        <div>
-                            @php
-                                // توحيد عرض الحالات - جميع الحالات تستخدم نفس اللون الأخضر
-                                $statusMap = [
-                                    'pending' => ['label' => 'قيد التحضير', 'class' => 'processing'],
-                                    'confirmed' => ['label' => 'قيد التحضير', 'class' => 'processing'],
-                                    'processing' => ['label' => 'قيد التحضير', 'class' => 'processing'],
-                                    'shipped' => ['label' => 'في الطريق للتوصيل', 'class' => 'on-delivery'],
-                                    'delivered' => ['label' => 'تم التوصيل', 'class' => 'delivered'],
-                                ];
-                                $statusInfo = $statusMap[$order->status] ?? ['label' => $order->status, 'class' => 'processing'];
-                            @endphp
+                        <div class="order-badge-wrapper">
                             <span class="order-badge {{ $statusInfo['class'] }}">
-                                ⏱ {{ $statusInfo['label'] }}
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="{{ $statusIconPath }}" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                {{ $statusInfo['label'] }}
                             </span>
                         </div>
                     </div>
@@ -580,10 +691,10 @@
                             @php
                                 // تحديد الخطوات المكتملة والنشطة بناءً على حالة الطلب
                                 $steps = [
-                                    ['key' => 'pending', 'label' => 'تم الطلب', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
+                                    ['key' => 'pending', 'label' => 'قيد الانتظار', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
                                     ['key' => 'confirmed', 'label' => 'قيد التحضير', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
-                                    ['key' => 'processing', 'label' => 'تم الشحن', 'icon' => 'M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4'],
-                                    ['key' => 'shipped', 'label' => 'قيد التوصيل', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
+                                    ['key' => 'processing', 'label' => 'قيد المعالجة', 'icon' => 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'],
+                                    ['key' => 'shipped', 'label' => 'تم الشحن', 'icon' => 'M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4'],
                                     ['key' => 'delivered', 'label' => 'تم التوصيل', 'icon' => 'M5 13l4 4L19 7']
                                 ];
 
@@ -660,10 +771,6 @@
                                 <button class="btn-order btn-cancel" onclick="cancelOrder('{{ $order->id }}')">
                                     إلغاء الطلب
                                 </button>
-                            @else
-                                <button class="btn-order btn-track" onclick="trackOrder('{{ $order->id }}')">
-                                    تتبع الطلب
-                                </button>
                             @endif
                         </div>
                         <div class="order-total">
@@ -721,8 +828,8 @@
                             </td>
                             <td>{{ number_format($order->total, 0) }} د.إ</td>
                             <td>
-                                <span class="status-badge-table {{ $order->status == 'delivered' ? 'delivered' : 'cancelled' }}">
-                                    {{ $order->status == 'delivered' ? 'تم التوصيل' : 'تم الإلغاء' }}
+                                <span class="status-badge-table {{ $order->status }}">
+                                    {{ $order->getStatusLabelAttribute() }}
                                 </span>
                             </td>
                             <td>
@@ -775,38 +882,84 @@
         window.location.href = '/order/' + orderId;
     }
 
-    // Track Order
-    function trackOrder(orderId) {
-        // Implement tracking functionality
-        alert('تتبع الطلب #' + orderId);
-    }
-
     // Cancel Order
     function cancelOrder(orderId) {
-        if (confirm('هل أنت متأكد من إلغاء هذا الطلب?')) {
-            // Implement cancel functionality
-            fetch('/order/' + orderId + '/cancel', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('تم إلغاء الطلب بنجاح');
-                    location.reload();
-                }
-            });
-        }
+        const isArabic = document.documentElement.getAttribute('dir') === 'rtl';
+
+        Swal.fire({
+            title: isArabic ? 'هل أنت متأكد؟' : 'Are you sure?',
+            text: isArabic ? 'هل تريد إلغاء هذا الطلب؟ لن تتمكن من التراجع عن هذا الإجراء!' : 'Do you want to cancel this order? You won\'t be able to revert this!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: isArabic ? 'نعم، إلغاء الطلب' : 'Yes, cancel it!',
+            cancelButtonText: isArabic ? 'تراجع' : 'Cancel',
+            reverseButtons: isArabic
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Implement cancel functionality
+                fetch('/order/' + orderId + '/cancel', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: isArabic ? 'تم الإلغاء!' : 'Cancelled!',
+                            text: isArabic ? 'تم إلغاء الطلب بنجاح' : 'Your order has been cancelled.',
+                            icon: 'success',
+                            confirmButtonColor: '#28a745',
+                            confirmButtonText: isArabic ? 'حسناً' : 'OK'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: isArabic ? 'خطأ!' : 'Error!',
+                            text: data.message || (isArabic ? 'حدث خطأ أثناء إلغاء الطلب' : 'An error occurred while cancelling the order'),
+                            icon: 'error',
+                            confirmButtonColor: '#dc3545',
+                            confirmButtonText: isArabic ? 'حسناً' : 'OK'
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: isArabic ? 'خطأ!' : 'Error!',
+                        text: isArabic ? 'حدث خطأ في الاتصال بالخادم' : 'Connection error occurred',
+                        icon: 'error',
+                        confirmButtonColor: '#dc3545',
+                        confirmButtonText: isArabic ? 'حسناً' : 'OK'
+                    });
+                });
+            }
+        });
     }
 
     // Reorder
     function reorder(orderId) {
-        if (confirm('هل تريد إعادة طلب نفس المنتجات?')) {
-            window.location.href = '/order/' + orderId + '/reorder';
-        }
+        const isArabic = document.documentElement.getAttribute('dir') === 'rtl';
+
+        Swal.fire({
+            title: isArabic ? 'إعادة الطلب' : 'Reorder',
+            text: isArabic ? 'هل تريد إعادة طلب نفس المنتجات؟' : 'Do you want to reorder the same products?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: isArabic ? 'نعم، إعادة الطلب' : 'Yes, reorder!',
+            cancelButtonText: isArabic ? 'إلغاء' : 'Cancel',
+            reverseButtons: isArabic
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '/order/' + orderId + '/reorder';
+            }
+        });
     }
 
     // Animate progress bars on load

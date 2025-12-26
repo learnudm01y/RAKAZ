@@ -10,20 +10,48 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Home Page Content Management Controller
+ *
+ * CRITICAL CONCEPT: Content Locale vs Dashboard Locale Separation
+ * ================================================================
+ * This controller manages CONTENT in multiple languages (ar/en)
+ * The 'locale' parameter throughout this controller refers to CONTENT language ONLY
+ *
+ * Dashboard Language (Interface):
+ * - Controlled by session (app()->getLocale())
+ * - Changed via user menu toggle button
+ * - Set by SetLocale middleware
+ * - Independent from content editing
+ *
+ * Content Language:
+ * - Controlled by 'locale' parameter in URLs/forms
+ * - Determines which content version (ar/en) to edit
+ * - Does NOT affect dashboard interface language
+ *
+ * Example Scenario:
+ * - Admin has dashboard in Arabic (session locale = 'ar')
+ * - Admin selects to edit English content (URL param locale = 'en')
+ * - Admin sees Arabic interface, edits English content
+ * - After save, dashboard stays Arabic, continues editing English content
+ *
+ * THIS SEPARATION IS CRITICAL AND MUST NEVER BE VIOLATED
+ */
 class HomePageController extends Controller
 {
     public function edit()
     {
-        // IMPORTANT: This 'locale' parameter is for CONTENT LANGUAGE SELECTION ONLY
-        // It determines which content version (Arabic or English) the admin wants to edit
-        // It does NOT change the dashboard interface language (which comes from session)
-        // Dashboard language is controlled by SetLocale middleware using session value
-        $locale = request('locale', 'ar');
-        $homePage = HomePage::where('locale', $locale)->where('is_active', true)->first();
+        // CRITICAL ARCHITECTURE CHANGE: Using 'content_lang' instead of 'locale'
+        // This prevents ANY conflict with dashboard language (session 'locale')
+        // content_lang = which content version to edit (ar/en)
+        // session locale = dashboard interface language
+        // COMPLETE SEPARATION - NO CONFLICT POSSIBLE
+        $contentLang = request('content_lang', 'ar');
+        $homePage = HomePage::where('locale', $contentLang)->where('is_active', true)->first();
 
         if (!$homePage) {
             $homePage = HomePage::create([
-                'locale' => $locale,
+                'locale' => $contentLang,
                 'is_active' => true,
                 'hero_slides' => [],
                 'gifts_items' => [],
@@ -37,34 +65,36 @@ class HomePageController extends Controller
         // Get discover items
         $discoverItems = DiscoverItem::active()->ordered()->get();
 
-        return view('admin.pages.home-edit', compact('homePage', 'locale', 'giftsTitle', 'discoverItems'));
+        return view('admin.pages.home-edit', compact('homePage', 'contentLang', 'giftsTitle', 'discoverItems'));
     }
 
     public function update(Request $request)
     {
-        // IMPORTANT: Content locale vs Dashboard locale separation
-        // The 'locale' parameter here refers to which CONTENT version is being edited (ar/en)
-        // It does NOT affect the dashboard interface language (controlled by session)
-        // After redirect, user stays in same dashboard language but continues editing same content version
-        $locale = $request->input('locale', $request->get('locale', app()->getLocale()));
+        // ARCHITECTURE FIX: Using 'content_lang' completely separates from 'locale'
+        // content_lang = content version parameter (NEVER touches session)
+        // locale = dashboard language (session only, NEVER from request)
+        $contentLang = $request->input('content_lang', 'ar');
+        $dashboardLocale = session('locale', 'ar');
 
-        Log::info('HomePageController update - Locale received', [
-            'locale_from_input' => $request->input('locale'),
-            'locale_from_get' => $request->get('locale'),
-            'final_locale' => $locale,
-            'all_request_data' => $request->except(['hero_image', 'cyber_sale_image', 'gifts_image', 'discover_image', 'spotlight_image'])
+        Log::info('HomePageController update - Complete separation', [
+            'dashboard_locale' => $dashboardLocale,
+            'content_lang' => $contentLang,
+            'note' => 'Different parameter names = zero conflict possible'
         ]);
 
-        $homePage = HomePage::where('locale', $locale)->where('is_active', true)->firstOrFail();
+        $homePage = HomePage::where('locale', $contentLang)->where('is_active', true)->firstOrFail();
 
         $data = [
-            'locale' => $locale,
+            'locale' => $contentLang,
             'is_active' => $request->boolean('is_active', true),
         ];
 
         // Handle Hero Slides
         if ($request->has('hero_slides')) {
             $heroSlides = [];
+            $heroSlidesTablet = [];
+            $heroSlidesMobile = [];
+
             foreach ($request->hero_slides as $index => $slide) {
                 $slideData = [
                     'link' => $slide['link'] ?? '#',
@@ -79,8 +109,43 @@ class HomePageController extends Controller
                 }
 
                 $heroSlides[] = $slideData;
+
+                // Handle Tablet Image
+                $tabletSlideData = [
+                    'link' => $slide['link'] ?? '#',
+                    'alt' => $slide['alt'] ?? 'Hero Banner'
+                ];
+
+                if ($request->hasFile("hero_slide_tablet_image.{$index}")) {
+                    $path = $request->file("hero_slide_tablet_image.{$index}")->store('home-page/hero/tablet', 'public');
+                    $tabletSlideData['image'] = '/storage/' . $path;
+                } else {
+                    $existingTablet = $homePage->hero_slides_tablet[$index] ?? null;
+                    $tabletSlideData['image'] = $existingTablet['image'] ?? '';
+                }
+
+                $heroSlidesTablet[] = $tabletSlideData;
+
+                // Handle Mobile Image
+                $mobileSlideData = [
+                    'link' => $slide['link'] ?? '#',
+                    'alt' => $slide['alt'] ?? 'Hero Banner'
+                ];
+
+                if ($request->hasFile("hero_slide_mobile_image.{$index}")) {
+                    $path = $request->file("hero_slide_mobile_image.{$index}")->store('home-page/hero/mobile', 'public');
+                    $mobileSlideData['image'] = '/storage/' . $path;
+                } else {
+                    $existingMobile = $homePage->hero_slides_mobile[$index] ?? null;
+                    $mobileSlideData['image'] = $existingMobile['image'] ?? '';
+                }
+
+                $heroSlidesMobile[] = $mobileSlideData;
             }
+
             $data['hero_slides'] = $heroSlides;
+            $data['hero_slides_tablet'] = $heroSlidesTablet;
+            $data['hero_slides_mobile'] = $heroSlidesMobile;
         }
 
         // Handle Cyber Sale Section
@@ -89,6 +154,22 @@ class HomePageController extends Controller
             $data['cyber_sale_image'] = '/storage/' . $path;
         } else {
             $data['cyber_sale_image'] = $request->input('cyber_sale_image_current');
+        }
+
+        // Handle Cyber Sale Tablet Image
+        if ($request->hasFile('cyber_sale_image_tablet')) {
+            $path = $request->file('cyber_sale_image_tablet')->store('home-page/cyber-sale/tablet', 'public');
+            $data['cyber_sale_image_tablet'] = '/storage/' . $path;
+        } else {
+            $data['cyber_sale_image_tablet'] = $request->input('cyber_sale_image_tablet_current');
+        }
+
+        // Handle Cyber Sale Mobile Image
+        if ($request->hasFile('cyber_sale_image_mobile')) {
+            $path = $request->file('cyber_sale_image_mobile')->store('home-page/cyber-sale/mobile', 'public');
+            $data['cyber_sale_image_mobile'] = '/storage/' . $path;
+        } else {
+            $data['cyber_sale_image_mobile'] = $request->input('cyber_sale_image_mobile_current');
         }
 
         $data['cyber_sale_link'] = $request->input('cyber_sale_link');
@@ -182,6 +263,44 @@ class HomePageController extends Controller
         }
 
         $data['dg_banner_image'] = $dgBannerImage;
+
+        // Handle DG Banner Tablet Images
+        $currentDgTabletImage = $homePage->dg_banner_image_tablet ?? ['ar' => '', 'en' => ''];
+        $dgBannerTabletImage = [
+            'ar' => is_array($currentDgTabletImage) ? ($currentDgTabletImage['ar'] ?? '') : '',
+            'en' => is_array($currentDgTabletImage) ? ($currentDgTabletImage['en'] ?? '') : '',
+        ];
+
+        if ($request->hasFile('dg_banner_image_tablet_ar')) {
+            $path = $request->file('dg_banner_image_tablet_ar')->store('home-page/dg-banner/tablet', 'public');
+            $dgBannerTabletImage['ar'] = '/storage/' . $path;
+        }
+
+        if ($request->hasFile('dg_banner_image_tablet_en')) {
+            $path = $request->file('dg_banner_image_tablet_en')->store('home-page/dg-banner/tablet', 'public');
+            $dgBannerTabletImage['en'] = '/storage/' . $path;
+        }
+
+        $data['dg_banner_image_tablet'] = $dgBannerTabletImage;
+
+        // Handle DG Banner Mobile Images
+        $currentDgMobileImage = $homePage->dg_banner_image_mobile ?? ['ar' => '', 'en' => ''];
+        $dgBannerMobileImage = [
+            'ar' => is_array($currentDgMobileImage) ? ($currentDgMobileImage['ar'] ?? '') : '',
+            'en' => is_array($currentDgMobileImage) ? ($currentDgMobileImage['en'] ?? '') : '',
+        ];
+
+        if ($request->hasFile('dg_banner_image_mobile_ar')) {
+            $path = $request->file('dg_banner_image_mobile_ar')->store('home-page/dg-banner/mobile', 'public');
+            $dgBannerMobileImage['ar'] = '/storage/' . $path;
+        }
+
+        if ($request->hasFile('dg_banner_image_mobile_en')) {
+            $path = $request->file('dg_banner_image_mobile_en')->store('home-page/dg-banner/mobile', 'public');
+            $dgBannerMobileImage['en'] = '/storage/' . $path;
+        }
+
+        $data['dg_banner_image_mobile'] = $dgBannerMobileImage;
         $data['dg_banner_link'] = $request->input('dg_banner_link', '#');
         $data['dg_banner_active'] = $request->boolean('dg_banner_active');
         Log::info('DG Banner saved: ' . json_encode($dgBannerImage));
@@ -218,6 +337,44 @@ class HomePageController extends Controller
         }
 
         $data['gucci_spotlight_image'] = $gucciSpotlightImage;
+
+        // Handle Gucci Spotlight Tablet Images
+        $currentGucciTabletImage = $homePage->gucci_spotlight_image_tablet ?? ['ar' => '', 'en' => ''];
+        $gucciSpotlightTabletImage = [
+            'ar' => is_array($currentGucciTabletImage) ? ($currentGucciTabletImage['ar'] ?? '') : '',
+            'en' => is_array($currentGucciTabletImage) ? ($currentGucciTabletImage['en'] ?? '') : '',
+        ];
+
+        if ($request->hasFile('gucci_spotlight_image_tablet_ar')) {
+            $path = $request->file('gucci_spotlight_image_tablet_ar')->store('home-page/gucci-spotlight/tablet', 'public');
+            $gucciSpotlightTabletImage['ar'] = '/storage/' . $path;
+        }
+
+        if ($request->hasFile('gucci_spotlight_image_tablet_en')) {
+            $path = $request->file('gucci_spotlight_image_tablet_en')->store('home-page/gucci-spotlight/tablet', 'public');
+            $gucciSpotlightTabletImage['en'] = '/storage/' . $path;
+        }
+
+        $data['gucci_spotlight_image_tablet'] = $gucciSpotlightTabletImage;
+
+        // Handle Gucci Spotlight Mobile Images
+        $currentGucciMobileImage = $homePage->gucci_spotlight_image_mobile ?? ['ar' => '', 'en' => ''];
+        $gucciSpotlightMobileImage = [
+            'ar' => is_array($currentGucciMobileImage) ? ($currentGucciMobileImage['ar'] ?? '') : '',
+            'en' => is_array($currentGucciMobileImage) ? ($currentGucciMobileImage['en'] ?? '') : '',
+        ];
+
+        if ($request->hasFile('gucci_spotlight_image_mobile_ar')) {
+            $path = $request->file('gucci_spotlight_image_mobile_ar')->store('home-page/gucci-spotlight/mobile', 'public');
+            $gucciSpotlightMobileImage['ar'] = '/storage/' . $path;
+        }
+
+        if ($request->hasFile('gucci_spotlight_image_mobile_en')) {
+            $path = $request->file('gucci_spotlight_image_mobile_en')->store('home-page/gucci-spotlight/mobile', 'public');
+            $gucciSpotlightMobileImage['en'] = '/storage/' . $path;
+        }
+
+        $data['gucci_spotlight_image_mobile'] = $gucciSpotlightMobileImage;
         $data['gucci_spotlight_link'] = $request->input('gucci_spotlight_link', '#');
         $data['gucci_spotlight_active'] = $request->boolean('gucci_spotlight_active');
         Log::info('Gucci Spotlight saved: ' . json_encode($gucciSpotlightImage));
@@ -228,6 +385,22 @@ class HomePageController extends Controller
             $data['featured_banner_image'] = '/storage/' . $path;
         } else {
             $data['featured_banner_image'] = $request->input('featured_banner_image_current');
+        }
+
+        // Handle Featured Banner Tablet Image
+        if ($request->hasFile('featured_banner_image_tablet')) {
+            $path = $request->file('featured_banner_image_tablet')->store('home-page/featured/tablet', 'public');
+            $data['featured_banner_image_tablet'] = '/storage/' . $path;
+        } else {
+            $data['featured_banner_image_tablet'] = $request->input('featured_banner_image_tablet_current');
+        }
+
+        // Handle Featured Banner Mobile Image
+        if ($request->hasFile('featured_banner_image_mobile')) {
+            $path = $request->file('featured_banner_image_mobile')->store('home-page/featured/mobile', 'public');
+            $data['featured_banner_image_mobile'] = '/storage/' . $path;
+        } else {
+            $data['featured_banner_image_mobile'] = $request->input('featured_banner_image_mobile_current');
         }
 
         $data['featured_banner_link'] = $request->input('featured_banner_link');
@@ -413,14 +586,205 @@ class HomePageController extends Controller
 
         $homePage->update($data);
 
-        // IMPORTANT: Keep the current locale from the request to maintain user's choice
-        $currentLocale = $request->input('locale', $request->get('locale', 'ar'));
-
-        Log::info('HomePageController update - Redirecting', [
-            'redirect_locale' => $currentLocale
+        Log::info('HomePageController update - Success', [
+            'content_saved_for_lang' => $contentLang,
+            'dashboard_locale' => session('locale'),
+            'note' => 'No conflict - different parameter names'
         ]);
 
-        return redirect()->route('admin.home.edit', ['locale' => $currentLocale])
-            ->with('success', __('labels.homepage.updated_successfully'));
+        // Return to same page with content_lang parameter preserved
+        return back()->with('success', __('labels.homepage.updated_successfully'));
     }
-}
+
+    /**
+     * Delete an image from home page
+     * Handles deletion of images from storage and database
+     */
+    public function deleteImage(Request $request)
+    {
+        try {
+            $contentLang = $request->input('content_lang', 'ar');
+            $imageType = $request->input('image_type'); // hero, cyber_sale, dg_banner, etc.
+            $imageIndex = $request->input('image_index'); // For arrays like hero_slides
+            $deviceType = $request->input('device_type', 'desktop'); // desktop, tablet, mobile
+
+            Log::info('Delete image request', [
+                'content_lang' => $contentLang,
+                'image_type' => $imageType,
+                'image_index' => $imageIndex,
+                'device_type' => $deviceType
+            ]);
+
+            $homePage = HomePage::where('locale', $contentLang)->where('is_active', true)->firstOrFail();
+
+            // Handle different image types
+            switch ($imageType) {
+                case 'hero':
+                    $this->deleteHeroImage($homePage, $imageIndex, $deviceType);
+                    break;
+                case 'cyber_sale':
+                    $this->deleteCyberSaleImage($homePage, $deviceType);
+                    break;
+                case 'dg_banner':
+                    $this->deleteDgBannerImage($homePage, $deviceType);
+                    break;
+                case 'gucci_spotlight':
+                    $this->deleteGucciSpotlightImage($homePage, $deviceType);
+                    break;
+                case 'featured_banner':
+                    $this->deleteFeaturedBannerImage($homePage, $deviceType);
+                    break;
+                case 'gift':
+                    $this->deleteGiftImage($homePage, $imageIndex);
+                    break;
+                default:
+                    return response()->json(['success' => false, 'message' => 'Invalid image type'], 400);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => __('labels.homepage.image_deleted_successfully')
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error deleting image', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting image: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function deleteHeroImage($homePage, $index, $deviceType)
+    {
+        if ($deviceType === 'desktop') {
+            $slides = $homePage->hero_slides;
+            if (isset($slides[$index]['image'])) {
+                $this->deleteFileFromStorage($slides[$index]['image']);
+                unset($slides[$index]['image']);
+                $homePage->hero_slides = array_values($slides);
+            }
+        } elseif ($deviceType === 'tablet') {
+            $slides = $homePage->hero_slides_tablet;
+            if (isset($slides[$index]['image'])) {
+                $this->deleteFileFromStorage($slides[$index]['image']);
+                unset($slides[$index]['image']);
+                $homePage->hero_slides_tablet = array_values($slides);
+            }
+        } elseif ($deviceType === 'mobile') {
+            $slides = $homePage->hero_slides_mobile;
+            if (isset($slides[$index]['image'])) {
+                $this->deleteFileFromStorage($slides[$index]['image']);
+                unset($slides[$index]['image']);
+                $homePage->hero_slides_mobile = array_values($slides);
+            }
+        }
+        $homePage->save();
+    }
+
+    private function deleteCyberSaleImage($homePage, $deviceType)
+    {
+        if ($deviceType === 'desktop') {
+            $this->deleteFileFromStorage($homePage->cyber_sale_image);
+            $homePage->cyber_sale_image = null;
+        } elseif ($deviceType === 'tablet') {
+            $this->deleteFileFromStorage($homePage->cyber_sale_image_tablet);
+            $homePage->cyber_sale_image_tablet = null;
+        } elseif ($deviceType === 'mobile') {
+            $this->deleteFileFromStorage($homePage->cyber_sale_image_mobile);
+            $homePage->cyber_sale_image_mobile = null;
+        }
+        $homePage->save();
+    }
+
+    private function deleteDgBannerImage($homePage, $deviceType)
+    {
+        if ($deviceType === 'desktop') {
+            $banners = $homePage->dg_banner_image;
+            if (isset($banners['image'])) {
+                $this->deleteFileFromStorage($banners['image']);
+                unset($banners['image']);
+                $homePage->dg_banner_image = $banners;
+            }
+        } elseif ($deviceType === 'tablet') {
+            $banners = $homePage->dg_banner_image_tablet;
+            if (isset($banners['image'])) {
+                $this->deleteFileFromStorage($banners['image']);
+                unset($banners['image']);
+                $homePage->dg_banner_image_tablet = $banners;
+            }
+        } elseif ($deviceType === 'mobile') {
+            $banners = $homePage->dg_banner_image_mobile;
+            if (isset($banners['image'])) {
+                $this->deleteFileFromStorage($banners['image']);
+                unset($banners['image']);
+                $homePage->dg_banner_image_mobile = $banners;
+            }
+        }
+        $homePage->save();
+    }
+
+    private function deleteGucciSpotlightImage($homePage, $deviceType)
+    {
+        if ($deviceType === 'desktop') {
+            $spotlights = $homePage->gucci_spotlight_image;
+            if (isset($spotlights['image'])) {
+                $this->deleteFileFromStorage($spotlights['image']);
+                unset($spotlights['image']);
+                $homePage->gucci_spotlight_image = $spotlights;
+            }
+        } elseif ($deviceType === 'tablet') {
+            $spotlights = $homePage->gucci_spotlight_image_tablet;
+            if (isset($spotlights['image'])) {
+                $this->deleteFileFromStorage($spotlights['image']);
+                unset($spotlights['image']);
+                $homePage->gucci_spotlight_image_tablet = $spotlights;
+            }
+        } elseif ($deviceType === 'mobile') {
+            $spotlights = $homePage->gucci_spotlight_image_mobile;
+            if (isset($spotlights['image'])) {
+                $this->deleteFileFromStorage($spotlights['image']);
+                unset($spotlights['image']);
+                $homePage->gucci_spotlight_image_mobile = $spotlights;
+            }
+        }
+        $homePage->save();
+    }
+
+    private function deleteFeaturedBannerImage($homePage, $deviceType)
+    {
+        if ($deviceType === 'desktop') {
+            $this->deleteFileFromStorage($homePage->featured_banner_image);
+            $homePage->featured_banner_image = null;
+        } elseif ($deviceType === 'tablet') {
+            $this->deleteFileFromStorage($homePage->featured_banner_image_tablet);
+            $homePage->featured_banner_image_tablet = null;
+        } elseif ($deviceType === 'mobile') {
+            $this->deleteFileFromStorage($homePage->featured_banner_image_mobile);
+            $homePage->featured_banner_image_mobile = null;
+        }
+        $homePage->save();
+    }
+
+    private function deleteGiftImage($homePage, $index)
+    {
+        $gifts = $homePage->gifts_items;
+        if (isset($gifts[$index]['image'])) {
+            $this->deleteFileFromStorage($gifts[$index]['image']);
+            unset($gifts[$index]['image']);
+            $homePage->gifts_items = array_values($gifts);
+            $homePage->save();
+        }
+    }
+
+    private function deleteFileFromStorage($filePath)
+    {
+        if ($filePath && Storage::disk('public')->exists(str_replace('/storage/', '', $filePath))) {
+            Storage::disk('public')->delete(str_replace('/storage/', '', $filePath));
+            Log::info('File deleted from storage', ['path' => $filePath]);
+        }
+    }}

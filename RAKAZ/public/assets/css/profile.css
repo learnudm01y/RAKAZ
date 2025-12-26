@@ -1,0 +1,443 @@
+/* ========================================
+   Profile Page Styles
+   ======================================== */
+
+.profile-page {
+    padding: 40px 0;
+    background: #f8f8f8;
+    min-height: calc(100vh - 200px);
+}
+
+.profile-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Profile Header */
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.profile-avatar svg {
+    width: 50px;
+    height: 50px;
+    stroke: #fff;
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-name {
+    font-size: 28px;
+    font-weight: 600;
+    margin: 0 0 5px 0;
+    color: #1a1a1a;
+}
+
+.profile-email {
+    font-size: 16px;
+    color: #666;
+    margin: 0 0 8px 0;
+}
+
+.profile-member-since {
+    font-size: 14px;
+    color: #999;
+    margin: 0;
+}
+
+/* Alert */
+.alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    font-size: 14px;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+/* Profile Form */
+.profile-form {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    overflow: visible;
+}
+
+.profile-section {
+    padding: 30px;
+    border-bottom: 1px solid #eee;
+}
+
+.profile-section:last-of-type {
+    border-bottom: none;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 25px 0;
+}
+
+.section-title svg {
+    width: 24px;
+    height: 24px;
+    stroke: #1a1a1a;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    padding: 14px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: #1a1a1a;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-group select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+}
+
+[dir="rtl"] .form-group select {
+    background-position: left 16px center;
+    padding-right: 16px;
+    padding-left: 40px;
+}
+
+.error-message {
+    font-size: 13px;
+    color: #dc3545;
+}
+
+/* Form Actions */
+.form-actions {
+    padding: 25px 30px;
+    background: #f8f8f8;
+    display: flex;
+    justify-content: flex-end;
+}
+
+[dir="rtl"] .form-actions {
+    justify-content: flex-start;
+}
+
+.btn-save {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 30px;
+    background: #1a1a1a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-save:hover {
+    background: #333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-save svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Quick Links */
+.profile-quick-links {
+    margin-top: 25px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.quick-links-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 20px 0;
+}
+
+.quick-links-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.quick-link-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 25px 15px;
+    background: #f8f8f8;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.quick-link-card:hover {
+    background: #1a1a1a;
+    color: #fff;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.quick-link-card:hover svg {
+    stroke: #fff;
+}
+
+.quick-link-card svg {
+    width: 28px;
+    height: 28px;
+    stroke: #333;
+    transition: stroke 0.3s ease;
+}
+
+.quick-link-card span {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .profile-page {
+        padding: 20px 0;
+    }
+
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 25px 20px;
+    }
+
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+    }
+
+    .profile-avatar svg {
+        width: 40px;
+        height: 40px;
+    }
+
+    .profile-name {
+        font-size: 22px;
+    }
+
+    .profile-section {
+        padding: 25px 20px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        padding: 20px;
+        justify-content: center;
+    }
+
+    .btn-save {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .quick-links-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-link-card {
+        flex-direction: row;
+        justify-content: flex-start;
+        padding: 18px 20px;
+    }
+}
+
+/* RTL Support */
+[dir="rtl"] .profile-header {
+    flex-direction: row-reverse;
+}
+
+@media (max-width: 768px) {
+    [dir="rtl"] .profile-header {
+        flex-direction: column;
+    }
+}
+
+/* ========================================
+   Custom Select Override for Profile Page
+   ======================================== */
+
+/* Wrapper - يسمح للقائمة بالظهور خارج الـ container */
+.form-group .custom-select-wrapper {
+    position: relative;
+    width: 100%;
+    min-width: unset !important;
+}
+
+/* Trigger - نفس حجم الحقول الأخرى */
+.form-group .custom-select-trigger {
+    padding: 14px 16px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
+    font-family: inherit;
+    min-height: 50px !important;
+    background: #fff !important;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.form-group .custom-select-trigger:hover {
+    border-color: #999 !important;
+}
+
+.form-group .custom-select-trigger:focus,
+.form-group .custom-select-trigger.active {
+    border-color: #1a1a1a !important;
+    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+    border-radius: 8px !important;
+}
+
+.form-group .custom-select-trigger .arrow {
+    border-top-color: #333;
+}
+
+.form-group .custom-select-trigger .selected-text {
+    color: #333;
+    font-size: 15px;
+}
+
+/* Options Container - تظهر خارج الـ container */
+.form-group .custom-select-options {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    z-index: 9999 !important;
+    border: 1px solid #ddd !important;
+    border-top: none !important;
+    border-radius: 0 0 8px 8px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+    background: #fff;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.form-group .custom-select-options.active {
+    border: 1px solid #1a1a1a !important;
+    border-top: none !important;
+}
+
+.form-group .custom-option {
+    padding: 12px 16px;
+    font-size: 15px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    min-height: auto;
+}
+
+.form-group .custom-option:last-child {
+    border-bottom: none;
+    border-radius: 0 0 8px 8px;
+}
+
+.form-group .custom-option:hover {
+    background-color: #f5f5f5;
+}
+
+.form-group .custom-option.selected {
+    background-color: #f0f0f0;
+    font-weight: 500;
+}
+
+/* السماح للقائمة بالظهور خارج الـ section */
+.profile-section {
+    overflow: visible !important;
+}
+
+.form-grid {
+    overflow: visible !important;
+}
+
+.profile-form {
+    overflow: visible !important;
+}

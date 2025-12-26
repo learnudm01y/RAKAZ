@@ -432,6 +432,7 @@
     }
 
     .image-preview-container {
+        position: relative;
         margin-top: 1rem;
         padding: 1rem;
         background: #f8fafc;
@@ -444,6 +445,38 @@
         height: auto;
         border-radius: 6px;
         display: block;
+    }
+
+    .image-remove-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+
+    .image-remove-btn:hover {
+        background: #c82333;
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.6);
+    }
+
+    .image-remove-btn svg {
+        width: 16px;
+        height: 16px;
+        stroke-width: 2.5;
     }
 
     .file-input-custom {
@@ -553,6 +586,7 @@
         background: var(--primary-color);
         color: white;
         box-shadow: 0 1px 3px rgba(49, 130, 206, 0.3);
+        margin-bottom: 10px;
     }
 
     .btn-primary:hover {
@@ -617,11 +651,13 @@
         gap: 0.5rem;
         color: #64748b;
         font-size: 0.875rem;
+        padding-right: 32px;
     }
 
     .save-bar-actions {
         display: flex;
         gap: 1rem;
+        padding-left: 34px;
     }
 
     .empty-state {
@@ -755,6 +791,9 @@
             max-height: none;
         }
     }
+    .content {
+    padding: 14px 3px !important;
+    }
 </style>
 @endpush
 
@@ -774,14 +813,17 @@
 
 
     <!-- Language Selector -->
-    <div class="language-card" style="margin-bottom: 24px; border: 3px dashed #3182ce; position: relative;">
-        <div style="position: absolute; top: -12px; left: 20px; background: white; padding: 0 10px; font-size: 11px; font-weight: 700; color: #3182ce; text-transform: uppercase; letter-spacing: 0.5px;">
-            <span class="ar-text">⚙️ محدد لغة المحتوى فقط</span>
-            <span class="en-text">⚙️ Content Language Only</span>
+    {{-- CRITICAL NOTICE: This selector is for CONTENT LANGUAGE ONLY, NOT dashboard interface language --}}
+    {{-- Dashboard language is controlled by the toggle button in the top header (session-based) --}}
+    {{-- Changing content language here will NOT and MUST NOT change dashboard interface language --}}
+    <div class="language-card" style="margin-bottom: 24px; border: 3px dashed #dc3545; position: relative; background: #fff5f5;">
+        <div style="position: absolute; top: -12px; left: 20px; background: white; padding: 0 10px; font-size: 11px; font-weight: 700; color: #dc3545; text-transform: uppercase; letter-spacing: 0.5px;">
+            <span class="ar-text">⚠️ محدد لغة المحتوى فقط (ليس لوحة التحكم)</span>
+            <span class="en-text">⚠️ Content Language Only (NOT Dashboard)</span>
         </div>
         <div class="language-label">
-            <i class="fas fa-language" style="font-size: 20px; color: var(--primary-color);"></i>
-            <span class="ar-text">اختر لغة المحتوى للتعديل (فقط للمحتوى)</span>
+            <i class="fas fa-language" style="font-size: 20px; color: #dc3545;"></i>
+            <span class="ar-text">اختر لغة المحتوى للتعديل (لوحة التحكم تبقى بنفس اللغة)</span>
             <span class="en-text">Select Content Language to Edit (Content Only)</span>
         </div>
         <p style="font-size: 13px; color: #666; margin: 8px 0 12px; line-height: 1.5;">
@@ -789,16 +831,18 @@
             <span class="en-text">💡 This selector is for content only! To change dashboard interface language, use the language button in the top menu</span>
         </p>
         <form action="{{ route('admin.home.edit') }}" method="GET" style="margin: 0;">
-            <select name="locale" onchange="this.form.submit()" class="language-selector">
-                <option value="ar" {{ $locale === 'ar' ? 'selected' : '' }}>🇸🇦 محتوى عربي (Arabic Content)</option>
-                <option value="en" {{ $locale === 'en' ? 'selected' : '' }}>🇬🇧 محتوى إنجليزي (English Content)</option>
+            <select name="content_lang" onchange="this.form.submit()" class="language-selector">
+                <option value="ar" {{ $contentLang === 'ar' ? 'selected' : '' }}>🇸🇦 محتوى عربي (Arabic Content)</option>
+                <option value="en" {{ $contentLang === 'en' ? 'selected' : '' }}>🇬🇧 محتوى إنجليزي (English Content)</option>
             </select>
         </form>
     </div>
 
     <form action="{{ route('admin.home.update') }}" method="POST" enctype="multipart/form-data" id="homePageForm">
         @csrf
-        <input type="hidden" name="locale" value="{{ $locale }}">
+        {{-- ARCHITECTURE FIX: Using content_lang prevents ANY conflict with dashboard locale --}}
+        {{-- content_lang = content version only, locale = dashboard only, ZERO overlap --}}
+        <input type="hidden" name="content_lang" value="{{ $contentLang }}">
 
         <div class="tabs-wrapper">
             <nav class="tabs-nav">
@@ -885,14 +929,21 @@
                             </label>
                             <div class="image-preview-container" id="hero-preview-{{ $index }}" style="display: block;">
                                 <img src="{{ $slide['image'] }}" alt="Hero {{ $index + 1 }}">
+                                <button type="button" class="image-remove-btn" onclick="removeImage(document.getElementById('hero-preview-{{ $index }}'), document.querySelector('input[name=\'hero_slide_image[{{ $index }}]\']'))">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    <span class="ar-text">حذف</span>
+                                    <span class="en-text">Delete</span>
+                                </button>
                             </div>
                             <input type="hidden" name="hero_slides[{{ $index }}][image]" value="{{ $slide['image'] }}">
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">
-                                <span class="ar-text">تغيير الصورة</span>
-                                <span class="en-text">Change Image</span>
+                                <span class="ar-text">💻 تغيير الصورة (للحاسوب)</span>
+                                <span class="en-text">💻 Change Image (Desktop)</span>
                             </label>
                             <div class="file-input-custom">
                                 <input type="file" name="hero_slide_image[{{ $index }}]" class="form-control" accept="image/*" data-preview="hero-preview-{{ $index }}" onchange="previewImage(this)">
@@ -903,6 +954,71 @@
                                 </svg>
                                 <span class="ar-text">الحجم المثالي: 1920x800 بكسل | JPG, PNG</span>
                                 <span class="en-text">Optimal size: 1920x800px | JPG, PNG</span>
+                            </p>
+                        </div>
+
+                        @php
+                            $tabletSlide = $homePage->hero_slides_tablet[$index] ?? null;
+                            $mobileSlide = $homePage->hero_slides_mobile[$index] ?? null;
+                        @endphp
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span class="ar-text">📱 صورة التابلت (اختياري)</span>
+                                <span class="en-text">📱 Tablet Image (Optional)</span>
+                            </label>
+                            @if($tabletSlide && isset($tabletSlide['image']))
+                            <div class="image-preview-container" id="hero-tablet-preview-{{ $index }}" style="display: block;">
+                                <img src="{{ $tabletSlide['image'] }}" alt="Hero Tablet {{ $index + 1 }}">
+                                <button type="button" class="image-remove-btn" onclick="removeImage(document.getElementById('hero-tablet-preview-{{ $index }}'), document.querySelector('input[name=\'hero_slide_tablet_image[{{ $index }}]\']'))">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    <span class="ar-text">حذف</span>
+                                    <span class="en-text">Delete</span>
+                                </button>
+                            </div>
+                            <input type="hidden" name="hero_slides_tablet[{{ $index }}][image]" value="{{ $tabletSlide['image'] }}">
+                            @endif
+                            <div class="file-input-custom">
+                                <input type="file" name="hero_slide_tablet_image[{{ $index }}]" class="form-control" accept="image/*" data-preview="hero-tablet-preview-{{ $index }}" onchange="previewImage(this)">
+                            </div>
+                            <p class="helper-text">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="ar-text">الحجم المثالي: 1024x600 بكسل | سيتم عرضها على التابلت</span>
+                                <span class="en-text">Optimal size: 1024x600px | Will be shown on tablets</span>
+                            </p>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span class="ar-text">📱 صورة الموبايل (اختياري)</span>
+                                <span class="en-text">📱 Mobile Image (Optional)</span>
+                            </label>
+                            @if($mobileSlide && isset($mobileSlide['image']))
+                            <div class="image-preview-container" id="hero-mobile-preview-{{ $index }}" style="display: block;">
+                                <img src="{{ $mobileSlide['image'] }}" alt="Hero Mobile {{ $index + 1 }}">
+                                <button type="button" class="image-remove-btn" onclick="removeImage(document.getElementById('hero-mobile-preview-{{ $index }}'), document.querySelector('input[name=\'hero_slide_mobile_image[{{ $index }}]\']'))">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    <span class="ar-text">حذف</span>
+                                    <span class="en-text">Delete</span>
+                                </button>
+                            </div>
+                            <input type="hidden" name="hero_slides_mobile[{{ $index }}][image]" value="{{ $mobileSlide['image'] }}">
+                            @endif
+                            <div class="file-input-custom">
+                                <input type="file" name="hero_slide_mobile_image[{{ $index }}]" class="form-control" accept="image/*" data-preview="hero-mobile-preview-{{ $index }}" onchange="previewImage(this)">
+                            </div>
+                            <p class="helper-text">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="ar-text">الحجم المثالي: 768x600 بكسل | سيتم عرضها على الهواتف</span>
+                                <span class="en-text">Optimal size: 768x600px | Will be shown on mobile phones</span>
                             </p>
                         </div>
 
@@ -969,8 +1085,8 @@
 
                 <div class="form-group">
                     <label class="form-label">
-                        <span class="ar-text">صورة البانر</span>
-                        <span class="en-text">Banner Image</span>
+                        <span class="ar-text">💻 صورة البانر (للحاسوب)</span>
+                        <span class="en-text">💻 Banner Image (Desktop)</span>
                     </label>
                     <div class="image-preview-container" id="cyber-preview" @if($homePage->cyber_sale_image) style="display: block;" @else style="display: none;" @endif>
                         <img src="{{ $homePage->cyber_sale_image ?? '' }}" alt="Cyber Sale">
@@ -983,6 +1099,44 @@
                         <i class="fas fa-info-circle"></i>
                         <span class="ar-text">الحجم المثالي: 1920x600 بكسل</span>
                         <span class="en-text">Optimal size: 1920x600px</span>
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <span class="ar-text">📱 صورة التابلت (اختياري)</span>
+                        <span class="en-text">📱 Tablet Image (Optional)</span>
+                    </label>
+                    <div class="image-preview-container" id="cyber-tablet-preview" @if($homePage->cyber_sale_image_tablet) style="display: block;" @else style="display: none;" @endif>
+                        <img src="{{ $homePage->cyber_sale_image_tablet ?? '' }}" alt="Cyber Sale Tablet">
+                    </div>
+                    <input type="hidden" name="cyber_sale_image_tablet_current" value="{{ $homePage->cyber_sale_image_tablet ?? '' }}">
+                    <div class="file-input-custom">
+                        <input type="file" name="cyber_sale_image_tablet" class="form-control image-upload" accept="image/*" data-preview="cyber-tablet-preview" onchange="previewImage(this)">
+                    </div>
+                    <p class="helper-text">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="ar-text">الحجم المثالي: 1024x400 بكسل | سيتم عرضها على التابلت</span>
+                        <span class="en-text">Optimal size: 1024x400px | Will be shown on tablets</span>
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <span class="ar-text">📱 صورة الموبايل (اختياري)</span>
+                        <span class="en-text">📱 Mobile Image (Optional)</span>
+                    </label>
+                    <div class="image-preview-container" id="cyber-mobile-preview" @if($homePage->cyber_sale_image_mobile) style="display: block;" @else style="display: none;" @endif>
+                        <img src="{{ $homePage->cyber_sale_image_mobile ?? '' }}" alt="Cyber Sale Mobile">
+                    </div>
+                    <input type="hidden" name="cyber_sale_image_mobile_current" value="{{ $homePage->cyber_sale_image_mobile ?? '' }}">
+                    <div class="file-input-custom">
+                        <input type="file" name="cyber_sale_image_mobile" class="form-control image-upload" accept="image/*" data-preview="cyber-mobile-preview" onchange="previewImage(this)">
+                    </div>
+                    <p class="helper-text">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="ar-text">الحجم المثالي: 768x400 بكسل | سيتم عرضها على الهواتف</span>
+                        <span class="en-text">Optimal size: 768x400px | Will be shown on mobile phones</span>
                     </p>
                 </div>
 
@@ -1217,11 +1371,11 @@
 
                 <div class="row">
                     <!-- Arabic Image -->
-                    @if($locale === 'ar')
+                    @if($contentLang === 'ar')
                     <div class="form-group">
                         <label class="form-label">
-                            <span class="ar-text">صورة البانر (عربي)</span>
-                            <span class="en-text">Banner Image (Arabic)</span>
+                            <span class="ar-text">💻 صورة البانر (عربي - للحاسوب)</span>
+                            <span class="en-text">💻 Banner Image (Arabic - Desktop)</span>
                         </label>
                         <div class="file-input-custom">
                             <input type="file" name="dg_banner_image_ar" accept="image/*" class="form-control" onchange="previewImage(this)" data-preview="dg-preview-ar">
@@ -1244,14 +1398,68 @@
                         </div>
                         @endif
                     </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="ar-text">📱 صورة التابلت (عربي - اختياري)</span>
+                            <span class="en-text">📱 Tablet Image (Arabic - Optional)</span>
+                        </label>
+                        <div class="file-input-custom">
+                            <input type="file" name="dg_banner_image_tablet_ar" accept="image/*" class="form-control" onchange="previewImage(this)" data-preview="dg-tablet-preview-ar">
+                            <input type="hidden" name="dg_banner_image_tablet_ar_current" value="{{ is_array($homePage->dg_banner_image_tablet ?? null) ? ($homePage->dg_banner_image_tablet['ar'] ?? '') : '' }}">
+                        </div>
+                        <p class="helper-text">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="ar-text">الحجم الموصى به: 1024x400 بكسل | سيتم عرضها على التابلت</span>
+                            <span class="en-text">Recommended size: 1024x400 pixels | Will be shown on tablets</span>
+                        </p>
+                        @if(is_array($homePage->dg_banner_image_tablet ?? null) && !empty($homePage->dg_banner_image_tablet['ar']))
+                        <div class="image-preview-container" id="dg-tablet-preview-ar" style="display: block;">
+                            <img src="{{ $homePage->dg_banner_image_tablet['ar'] }}" alt="DG Banner Tablet AR">
+                        </div>
+                        @else
+                        <div class="image-preview-container" id="dg-tablet-preview-ar" style="display: none;">
+                            <img src="" alt="Preview">
+                        </div>
+                        @endif
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="ar-text">📱 صورة الموبايل (عربي - اختياري)</span>
+                            <span class="en-text">📱 Mobile Image (Arabic - Optional)</span>
+                        </label>
+                        <div class="file-input-custom">
+                            <input type="file" name="dg_banner_image_mobile_ar" accept="image/*" class="form-control" onchange="previewImage(this)" data-preview="dg-mobile-preview-ar">
+                            <input type="hidden" name="dg_banner_image_mobile_ar_current" value="{{ is_array($homePage->dg_banner_image_mobile ?? null) ? ($homePage->dg_banner_image_mobile['ar'] ?? '') : '' }}">
+                        </div>
+                        <p class="helper-text">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="ar-text">الحجم الموصى به: 768x400 بكسل | سيتم عرضها على الهواتف</span>
+                            <span class="en-text">Recommended size: 768x400 pixels | Will be shown on mobile phones</span>
+                        </p>
+                        @if(is_array($homePage->dg_banner_image_mobile ?? null) && !empty($homePage->dg_banner_image_mobile['ar']))
+                        <div class="image-preview-container" id="dg-mobile-preview-ar" style="display: block;">
+                            <img src="{{ $homePage->dg_banner_image_mobile['ar'] }}" alt="DG Banner Mobile AR">
+                        </div>
+                        @else
+                        <div class="image-preview-container" id="dg-mobile-preview-ar" style="display: none;">
+                            <img src="" alt="Preview">
+                        </div>
+                        @endif
+                    </div>
                     @endif
 
                     <!-- English Image -->
-                    @if($locale === 'en')
+                    @if($contentLang === 'en')
                     <div class="form-group">
                         <label class="form-label">
-                            <span class="ar-text">صورة البانر (إنجليزي)</span>
-                            <span class="en-text">Banner Image (English)</span>
+                            <span class="ar-text">💻 صورة البانر (إنجليزي - للحاسوب)</span>
+                            <span class="en-text">💻 Banner Image (English - Desktop)</span>
                         </label>
                         <div class="file-input-custom">
                             <input type="file" name="dg_banner_image_en" accept="image/*" class="form-control" onchange="previewImage(this)" data-preview="dg-preview-en">
@@ -1270,6 +1478,60 @@
                         </div>
                         @else
                         <div class="image-preview-container" id="dg-preview-en" style="display: none;">
+                            <img src="" alt="Preview">
+                        </div>
+                        @endif
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="ar-text">📱 صورة التابلت (إنجليزي - اختياري)</span>
+                            <span class="en-text">📱 Tablet Image (English - Optional)</span>
+                        </label>
+                        <div class="file-input-custom">
+                            <input type="file" name="dg_banner_image_tablet_en" accept="image/*" class="form-control" onchange="previewImage(this)" data-preview="dg-tablet-preview-en">
+                            <input type="hidden" name="dg_banner_image_tablet_en_current" value="{{ is_array($homePage->dg_banner_image_tablet ?? null) ? ($homePage->dg_banner_image_tablet['en'] ?? '') : '' }}">
+                        </div>
+                        <p class="helper-text">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="ar-text">الحجم الموصى به: 1024x400 بكسل | سيتم عرضها على التابلت</span>
+                            <span class="en-text">Recommended size: 1024x400 pixels | Will be shown on tablets</span>
+                        </p>
+                        @if(is_array($homePage->dg_banner_image_tablet ?? null) && !empty($homePage->dg_banner_image_tablet['en']))
+                        <div class="image-preview-container" id="dg-tablet-preview-en" style="display: block;">
+                            <img src="{{ $homePage->dg_banner_image_tablet['en'] }}" alt="DG Banner Tablet EN">
+                        </div>
+                        @else
+                        <div class="image-preview-container" id="dg-tablet-preview-en" style="display: none;">
+                            <img src="" alt="Preview">
+                        </div>
+                        @endif
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="ar-text">📱 صورة الموبايل (إنجليزي - اختياري)</span>
+                            <span class="en-text">📱 Mobile Image (English - Optional)</span>
+                        </label>
+                        <div class="file-input-custom">
+                            <input type="file" name="dg_banner_image_mobile_en" accept="image/*" class="form-control" onchange="previewImage(this)" data-preview="dg-mobile-preview-en">
+                            <input type="hidden" name="dg_banner_image_mobile_en_current" value="{{ is_array($homePage->dg_banner_image_mobile ?? null) ? ($homePage->dg_banner_image_mobile['en'] ?? '') : '' }}">
+                        </div>
+                        <p class="helper-text">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="ar-text">الحجم الموصى به: 768x400 بكسل | سيتم عرضها على الهواتف</span>
+                            <span class="en-text">Recommended size: 768x400 pixels | Will be shown on mobile phones</span>
+                        </p>
+                        @if(is_array($homePage->dg_banner_image_mobile ?? null) && !empty($homePage->dg_banner_image_mobile['en']))
+                        <div class="image-preview-container" id="dg-mobile-preview-en" style="display: block;">
+                            <img src="{{ $homePage->dg_banner_image_mobile['en'] }}" alt="DG Banner Mobile EN">
+                        </div>
+                        @else
+                        <div class="image-preview-container" id="dg-mobile-preview-en" style="display: none;">
                             <img src="" alt="Preview">
                         </div>
                         @endif
@@ -1316,11 +1578,11 @@
 
                 <div class="row">
                     <!-- Arabic Image -->
-                    @if($locale === 'ar')
+                    @if($contentLang === 'ar')
                     <div class="form-group">
                         <label class="form-label">
-                            <span class="ar-text">صورة البانر (عربي)</span>
-                            <span class="en-text">Banner Image (Arabic)</span>
+                            <span class="ar-text">💻 صورة البانر (عربي - للحاسوب)</span>
+                            <span class="en-text">💻 Banner Image (Arabic - Desktop)</span>
                         </label>
                         <div class="file-input-custom">
                             <input type="file" name="gucci_spotlight_image_ar" accept="image/*" class="form-control" onchange="previewImage(this)" data-preview="gucci-preview-ar">
@@ -1343,14 +1605,68 @@
                         </div>
                         @endif
                     </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="ar-text">📱 صورة التابلت (عربي - اختياري)</span>
+                            <span class="en-text">📱 Tablet Image (Arabic - Optional)</span>
+                        </label>
+                        <div class="file-input-custom">
+                            <input type="file" name="gucci_spotlight_image_tablet_ar" accept="image/*" class="form-control" onchange="previewImage(this)" data-preview="gucci-tablet-preview-ar">
+                            <input type="hidden" name="gucci_spotlight_image_tablet_ar_current" value="{{ is_array($homePage->gucci_spotlight_image_tablet ?? null) ? ($homePage->gucci_spotlight_image_tablet['ar'] ?? '') : '' }}">
+                        </div>
+                        <p class="helper-text">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="ar-text">الحجم الموصى به: 1024x400 بكسل | سيتم عرضها على التابلت</span>
+                            <span class="en-text">Recommended size: 1024x400 pixels | Will be shown on tablets</span>
+                        </p>
+                        @if(is_array($homePage->gucci_spotlight_image_tablet ?? null) && !empty($homePage->gucci_spotlight_image_tablet['ar']))
+                        <div class="image-preview-container" id="gucci-tablet-preview-ar" style="display: block;">
+                            <img src="{{ $homePage->gucci_spotlight_image_tablet['ar'] }}" alt="Gucci Spotlight Tablet AR">
+                        </div>
+                        @else
+                        <div class="image-preview-container" id="gucci-tablet-preview-ar" style="display: none;">
+                            <img src="" alt="Preview">
+                        </div>
+                        @endif
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="ar-text">📱 صورة الموبايل (عربي - اختياري)</span>
+                            <span class="en-text">📱 Mobile Image (Arabic - Optional)</span>
+                        </label>
+                        <div class="file-input-custom">
+                            <input type="file" name="gucci_spotlight_image_mobile_ar" accept="image/*" class="form-control" onchange="previewImage(this)" data-preview="gucci-mobile-preview-ar">
+                            <input type="hidden" name="gucci_spotlight_image_mobile_ar_current" value="{{ is_array($homePage->gucci_spotlight_image_mobile ?? null) ? ($homePage->gucci_spotlight_image_mobile['ar'] ?? '') : '' }}">
+                        </div>
+                        <p class="helper-text">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="ar-text">الحجم الموصى به: 768x400 بكسل | سيتم عرضها على الهواتف</span>
+                            <span class="en-text">Recommended size: 768x400 pixels | Will be shown on mobile phones</span>
+                        </p>
+                        @if(is_array($homePage->gucci_spotlight_image_mobile ?? null) && !empty($homePage->gucci_spotlight_image_mobile['ar']))
+                        <div class="image-preview-container" id="gucci-mobile-preview-ar" style="display: block;">
+                            <img src="{{ $homePage->gucci_spotlight_image_mobile['ar'] }}" alt="Gucci Spotlight Mobile AR">
+                        </div>
+                        @else
+                        <div class="image-preview-container" id="gucci-mobile-preview-ar" style="display: none;">
+                            <img src="" alt="Preview">
+                        </div>
+                        @endif
+                    </div>
                     @endif
 
                     <!-- English Image -->
-                    @if($locale === 'en')
+                    @if($contentLang === 'en')
                     <div class="form-group">
                         <label class="form-label">
-                            <span class="ar-text">صورة البانر (إنجليزي)</span>
-                            <span class="en-text">Banner Image (English)</span>
+                            <span class="ar-text">💻 صورة البانر (إنجليزي - للحاسوب)</span>
+                            <span class="en-text">💻 Banner Image (English - Desktop)</span>
                         </label>
                         <div class="file-input-custom">
                             <input type="file" name="gucci_spotlight_image_en" accept="image/*" class="form-control" onchange="previewImage(this)" data-preview="gucci-preview-en">
@@ -1369,6 +1685,60 @@
                         </div>
                         @else
                         <div class="image-preview-container" id="gucci-preview-en" style="display: none;">
+                            <img src="" alt="Preview">
+                        </div>
+                        @endif
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="ar-text">📱 صورة التابلت (إنجليزي - اختياري)</span>
+                            <span class="en-text">📱 Tablet Image (English - Optional)</span>
+                        </label>
+                        <div class="file-input-custom">
+                            <input type="file" name="gucci_spotlight_image_tablet_en" accept="image/*" class="form-control" onchange="previewImage(this)" data-preview="gucci-tablet-preview-en">
+                            <input type="hidden" name="gucci_spotlight_image_tablet_en_current" value="{{ is_array($homePage->gucci_spotlight_image_tablet ?? null) ? ($homePage->gucci_spotlight_image_tablet['en'] ?? '') : '' }}">
+                        </div>
+                        <p class="helper-text">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="ar-text">الحجم الموصى به: 1024x400 بكسل | سيتم عرضها على التابلت</span>
+                            <span class="en-text">Recommended size: 1024x400 pixels | Will be shown on tablets</span>
+                        </p>
+                        @if(is_array($homePage->gucci_spotlight_image_tablet ?? null) && !empty($homePage->gucci_spotlight_image_tablet['en']))
+                        <div class="image-preview-container" id="gucci-tablet-preview-en" style="display: block;">
+                            <img src="{{ $homePage->gucci_spotlight_image_tablet['en'] }}" alt="Gucci Spotlight Tablet EN">
+                        </div>
+                        @else
+                        <div class="image-preview-container" id="gucci-tablet-preview-en" style="display: none;">
+                            <img src="" alt="Preview">
+                        </div>
+                        @endif
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="ar-text">📱 صورة الموبايل (إنجليزي - اختياري)</span>
+                            <span class="en-text">📱 Mobile Image (English - Optional)</span>
+                        </label>
+                        <div class="file-input-custom">
+                            <input type="file" name="gucci_spotlight_image_mobile_en" accept="image/*" class="form-control" onchange="previewImage(this)" data-preview="gucci-mobile-preview-en">
+                            <input type="hidden" name="gucci_spotlight_image_mobile_en_current" value="{{ is_array($homePage->gucci_spotlight_image_mobile ?? null) ? ($homePage->gucci_spotlight_image_mobile['en'] ?? '') : '' }}">
+                        </div>
+                        <p class="helper-text">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="ar-text">الحجم الموصى به: 768x400 بكسل | سيتم عرضها على الهواتف</span>
+                            <span class="en-text">Recommended size: 768x400 pixels | Will be shown on mobile phones</span>
+                        </p>
+                        @if(is_array($homePage->gucci_spotlight_image_mobile ?? null) && !empty($homePage->gucci_spotlight_image_mobile['en']))
+                        <div class="image-preview-container" id="gucci-mobile-preview-en" style="display: block;">
+                            <img src="{{ $homePage->gucci_spotlight_image_mobile['en'] }}" alt="Gucci Spotlight Mobile EN">
+                        </div>
+                        @else
+                        <div class="image-preview-container" id="gucci-mobile-preview-en" style="display: none;">
                             <img src="" alt="Preview">
                         </div>
                         @endif
@@ -1400,8 +1770,8 @@
 
                 <div class="form-group">
                     <label class="form-label">
-                        <span class="ar-text">صورة البانر</span>
-                        <span class="en-text">Banner Image</span>
+                        <span class="ar-text">💻 صورة البانر (للحاسوب)</span>
+                        <span class="en-text">💻 Banner Image (Desktop)</span>
                     </label>
                     <div class="image-preview-container" id="featured-preview" @if($homePage->featured_banner_image) style="display: block;" @else style="display: none;" @endif>
                         <img src="{{ $homePage->featured_banner_image ?? '' }}" alt="Featured Banner">
@@ -1414,6 +1784,44 @@
                         <i class="fas fa-info-circle"></i>
                         <span class="ar-text">الحجم المثالي: 1920x600 بكسل</span>
                         <span class="en-text">Optimal size: 1920x600px</span>
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <span class="ar-text">📱 صورة التابلت (اختياري)</span>
+                        <span class="en-text">📱 Tablet Image (Optional)</span>
+                    </label>
+                    <div class="image-preview-container" id="featured-tablet-preview" @if($homePage->featured_banner_image_tablet) style="display: block;" @else style="display: none;" @endif>
+                        <img src="{{ $homePage->featured_banner_image_tablet ?? '' }}" alt="Featured Banner Tablet">
+                    </div>
+                    <input type="hidden" name="featured_banner_image_tablet_current" value="{{ $homePage->featured_banner_image_tablet ?? '' }}">
+                    <div class="file-input-custom">
+                        <input type="file" name="featured_banner_image_tablet" class="form-control image-upload" accept="image/*" data-preview="featured-tablet-preview" onchange="previewImage(this)">
+                    </div>
+                    <p class="helper-text">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="ar-text">الحجم المثالي: 1024x400 بكسل | سيتم عرضها على التابلت</span>
+                        <span class="en-text">Optimal size: 1024x400px | Will be shown on tablets</span>
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <span class="ar-text">📱 صورة الموبايل (اختياري)</span>
+                        <span class="en-text">📱 Mobile Image (Optional)</span>
+                    </label>
+                    <div class="image-preview-container" id="featured-mobile-preview" @if($homePage->featured_banner_image_mobile) style="display: block;" @else style="display: none;" @endif>
+                        <img src="{{ $homePage->featured_banner_image_mobile ?? '' }}" alt="Featured Banner Mobile">
+                    </div>
+                    <input type="hidden" name="featured_banner_image_mobile_current" value="{{ $homePage->featured_banner_image_mobile ?? '' }}">
+                    <div class="file-input-custom">
+                        <input type="file" name="featured_banner_image_mobile" class="form-control image-upload" accept="image/*" data-preview="featured-mobile-preview" onchange="previewImage(this)">
+                    </div>
+                    <p class="helper-text">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="ar-text">الحجم المثالي: 768x400 بكسل | سيتم عرضها على الهواتف</span>
+                        <span class="en-text">Optimal size: 768x400px | Will be shown on mobile phones</span>
                     </p>
                 </div>
 
@@ -1524,6 +1932,32 @@
                     </p>
                 </div>
 
+                <div style="background: #e3f2fd; border: 2px solid #2196f3; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                    <div style="display: flex; align-items: start; gap: 0.75rem;">
+                        <svg fill="none" stroke="#2196f3" viewBox="0 0 24 24" style="width: 24px; height: 24px; flex-shrink: 0; margin-top: 2px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <strong style="color: #1976d2; display: block; margin-bottom: 0.5rem;">
+                                <span class="ar-text">ملاحظة هامة عن ترتيب العناصر:</span>
+                                <span class="en-text">Important Note About Item Order:</span>
+                            </strong>
+                            <p style="margin: 0; color: #0d47a1; line-height: 1.6;">
+                                <span class="ar-text">
+                                    • أول <strong>3 عناصر</strong> ستظهر في صف واحد (grid)<br>
+                                    • آخر <strong>عنصرين</strong> (رقم 4 و 5) ستظهر في صف منفصل بتصميم عريض (wide cards)<br>
+                                    • يُفضل رفع 5 عناصر بالمجموع للحصول على أفضل تصميم في الواجهة
+                                </span>
+                                <span class="en-text">
+                                    • First <strong>3 items</strong> will appear in one row (grid)<br>
+                                    • Last <strong>2 items</strong> (#4 and #5) will appear in a separate row as wide cards<br>
+                                    • It's recommended to add 5 items total for the best frontend layout
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="checkbox-wrapper">
                     <input type="checkbox" name="discover_section_active" value="1" id="discover_section_active" {{ $homePage->discover_section_active ? 'checked' : '' }}>
                     <label for="discover_section_active">
@@ -1534,12 +1968,19 @@
 
                 <div id="discover-container">
                     @foreach($discoverItems ?? [] as $index => $item)
-                    <div class="item-card discover-item" data-index="{{ $index }}">
+                    @php
+                        $isWideCard = $index >= 3; // Items 4 and 5 (index 3, 4) are wide cards
+                        $cardTypeLabel = $index < 3 ?
+                            ($contentLang == 'ar' ? '(كرت صغير - Grid)' : '(Small Card - Grid)') :
+                            ($contentLang == 'ar' ? '(كرت عريض - Wide)' : '(Wide Card)');
+                        $cardTypeColor = $index < 3 ? '#4caf50' : '#ff9800';
+                    @endphp
+                    <div class="item-card discover-item" data-index="{{ $index }}" style="border-left: 4px solid {{ $cardTypeColor }};">
                         <div class="item-card-header">
                             <div class="item-card-title">
-                                <span class="item-number">{{ $index + 1 }}</span>
-                                <span class="ar-text">عنصر رقم {{ $index + 1 }}</span>
-                                <span class="en-text">Item #{{ $index + 1 }}</span>
+                                <span class="item-number" style="background: {{ $cardTypeColor }};">{{ $index + 1 }}</span>
+                                <span class="ar-text">عنصر رقم {{ $index + 1 }} {{ $cardTypeLabel }}</span>
+                                <span class="en-text">Item #{{ $index + 1 }} {{ $cardTypeLabel }}</span>
                             </div>
                             <button type="button" onclick="removeDiscoverItem({{ $item->id }})" class="btn btn-danger btn-sm">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1678,7 +2119,7 @@
                         </p>
                     </div>
 
-                    @if($locale === 'ar')
+                    @if($contentLang === 'ar')
                     <div class="form-group">
                         <label class="form-label">
                             <span class="ar-text">العنوان (عربي)</span>
@@ -1688,7 +2129,7 @@
                     </div>
                     @endif
 
-                    @if($locale === 'en')
+                    @if($contentLang === 'en')
                     <div class="form-group">
                         <label class="form-label">
                             <span class="ar-text">العنوان (إنجليزي)</span>
@@ -1698,7 +2139,7 @@
                     </div>
                     @endif
 
-                    @if($locale === 'ar')
+                    @if($contentLang === 'ar')
                     <div class="form-group">
                         <label class="form-label">
                             <span class="ar-text">الوصف (عربي)</span>
@@ -1708,7 +2149,7 @@
                     </div>
                     @endif
 
-                    @if($locale === 'en')
+                    @if($contentLang === 'en')
                     <div class="form-group">
                         <label class="form-label">
                             <span class="ar-text">الوصف (إنجليزي)</span>
@@ -1743,7 +2184,7 @@
                         </label>
                     </div>
 
-                    @if($locale === 'ar')
+                    @if($contentLang === 'ar')
                     <div class="form-group">
                         <label class="form-label">
                             <span class="ar-text">العنوان (عربي)</span>
@@ -1753,7 +2194,7 @@
                     </div>
                     @endif
 
-                    @if($locale === 'en')
+                    @if($contentLang === 'en')
                     <div class="form-group">
                         <label class="form-label">
                             <span class="ar-text">العنوان (إنجليزي)</span>
@@ -1763,7 +2204,7 @@
                     </div>
                     @endif
 
-                    @if($locale === 'ar')
+                    @if($contentLang === 'ar')
                     <div class="form-group">
                         <label class="form-label">
                             <span class="ar-text">الوصف (عربي)</span>
@@ -1773,7 +2214,7 @@
                     </div>
                     @endif
 
-                    @if($locale === 'en')
+                    @if($contentLang === 'en')
                     <div class="form-group">
                         <label class="form-label">
                             <span class="ar-text">الوصف (إنجليزي)</span>
@@ -1950,13 +2391,30 @@
 
 @push('scripts')
 <script>
-// Debug: Log current locale on page load
-const currentLocale = new URLSearchParams(window.location.search).get('locale') || 'ar';
-const localeInput = document.querySelector('input[name="locale"]');
-console.log('=== Home Edit Page Loaded ===');
-console.log('URL locale parameter:', currentLocale);
-console.log('Form locale input value:', localeInput ? localeInput.value : 'NOT FOUND');
-console.log('Form action:', document.getElementById('homePageForm')?.action);
+// ============================================================================
+// CRITICAL SEPARATION: Content Locale vs Dashboard Locale
+// ============================================================================
+// This page uses 'locale' URL parameter for CONTENT version selection ONLY
+// It does NOT and MUST NOT affect the dashboard interface language
+//
+// Dashboard Language: Controlled by session, changed via top menu toggle
+// Content Language: Controlled by URL parameter '?locale=en/ar'
+//
+// When you edit English content while dashboard is in Arabic:
+// - Dashboard stays in Arabic (from session)
+// - You're editing English version of content
+// - After save, dashboard remains Arabic, you continue editing English content
+// ============================================================================
+
+// ARCHITECTURE FIX: content_lang completely separate from locale
+const contentLang = new URLSearchParams(window.location.search).get('content_lang') || 'ar';
+const contentLangInput = document.querySelector('input[name="content_lang"]');
+console.log('=== Home Edit Page - FIXED ARCHITECTURE ===');
+console.log('Content Language (content_lang):', contentLang, '← Edits THIS content version');
+console.log('Dashboard Language (locale):', '{{ app()->getLocale() }}', '← Interface language');
+console.log('Form content_lang value:', contentLangInput ? contentLangInput.value : 'NOT FOUND');
+console.log('✅ ZERO CONFLICT - Different parameter names!');
+console.log('✅ Dashboard language CANNOT be affected by content editing!');
 
 let heroSlideCount = {{ count($homePage->hero_slides ?? []) }};
 let giftCount = {{ count($homePage->gifts_items ?? []) }};
@@ -1986,6 +2444,22 @@ function previewImage(input) {
             img.src = e.target.result;
             previewContainer.style.display = 'block';
 
+            // Add remove button if not exists
+            if (!previewContainer.querySelector('.image-remove-btn')) {
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'image-remove-btn';
+                removeBtn.onclick = function() { removeImage(previewContainer, input); };
+                removeBtn.innerHTML = `
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    <span class="ar-text">حذف</span>
+                    <span class="en-text">Delete</span>
+                `;
+                previewContainer.appendChild(removeBtn);
+            }
+
             // Add animation
             previewContainer.style.opacity = '0';
             setTimeout(() => {
@@ -1998,6 +2472,126 @@ function previewImage(input) {
     } else if (previewContainer) {
         previewContainer.style.display = 'none';
     }
+}
+
+// Remove Image Function - Server-side deletion
+function removeImage(previewContainer, fileInput, imageType = null, imageIndex = null, deviceType = 'desktop') {
+    const isArabic = document.documentElement.lang === 'ar';
+
+    Swal.fire({
+        title: isArabic ? 'حذف الصورة؟' : 'Delete Image?',
+        text: isArabic ? 'هل أنت متأكد من حذف هذه الصورة من السيرفر؟' : 'Are you sure you want to delete this image from the server?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: isArabic ? 'نعم، احذف' : 'Yes, delete',
+        cancelButtonText: isArabic ? 'إلغاء' : 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading
+            Swal.fire({
+                title: isArabic ? 'جاري الحذف...' : 'Deleting...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Get image metadata from container ID or data attributes
+            if (!imageType) {
+                const containerId = previewContainer.id;
+                imageType = extractImageType(containerId);
+                imageIndex = extractImageIndex(containerId);
+                deviceType = extractDeviceType(containerId);
+            }
+
+            const contentLang = new URLSearchParams(window.location.search).get('content_lang') || 'ar';
+
+            // Send delete request to server
+            fetch('{{ route('admin.home.deleteImage') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    content_lang: contentLang,
+                    image_type: imageType,
+                    image_index: imageIndex,
+                    device_type: deviceType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Clear file input
+                    if (fileInput) {
+                        fileInput.value = '';
+                    }
+
+                    // Clear hidden input if exists
+                    const hiddenInput = previewContainer.parentElement.querySelector('input[type="hidden"]');
+                    if (hiddenInput) {
+                        hiddenInput.remove();
+                    }
+
+                    // Hide preview
+                    previewContainer.style.display = 'none';
+
+                    // Reset image src
+                    const img = previewContainer.querySelector('img');
+                    if (img) {
+                        img.src = '';
+                    }
+
+                    Swal.fire({
+                        title: isArabic ? 'تم الحذف!' : 'Deleted!',
+                        text: isArabic ? 'تم حذف الصورة بنجاح من السيرفر' : 'Image deleted successfully from server',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        title: isArabic ? 'خطأ!' : 'Error!',
+                        text: data.message || (isArabic ? 'فشل حذف الصورة' : 'Failed to delete image'),
+                        icon: 'error'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Delete error:', error);
+                Swal.fire({
+                    title: isArabic ? 'خطأ!' : 'Error!',
+                    text: isArabic ? 'حدث خطأ أثناء الحذف' : 'An error occurred while deleting',
+                    icon: 'error'
+                });
+            });
+        }
+    });
+}
+
+// Helper functions to extract image metadata from container ID
+function extractImageType(containerId) {
+    if (containerId.includes('hero')) return 'hero';
+    if (containerId.includes('cyber')) return 'cyber_sale';
+    if (containerId.includes('dg')) return 'dg_banner';
+    if (containerId.includes('gucci')) return 'gucci_spotlight';
+    if (containerId.includes('featured')) return 'featured_banner';
+    if (containerId.includes('gift')) return 'gift';
+    return null;
+}
+
+function extractImageIndex(containerId) {
+    const match = containerId.match(/-(\d+)$/);
+    return match ? parseInt(match[1]) : null;
+}
+
+function extractDeviceType(containerId) {
+    if (containerId.includes('tablet')) return 'tablet';
+    if (containerId.includes('mobile')) return 'mobile';
+    return 'desktop';
 }
 
 function switchTab(event, tabName) {
@@ -2366,20 +2960,20 @@ function removeItem(button, type) {
 
 // Form submission confirmation
 document.getElementById('homePageForm').addEventListener('submit', function(e) {
-    const localeInput = document.querySelector('input[name="locale"]');
-    const locale = localeInput ? localeInput.value : 'ar';
+    const contentLangInput = document.querySelector('input[name="content_lang"]');
+    const contentLang = contentLangInput ? contentLangInput.value : 'ar';
 
-    // IMPORTANT: Ensure locale is always sent with the form
-    if (!localeInput || !localeInput.value) {
-        console.error('Locale input is missing or empty! Adding it now...');
-        const newLocaleInput = document.createElement('input');
-        newLocaleInput.type = 'hidden';
-        newLocaleInput.name = 'locale';
-        newLocaleInput.value = new URLSearchParams(window.location.search).get('locale') || 'ar';
-        this.appendChild(newLocaleInput);
+    // ARCHITECTURE FIX: Ensure content_lang is always sent
+    if (!contentLangInput || !contentLangInput.value) {
+        console.error('content_lang input missing! Adding it now...');
+        const newContentLangInput = document.createElement('input');
+        newContentLangInput.type = 'hidden';
+        newContentLangInput.name = 'content_lang';
+        newContentLangInput.value = new URLSearchParams(window.location.search).get('content_lang') || 'ar';
+        this.appendChild(newContentLangInput);
     }
 
-    console.log('Form submitting with locale:', locale);
+    console.log('Form submitting with content_lang:', contentLang);
 
     const submitBtn = this.querySelector('button[type="submit"]');
 
@@ -2414,42 +3008,13 @@ document.getElementById('homePageForm').addEventListener('input', function() {
     }
 });
 
-// Warn before leaving with unsaved changes
-let confirmLeave = true;
-window.addEventListener('beforeunload', function(e) {
-    if (formChanged && confirmLeave) {
-        e.preventDefault();
-        e.returnValue = '';
-        return '';
-    }
-});
+// Auto-save indication removed - No beforeunload warning
+let confirmLeave = false; // Disabled
+// beforeunload event removed - users can leave freely
 
-// Cancel button with confirmation
+// Cancel button - no confirmation needed
 document.querySelector('.btn-secondary[href*="admin.pages.index"]')?.addEventListener('click', function(e) {
-    if (formChanged) {
-        e.preventDefault();
-        const locale = document.querySelector('input[name="locale"]').value;
-        const title = locale === 'ar' ? 'هل أنت متأكد؟' : 'Are you sure?';
-        const text = locale === 'ar' ? 'لديك تغييرات غير محفوظة. هل تريد المغادرة؟' : 'You have unsaved changes. Do you want to leave?';
-        const confirmBtn = locale === 'ar' ? 'نعم، غادر' : 'Yes, leave';
-        const cancelBtn = locale === 'ar' ? 'إلغاء' : 'Cancel';
-
-        Swal.fire({
-            title: title,
-            text: text,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: confirmBtn,
-            cancelButtonText: cancelBtn
-        }).then((result) => {
-            if (result.isConfirmed) {
-                confirmLeave = false;
-                window.location.href = this.href;
-            }
-        });
-    }
+    // Direct navigation - no warning
 });
 
 // Preview Functions

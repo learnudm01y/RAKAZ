@@ -160,8 +160,8 @@ class CartController extends Controller
             return [
                 'id' => $item->id,
                 'image' => $mainImage,
-                'brand' => $product->brand ?? '',
-                'name' => app()->getLocale() == 'ar' ? $product->name_ar : $product->name_en,
+                'brand' => ($product->brand && is_object($product->brand)) ? $product->brand->getName() : 'ركاز',
+                'name' => $product->getName(),
                 'price' => number_format($item->price, 0) . ' د.إ',
                 'size' => $item->size ?? $item->shoe_size ?? '',
                 'quantity' => $item->quantity

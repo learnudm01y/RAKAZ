@@ -2,18 +2,40 @@
 
 @section('title', __('labels.menus.title'))
 
+@push('styles')
+<style>
+    .table thead th {
+        background: #1a1a1a !important;
+        color: white !important;
+        padding: 16px 20px !important;
+        font-weight: 600 !important;
+        border-bottom: 3px solid #000 !important;
+        text-transform: none !important;
+        letter-spacing: 0.3px !important;
+        font-size: 14px !important;
+        white-space: nowrap !important;
+        vertical-align: middle !important;
+    }
+
+    .table thead th svg {
+        margin-inline-end: 8px;
+        vertical-align: middle;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="page-header">
     <div class="page-header-content">
         <h1 class="page-title">{{ __('labels.menus.title') }}</h1>
-        <div class="page-actions">
-            <a href="{{ route('admin.menus.create') }}" class="btn btn-primary">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                {{ __('labels.menus.add_new') }}
-            </a>
-        </div>
+    </div>
+    <div class="page-actions">
+        <a href="{{ route('admin.menus.create') }}" class="btn btn-primary">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            {{ __('labels.menus.add_new') }}
+        </a>
     </div>
 </div>
 
@@ -40,13 +62,48 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>{{ __('labels.menus.sort_order') }}</th>
-                            <th>{{ __('labels.menus.name') }}</th>
-                            <th>{{ __('labels.menus.image') }}</th>
-                            <th>{{ __('labels.menus.columns_count') }}</th>
-                            <th>{{ __('labels.menus.link') }}</th>
-                            <th>{{ __('labels.menus.status') }}</th>
-                            <th>{{ __('labels.actions') }}</th>
+                            <th>
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                                </svg>
+                                {{ __('labels.menus.sort_order') }}
+                            </th>
+                            <th>
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                </svg>
+                                {{ __('labels.menus.name') }}
+                            </th>
+                            <th>
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                {{ __('labels.menus.image') }}
+                            </th>
+                            <th>
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+                                </svg>
+                                {{ __('labels.menus.columns_count') }}
+                            </th>
+                            <th>
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                                </svg>
+                                {{ __('labels.menus.link') }}
+                            </th>
+                            <th>
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                {{ __('labels.menus.status') }}
+                            </th>
+                            <th>
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-inline-end: 8px; vertical-align: middle;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                                </svg>
+                                {{ __('labels.actions') }}
+                            </th>
                         </tr>
                     </thead>
                     <tbody>

@@ -77,6 +77,40 @@
             grid-template-columns: 1fr 1fr;
             gap: 40px;
             padding: 40px;
+            position: relative;
+        }
+
+        /* Sale Badge - Positioned on far left/right */
+        .modal-sale-badge-container {
+            position: absolute;
+            top: 20px;
+            z-index: 100;
+        }
+
+        [dir="rtl"] .modal-sale-badge-container {
+            left: 20px;
+        }
+
+        [dir="ltr"] .modal-sale-badge-container {
+            right: 20px;
+        }
+
+        .modal-sale-badge {
+            display: inline-block;
+            background: #dc2626;
+            color: white;
+            padding: 8px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         /* Gallery Styles */
@@ -179,11 +213,47 @@
             cursor: pointer;
             border: 2px solid transparent;
             transition: all 0.3s ease;
+            position: relative;
         }
 
         .modal-thumbnail:hover,
         .modal-thumbnail.active {
             border-color: #1a1a1a;
+        }
+
+        .modal-thumbnail-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 26, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-thumbnail-overlay:hover {
+            background: rgba(26, 26, 26, 0.95);
+        }
+
+        .modal-thumbnail-overlay-text {
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-thumbnails-extra {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e5e5e5;
         }
 
         /* Product Info Styles */
@@ -276,6 +346,60 @@
 
         .modal-option-group {
             margin-bottom: 20px;
+        }
+
+        /* Modal Color Images Styles */
+        .modal-color-images-section {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-color-header {
+            margin-bottom: 12px;
+        }
+
+        .modal-color-header .modal-option-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .modal-selected-color-name {
+            font-weight: 600;
+            color: #000;
+        }
+
+        .modal-color-images-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .modal-color-image-thumb {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #e5e7eb;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #f9fafb;
+        }
+
+        .modal-color-image-thumb:hover {
+            border-color: #9ca3af;
+        }
+
+        .modal-color-image-thumb.active {
+            border-color: #000;
+            border-width: 2px;
+        }
+
+        .modal-color-image-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
         }
 
         .modal-size-header {
@@ -450,30 +574,756 @@
             margin: 8px 0;
         }
 
-        /* Mobile Responsive */
+        /* Hide hover content and gallery on mobile/tablet to improve performance */
+        @media (max-width: 1024px) {
+            .product-hover-content {
+                display: none !important;
+            }
+
+            .product-gallery-section {
+                display: none !important;
+            }
+
+            /* Force product brand to always show on mobile */
+            .product-brand {
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                position: relative !important;
+            }
+        }
+
+        /* ============================================
+           Mobile Grid Layout - 2 Products Per Row (COMPACT & EQUAL HEIGHT)
+           ============================================ */
         @media (max-width: 768px) {
-            .modal-product-details {
-                grid-template-columns: 1fr;
-                padding: 20px;
-                gap: 30px;
+            /* Override all grid views to show 2 products per row on mobile */
+            .products-grid,
+            .products-grid[data-view="grid-2"],
+            .products-grid[data-view="grid-3"],
+            .products-grid[data-view="grid-4"] {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                grid-auto-rows: 1fr !important; /* جميع الصفوف بنفس الارتفاع */
+                gap: 6px !important;
+                padding: 0 6px !important;
+                margin: 0 0 15px 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                align-items: stretch !important; /* تمديد العناصر لنفس الارتفاع */
             }
 
-            .modal-product-gallery {
-                position: relative;
-                top: 0;
+            /* Product Card - Equal Height Container */
+            .product-card {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                height: 100% !important; /* ارتفاع كامل */
+                margin: 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+                display: flex !important;
+                flex-direction: column !important;
+                background: #fff !important;
+                border-radius: 6px !important;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
             }
 
+            /* Image Wrapper - Fixed Height Part */
+            .product-image-wrapper,
+            .product-card .product-image-wrapper {
+                position: relative !important;
+                width: 100% !important;
+                padding-top: 125% !important; /* نسبة 5:4 */
+                margin: 0 !important;
+                overflow: hidden !important;
+                border-radius: 6px 6px 0 0 !important;
+                background: #f5f5f5 !important;
+                box-sizing: border-box !important;
+                flex-shrink: 0 !important; /* لا يتقلص */
+            }
+
+            /* Images - Cover the container */
+            .product-image-primary,
+            .product-image-secondary,
+            .product-card .product-image-primary,
+            .product-card .product-image-secondary {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: cover !important;
+            }
+
+            /* Product Info Container - Flexible Height */
+            .product-info,
+            .product-card .product-info {
+                width: 100% !important;
+                padding: 5px 4px 6px 4px !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 2px !important;
+                flex: 1 !important; /* يأخذ المساحة المتبقية */
+                min-height: 0 !important; /* يسمح بالانكماش */
+            }
+
+            /* Brand - Always Visible - Fixed Size */
+            .product-brand,
+            .product-card .product-brand {
+                font-size: 9px !important;
+                line-height: 1.1 !important;
+                margin: 0 !important;
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                color: #888 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.3px !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                flex-shrink: 0 !important; /* لا يتقلص */
+            }
+
+            /* Product Name - Fixed Height */
+            .product-name,
+            .product-card .product-name {
+                font-size: 11px !important;
+                line-height: 1.25 !important;
+                margin: 0 !important;
+                height: 27.5px !important; /* ارتفاع ثابت لسطرين */
+                min-height: 27.5px !important;
+                max-height: 27.5px !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                display: -webkit-box !important;
+                -webkit-line-clamp: 2 !important;
+                -webkit-box-orient: vertical !important;
+                color: #333 !important;
+                font-weight: 500 !important;
+                flex-shrink: 0 !important; /* لا يتقلص */
+            }
+
+            /* Price - Fixed Height */
+            .product-price,
+            .product-card .product-price {
+                font-size: 12px !important;
+                font-weight: 700 !important;
+                margin: 0 !important;
+                color: #000 !important;
+                line-height: 1.3 !important;
+                min-height: 16px !important;
+                flex-shrink: 0 !important; /* لا يتقلص */
+            }
+
+            /* Add to Cart Button - Fixed Height */
+            .add-to-cart-btn,
+            .product-card .add-to-cart-btn {
+                font-size: 10px !important;
+                padding: 6px 8px !important;
+                width: 100% !important;
+                margin: auto 0 0 0 !important; /* يدفع للأسفل */
+                border-radius: 4px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 4px !important;
+                min-height: 30px !important;
+                height: 30px !important;
+                flex-shrink: 0 !important; /* لا يتقلص */
+            }
+
+            .add-to-cart-btn svg {
+                width: 12px !important; /* أصغر */
+                height: 12px !important;
+            }
+
+            /* Wishlist Button - Smaller */
+            .wishlist-btn,
+            .product-card .wishlist-btn {
+                width: 26px !important; /* أصغر */
+                height: 26px !important;
+                top: 4px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background: rgba(255, 255, 255, 0.9) !important;
+                border-radius: 50% !important;
+            }
+
+            .wishlist-btn svg {
+                width: 12px !important; /* أصغر */
+                height: 12px !important;
+            }
+
+            /* Discount Badge - Smaller */
+            .discount-badge-wrapper {
+                top: 4px !important;
+                left: 4px !important;
+                transform: scale(0.65) !important; /* أصغر بكثير */
+                transform-origin: top left !important;
+            }
+
+            .badge {
+                font-size: 8px !important; /* أصغر */
+                padding: 2px 5px !important;
+                border-radius: 3px !important;
+            }
+        }
+
+        /* Mobile View Toggle - One product per row */
+        @media (max-width: 768px) {
+            .products-grid.mobile-view-one {
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
+            }
+
+            .products-grid.mobile-view-one .product-card {
+                max-width: 100% !important;
+            }
+        }
+
+        /* ============================================
+           Mobile Modal - FIXED Structure for RTL/LTR
+           ============================================ */
+        @media (max-width: 768px) {
+            /* SweetAlert Must Appear Above Modal on Mobile */
+            .swal2-container {
+                z-index: 999999 !important;
+            }
+
+            .swal2-popup {
+                z-index: 999999 !important;
+            }
+
+            /* All Toast Notifications Must Appear Above Modal */
+            .swal2-toast {
+                z-index: 999999 !important;
+            }
+
+            /* Any other notification systems */
+            .toast,
+            .notification,
+            .alert-popup,
+            [role="alert"] {
+                z-index: 999999 !important;
+            }
+
+            /* Specific classes for modal-triggered alerts */
+            .modal-wishlist-alert,
+            .modal-wishlist-toast {
+                z-index: 999999 !important;
+            }
+
+            /* Ensure SweetAlert overlay doesn't block interactions */
+            body.swal2-shown:not(.swal2-no-backdrop):not(.swal2-toast-shown) .swal2-container {
+                z-index: 999999 !important;
+            }
+
+            /* Max Width for All Container Elements */
+            section, article, main, header, footer, div {
+                max-width: 105%;
+            }
+
+            /* Modal Container - Safe Padding */
+            .product-modal {
+                z-index: 99999 !important;
+                padding: 10px !important;
+                box-sizing: border-box !important;
+            }
+
+            .product-modal-overlay {
+                background: rgba(0, 0, 0, 0.85) !important;
+            }
+
+            /* Modal Content - Centered with Safe Margins */
             .product-modal-content {
-                width: 95%;
-                max-height: 95vh;
+                width: calc(100vw - 20px) !important; /* 10px من كل جهة */
+                max-width: calc(100vw - 20px) !important;
+                max-height: calc(100vh - 20px) !important;
+                height: auto !important;
+                border-radius: 12px !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                -webkit-overflow-scrolling: touch !important;
+                position: fixed !important; /* fixed بدلاً من absolute */
+                top: 50% !important;
+                left: 50% !important;
+                right: auto !important; /* إلغاء right */
+                transform: translate(-50%, -50%) !important;
+                box-sizing: border-box !important;
+                margin: 0 !important;
+            }
+
+            /* RTL Support */
+            [dir="rtl"] .product-modal-content {
+                direction: rtl !important;
+            }
+
+            [dir="ltr"] .product-modal-content {
+                direction: ltr !important;
+            }
+
+            /* Close Button - Top Right Corner - NO SPACING */
+            .product-modal-close {
+                position: absolute !important;
+                width: 32px !important;
+                height: 32px !important;
+                top: 0 !important; /* بدون أي تباعد */
+                z-index: 100 !important;
+                background: white !important;
+                border-radius: 0 12px 0 8px !important; /* فقط الزاوية اليمنى السفلية */
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+            }
+
+            [dir="rtl"] .product-modal-close {
+                left: auto !important;
+                right: 0 !important; /* ملاصق للحافة */
+            }
+
+            [dir="ltr"] .product-modal-close {
+                right: 0 !important; /* ملاصق للحافة */
+                left: auto !important;
+            }
+
+            .product-modal-close svg {
+                width: 16px !important;
+                height: 16px !important;
+            }
+
+            /* Product Details Container - No Top Padding */
+            .modal-product-details {
+                display: block !important; /* block بدلاً من grid */
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 14px 14px 14px !important; /* لا padding من الأعلى أبداً */
+                margin: 0 !important;
+                box-sizing: border-box !important;
+                overflow: visible !important;
+                position: relative !important;
+            }
+
+            /* Ensure all child elements respect container */
+            .modal-product-details > *:not(.modal-sale-badge-container) {
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+
+            /* Sale Badge - Vertical Top Left - NO SPACING */
+            .modal-sale-badge-container {
+                position: absolute !important;
+                top: 0 !important; /* بدون أي تباعد */
+                left: 0 !important; /* ملاصق للحافة */
+                z-index: 50 !important;
+                width: auto !important;
+                max-width: none !important;
+                writing-mode: vertical-rl !important; /* طولي */
+                text-orientation: mixed !important;
+            }
+
+            .modal-sale-badge {
+                font-size: 9px !important;
+                padding: 8px 5px !important; /* padding للوضع الطولي */
+                display: inline-block !important;
+                white-space: nowrap !important;
+                background: #dc2626 !important;
+                color: white !important;
+                border-radius: 0 0 8px 8px !important; /* فقط من الأسفل */
+                font-weight: 600 !important;
+                letter-spacing: 0.3px !important;
+            }
+            .modal-product-gallery {
+                position: relative !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 0 12px 0 !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+            }
+
+            .modal-main-image-wrapper {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 0 8px 0 !important;
+                aspect-ratio: auto !important; /* تلقائي للحفاظ على النسبة الأصلية للصورة */
+                border-radius: 8px !important; /* border radius عادي */
+                overflow: hidden !important;
+                box-sizing: border-box !important;
+            }
+
+            .modal-main-product-image {
+                object-fit: contain !important; /* contain بدلاً من cover لعرض الصورة كاملة */
+                width: 100% !important;
+                height: auto !important;
+                /* إزالة جميع الفلاتر للجوال فقط */
+                filter: none !important;
+                image-rendering: auto !important;
+                -webkit-font-smoothing: subpixel-antialiased !important;
+            }
+
+            .modal-main-product-image {
+                object-fit: cover !important;
+            }
+
+            .modal-thumbnail img {
+                /* إزالة الفلاتر من الصور المصغرة أيضاً */
+                filter: none !important;
+                image-rendering: auto !important;
+            }
+
+            /* Image Navigation Buttons - Smaller */
+            .modal-image-nav {
+                width: 28px !important;
+                height: 28px !important;
+            }
+
+            .modal-image-nav svg {
+                width: 14px !important;
+                height: 14px !important;
+            }
+
+            .modal-thumbnail {
+                width: 50px !important;
+                height: 50px !important;
+                min-width: 50px !important;
+                border-radius: 6px !important;
+            }
+
+            .modal-thumbnails-wrapper {
+                display: flex !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                gap: 6px !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
+                overflow-x: auto !important;
+                overflow-y: hidden !important;
+            }
+
+            /* Product Info Section - No Gap */
+            .modal-product-info-section {
+                gap: 0px !important;
+            }
+
+            /* Product Header - Full Width */
+            .modal-product-header {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 0 10px 0 !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Season Badge - Vertical Next to Sale Badge - NO SPACING */
+            .modal-product-meta-top {
+                position: absolute !important;
+                top: 0 !important; /* بدون أي تباعد */
+                left: 30px !important; /* بجانب sale badge */
+                z-index: 50 !important;
+                writing-mode: vertical-rl !important; /* طولي */
+                text-orientation: mixed !important;
+            }
+
+            .modal-product-meta-top .modal-season-badge {
+                font-size: 9px !important;
+                padding: 8px 5px !important; /* padding للوضع الطولي */
+                display: inline-block !important;
+                background: #1a1a1a !important;
+                color: white !important;
+                border-radius: 0 0 8px 8px !important; /* فقط من الأسفل */
+                font-weight: 500 !important;
+                white-space: nowrap !important;
+            }
+
+            .modal-product-title {
+                width: 100% !important;
+                max-width: 100% !important;
+                font-size: 10px !important;
+                margin: 0 0 3px 0 !important;
+                box-sizing: border-box !important;
+                padding-top: 13px;
             }
 
             .modal-product-subtitle {
-                font-size: 20px;
+                width: 100% !important;
+                max-width: 100% !important;
+                font-size: 14px !important;
+                line-height: 1.3 !important;
+                margin: 0 0 6px 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Pricing - Full Width */
+            .modal-product-pricing {
+                width: 100% !important;
+                max-width: 100% !important;
+                display: flex !important;
+                gap: 6px !important;
+                align-items: center !important;
+                margin: 0 0 10px 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box !important;
             }
 
             .modal-current-price {
-                font-size: 24px;
+                font-size: 18px !important;
+            }
+
+            .modal-original-price {
+                font-size: 13px !important;
+            }
+
+            /* Payment Options - Full Width */
+            .modal-payment-options {
+                width: 100% !important;
+                max-width: 100% !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 4px !important;
+                padding: 6px 0 !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            .modal-payment-option {
+                font-size: 9px !important;
+                padding: 3px 6px !important;
+            }
+
+            .modal-payment-option .payment-icon {
+                height: 12px !important;
+            }
+
+            /* Delivery Info - Full Width */
+            .modal-delivery-info {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 8px !important;
+                font-size: 10px !important;
+                border-radius: 6px !important;
+                margin: 0 0 10px 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            .modal-delivery-info svg {
+                width: 12px !important;
+                height: 12px !important;
+            }
+
+            /* Color Images Section - Full Width */
+            .modal-color-images-section {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 0 10px 0 !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            .modal-color-image-thumb {
+                width: 42px !important;
+                height: 42px !important;
+                border-radius: 6px !important;
+            }
+
+            /* Product Options - Compact Padding */
+            .modal-product-options {
+                padding: 9px 0 !important;
+            }
+
+            .modal-option-label {
+                font-size: 12px !important;
+                margin: 0 0 6px 0 !important;
+                font-weight: 600 !important;
+                padding: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Size Selection - Full Width */
+            .modal-sizes-wrapper {
+                width: 100% !important;
+                max-width: 100% !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 6px !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            .modal-size-btn {
+                padding: 7px 12px !important;
+                font-size: 11px !important;
+                min-width: 45px !important;
+            }
+
+            /* Stock Notice - Smaller */
+            .modal-stock-notice {
+                padding: 8px !important;
+                font-size: 10px !important;
+                border-radius: 6px !important;
+                margin: 8px 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Action Buttons - Full Width Edge to Edge - Sticky at Bottom */
+            .modal-product-actions {
+                gap: 8px !important;
+                padding: 12px 14px !important; /* padding كامل للتصميم الجيد */
+                flex-direction: row !important;
+                position: sticky !important; /* sticky للبقاء في أسفل المودال */
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: calc(100% + 28px) !important; /* عرض أكبر لتعويض الـ margin */
+                background: white !important;
+                z-index: 100 !important;
+                margin: 0 -14px !important; /* تعويض سالب للإلتصاق بحدود المودال */
+                box-shadow: 0 -3px 15px rgba(0,0,0,0.12) !important;
+                border-radius: 0 0 12px 12px !important;
+                box-sizing: border-box !important;
+            }
+
+            .modal-btn-add-to-bag {
+                padding: 10px 12px !important;
+                font-size: 12px !important;
+                flex: 1 !important;
+                height: 42px !important;
+            }
+
+            .modal-btn-add-to-bag svg {
+                width: 16px !important;
+                height: 16px !important;
+            }
+
+            .modal-btn-add-to-wishlist {
+                width: 42px !important;
+                height: 42px !important;
+                flex-shrink: 0 !important;
+            }
+
+            .modal-btn-add-to-wishlist svg {
+                width: 18px !important;
+                height: 18px !important;
+            }
+
+            /* Tabs Section - Compact */
+            .modal-product-tabs {
+                padding: 10px 0 70px 0 !important; /* padding من الأعلى والأسفل فقط */
+                border-top: 1px solid #eee !important;
+                box-sizing: border-box !important;
+            }
+
+            .modal-tabs-header {
+                width: 100% !important;
+                max-width: 100% !important;
+                display: flex !important;
+                gap: 6px !important;
+                overflow-x: auto !important;
+                white-space: nowrap !important;
+                -webkit-overflow-scrolling: touch !important;
+                scrollbar-width: none !important;
+                margin: 0 0 12px 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            .modal-tabs-header::-webkit-scrollbar {
+                display: none !important;
+            }
+
+            .modal-tab-btn {
+                padding: 7px 10px !important;
+                font-size: 11px !important;
+                flex-shrink: 0 !important;
+            }
+
+            .modal-tab-panel {
+                font-size: 11px !important;
+                line-height: 1.6 !important;
+                padding: 8px 0 !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            .modal-tab-panel ul {
+                padding-left: 18px !important;
+            }
+
+            .modal-tab-panel li {
+                margin-bottom: 4px !important;
+            }
+        }
+
+        /* Tablet Optimization (769px - 1024px) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .product-modal-content {
+                width: 95% !important;
+                max-width: 900px !important;
+                max-height: 95vh !important;
+                border-radius: 12px !important;
+            }
+
+            .modal-product-details {
+                padding: 20px !important;
+                gap: 20px !important;
+            }
+
+            .modal-main-image-wrapper {
+                aspect-ratio: 3/4 !important;
+            }
+
+            .modal-product-actions {
+                flex-direction: row !important;
+                gap: 12px !important;
+            }
+
+            .modal-btn-add-to-bag {
+                flex: 1 !important;
+            }
+
+            .modal-btn-add-to-wishlist {
+                width: 50px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .modal-product-details {
+                padding: 10px !important;
+                gap: 12px !important;
+            }
+
+            .modal-product-subtitle {
+                font-size: 14px !important;
+            }
+
+            .modal-current-price {
+                font-size: 18px !important;
+            }
+
+            .modal-thumbnail {
+                width: 50px !important;
+                height: 50px !important;
+                min-width: 50px !important;
+            }
+
+            .modal-color-image-thumb {
+                width: 40px !important;
+                height: 40px !important;
+            }
+
+            .modal-size-btn {
+                padding: 7px 12px !important;
+                font-size: 11px !important;
             }
         }
     </style>
@@ -492,6 +1342,11 @@
                 </button>
 
                 <div class="modal-product-details">
+                    <!-- Sale Badge - Absolute positioned on far left -->
+                    <div class="modal-sale-badge-container" id="modalSaleBadgeContainer" style="display: none;">
+                        <span class="modal-sale-badge" id="modalSaleBadge">{{ app()->getLocale() == 'ar' ? 'عرض خاص' : 'On Sale' }}</span>
+                    </div>
+
                     <!-- Product Gallery -->
                     <div class="modal-product-gallery">
                         <div class="modal-main-image-wrapper">
@@ -510,6 +1365,8 @@
                         <div class="modal-thumbnail-gallery">
                             <div class="modal-thumbnails-wrapper" id="modalThumbnails">
                             </div>
+                            <div class="modal-thumbnails-extra" id="modalThumbnailsExtra" style="display: none;">
+                            </div>
                         </div>
                     </div>
 
@@ -517,18 +1374,18 @@
                     <div class="modal-product-info-section">
                         <!-- Season Badge -->
                         <div class="modal-product-meta-top">
-                            <span class="modal-season-badge" id="modalSeasonBadge" style="display: none;">الموسم
-                                الجديد</span>
+                            <span class="modal-season-badge" id="modalSeasonBadge" style="display: none;">{{ app()->getLocale() == 'ar' ? 'الموسم الجديد' : 'New season' }}</span>
                         </div>
 
                         <!-- Brand & Title -->
                         <div class="modal-product-header">
-                            <h1 class="modal-product-title" id="modalBrand">ركاز</h1>
+                            <h1 class="modal-product-title" id="modalBrand">{{ app()->getLocale() == 'ar' ? 'ركاز' : 'Rakaz' }}</h1>
                             <h2 class="modal-product-subtitle" id="modalProductName"></h2>
                         </div>
 
                         <!-- Price -->
                         <div class="modal-product-price-section">
+                            <span class="modal-original-price" id="modalOriginalPrice" style="text-decoration: line-through; color: #999; margin-left: 10px; display: none;"></span>
                             <span class="modal-current-price" id="modalPrice"></span>
                         </div>
 
@@ -539,13 +1396,13 @@
                                     class="payment-icon">
                             </div>
                             <div class="modal-payment-option">
-                                <span class="payment-text">تمرا</span>
+                                <span class="payment-text">{{ app()->getLocale() == 'ar' ? 'تمرا' : 'Tamara' }}</span>
                             </div>
                             <div class="modal-payment-option">
                                 <span class="payment-text">tabby</span>
                             </div>
                             <div class="modal-payment-option">
-                                <span class="payment-text">تتوفر أقساط بدون فوائد</span>
+                                <span class="payment-text">{{ app()->getLocale() == 'ar' ? 'تتوفر أقساط بدون فوائد' : 'Interest-free installments available' }}</span>
                             </div>
                         </div>
 
@@ -557,26 +1414,39 @@
                                 <circle cx="5.5" cy="18.5" r="2.5"></circle>
                                 <circle cx="18.5" cy="18.5" r="2.5"></circle>
                             </svg>
-                            <span>توصيل خلال ساعتين في نفس اليوم إلى أبي ظبي</span>
+                            <span>{{ app()->getLocale() == 'ar' ? 'توصيل خلال ساعتين في نفس اليوم إلى أبي ظبي' : 'Same-day delivery in Abu Dhabi (within 2 hours)' }}</span>
+                        </div>
+
+                        <!-- Color Images Selection (Dynamic) -->
+                        <div class="modal-color-images-section" id="modalColorImagesSection" style="display: none;">
+                            <div class="modal-color-header">
+                                <label class="modal-option-label">
+                                    {{ app()->getLocale() == 'ar' ? 'اللون:' : 'Color:' }}
+                                    <span class="modal-selected-color-name" id="modalSelectedColorName"></span>
+                                </label>
+                            </div>
+                            <div class="modal-color-images-row" id="modalColorImagesRow">
+                                <!-- Color image thumbnails will be dynamically inserted here -->
+                            </div>
                         </div>
 
                         <!-- Size Selection -->
                         <div class="modal-product-options">
                             <div class="modal-option-group">
                                 <div class="modal-size-header">
-                                    <label class="modal-option-label" style="font-size: 16px; font-weight: bold;">اختيار المقاس</label>
-                                    <a href="#" class="modal-size-guide-link">جدول المقاسات</a>
+                                    <label class="modal-option-label" style="font-size: 16px; font-weight: bold;">{{ app()->getLocale() == 'ar' ? 'اختيار المقاس' : 'Select size' }}</label>
+                                    <a href="#" class="modal-size-guide-link">{{ app()->getLocale() == 'ar' ? 'جدول المقاسات' : 'Size guide' }}</a>
                                 </div>
-                                <!-- Available Sizes Display -->
-                                <div id="modalAvailableSizes" style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 6px; border: 2px solid #28a745; display: none;">
+                                <!-- Available Sizes Display - Hidden -->
+                                <div id="modalAvailableSizes" style="display: none !important;">
                                     <div style="font-size: 14px; font-weight: 700; color: #28a745; margin-bottom: 10px;">
-                                        ✅ <span id="modalSizesTitle">المقاسات المتوفرة:</span> <span id="modalSizesCount"></span>
+                                        ✅ <span id="modalSizesTitle">{{ app()->getLocale() == 'ar' ? 'المقاسات المتوفرة:' : 'Available sizes:' }}</span> <span id="modalSizesCount"></span>
                                     </div>
                                     <div id="modalSizesList" style="font-size: 16px; color: #212529; font-weight: 600; line-height: 1.8;"></div>
                                 </div>
                                 <!-- Size Dropdown -->
                                 <select class="custom-select" id="modalSizeSelect" style="width: 100%; font-size: 16px; font-weight: 600;">
-                                    <option value="">اختر المقاس</option>
+                                    <option value="">{{ app()->getLocale() == 'ar' ? 'اختر المقاس' : 'Choose size' }}</option>
                                 </select>
                             </div>
                         </div>
@@ -588,7 +1458,7 @@
                                 <line x1="12" y1="8" x2="12" y2="12"></line>
                                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
                             </svg>
-                            <span>التحقق من الإمارات العربية المتحدة - التوصيل متوفر</span>
+                            <span>{{ app()->getLocale() == 'ar' ? 'التحقق من الإمارات العربية المتحدة - التوصيل متوفر' : 'UAE delivery check — delivery available' }}</span>
                         </div>
 
                         <!-- Action Buttons -->
@@ -599,7 +1469,7 @@
                                     <line x1="3" y1="6" x2="21" y2="6"></line>
                                     <path d="M16 10a4 4 0 0 1-8 0"></path>
                                 </svg>
-                                إضافة إلى حقيبة التسوق
+                                {{ app()->getLocale() == 'ar' ? 'إضافة إلى حقيبة التسوق' : 'Add to bag' }}
                             </button>
                             <button class="modal-btn-add-to-wishlist">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -649,7 +1519,8 @@
                         <line x1="4" y1="12" x2="20" y2="12"></line>
                         <line x1="4" y1="18" x2="20" y2="18"></line>
                     </svg>
-                    <span>الفلاتر</span>
+                    <span class="ar-text">الفلاتر</span>
+                    <span class="en-text">Filters</span>
                 </button>
 
                 <!-- Mobile View Toggle (Only visible on mobile) -->
@@ -659,20 +1530,25 @@
                             <rect x="3" y="3" width="8" height="18"></rect>
                             <rect x="13" y="3" width="8" height="18"></rect>
                         </svg>
-                        <span>منتجين</span>
+                        <span class="ar-text">منتجين</span>
+                        <span class="en-text">Two products</span>
                     </button>
                     <button class="mobile-view-btn" data-mobile-view="one">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="3" y="3" width="18" height="18"></rect>
                         </svg>
-                        <span>منتج واحد</span>
+                        <span class="ar-text">منتج واحد</span>
+                        <span class="en-text">One product</span>
                     </button>
                 </div>
 
                 <!-- Sidebar Filters -->
                 <aside class="shop-sidebar" id="shopSidebar">
                     <div class="sidebar-header">
-                        <h2>الفلاتر</h2>
+                        <h2>
+                            <span class="ar-text">الفلاتر</span>
+                            <span class="en-text">Filters</span>
+                        </h2>
                         <button class="sidebar-close" id="sidebarClose">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -681,9 +1557,12 @@
                         </button>
                     </div>
 
-                    <!-- مقاس العلابيس (Clothing Size) -->
+                    <!-- قياس الملابس (Clothing Size) -->
                     <div class="filter-section">
-                        <h3 class="filter-title">مقاس العلابيس</h3>
+                        <h3 class="filter-title">
+                            <span class="ar-text">قياس الملابس</span>
+                            <span class="en-text">Clothing size</span>
+                        </h3>
                         <div class="size-grid">
                             @foreach($sizes as $size)
                             <label class="size-checkbox">
@@ -697,9 +1576,105 @@
                         </div>
                     </div>
 
+                    <!-- التصنيفات الرئيسية (Main Categories) -->
+                    <div class="filter-section">
+                        <h3 class="filter-title">
+                            <span class="ar-text">التصنيفات</span>
+                            <span class="en-text">Categories</span>
+                        </h3>
+                        <div class="categories-list-wrapper">
+                            @php
+                                $mainCategories = \App\Models\Category::where('is_active', true)
+                                    ->whereNull('parent_id')
+                                    ->whereHas('products', function($query) {
+                                        $query->where('is_active', true);
+                                    })
+                                    ->orderBy('sort_order')
+                                    ->get();
+                                $totalCategories = $mainCategories->count();
+                                $maxDisplay = 10;
+                                $displayedCategories = $mainCategories->take($maxDisplay);
+                                $hasMore = $totalCategories > $maxDisplay;
+                            @endphp
+                            <div class="categories-checkbox-list" id="categoriesCheckboxList">
+                                @foreach($displayedCategories as $category)
+                                    <label class="category-checkbox-item">
+                                        <span class="custom-checkbox">
+                                            <input type="checkbox" name="category" value="{{ $category->id }}" data-slug="{{ $category->getSlug() }}">
+                                            <span class="checkbox-mark">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </span>
+                                        </span>
+                                        <span class="category-label">
+                                            <span class="category-text">{{ $category->getName() }}</span>
+                                            <span class="category-count">({{ $category->products()->where('is_active', true)->count() }})</span>
+                                        </span>
+                                    </label>
+                                @endforeach
+                            </div>
+                            @if($hasMore)
+                                <button class="show-more-categories" id="showMoreCategories" data-loaded="{{ $maxDisplay }}" data-total="{{ $totalCategories }}">
+                                    <span class="ar-text">عرض المزيد</span>
+                                    <span class="en-text">SHOW MORE</span>
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- العلامات التجارية (Brands) -->
+                    <div class="filter-section">
+                        <h3 class="filter-title">
+                            <span class="ar-text">العلامات التجارية</span>
+                            <span class="en-text">Brands</span>
+                        </h3>
+                        <div class="brands-list-wrapper">
+                            @php
+                                $brands = \App\Models\Brand::where('is_active', true)
+                                    ->whereHas('products', function($query) {
+                                        $query->where('is_active', true);
+                                    })
+                                    ->orderBy('name_ar')
+                                    ->get();
+                                $totalBrands = $brands->count();
+                                $maxDisplayBrands = 10;
+                                $displayedBrands = $brands->take($maxDisplayBrands);
+                                $hasMoreBrands = $totalBrands > $maxDisplayBrands;
+                            @endphp
+                            <div class="brands-checkbox-list" id="brandsCheckboxList">
+                                @foreach($displayedBrands as $brand)
+                                    <label class="category-checkbox-item">
+                                        <span class="custom-checkbox">
+                                            <input type="checkbox" name="brand" value="{{ $brand->id }}" data-slug="{{ $brand->slug }}">
+                                            <span class="checkbox-mark">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </span>
+                                        </span>
+                                        <span class="category-label">
+                                            <span class="category-text">{{ $brand->getName() }}</span>
+                                            <span class="category-count">({{ $brand->products()->where('is_active', true)->count() }})</span>
+                                        </span>
+                                    </label>
+                                @endforeach
+                            </div>
+                            @if($hasMoreBrands)
+                                <button class="show-more-categories" id="showMoreBrands" data-loaded="{{ $maxDisplayBrands }}" data-total="{{ $totalBrands }}">
+                                    <span class="ar-text">عرض المزيد</span>
+                                    <span class="en-text">SHOW MORE</span>
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+
                     <!-- مقاس الحذاء (Shoe Size) -->
                     <div class="filter-section">
-                        <h3 class="filter-title">مقاس الحذاء</h3>
+                        <h3 class="filter-title">
+                            <span class="ar-text">مقاس الحذاء</span>
+                            <span class="en-text">Shoe size</span>
+                        </h3>
                         <div class="shoe-size-selector">
                             <select class="shoe-size-dropdown custom-select">
                                 <option value="">EU</option>
@@ -723,7 +1698,10 @@
 
                     <!-- اللون (Color) -->
                     <div class="filter-section">
-                        <h3 class="filter-title">اللون</h3>
+                        <h3 class="filter-title">
+                            <span class="ar-text">اللون</span>
+                            <span class="en-text">Color</span>
+                        </h3>
                         <div class="color-scroll">
                             @foreach($colors as $color)
                             <label class="color-checkbox">
@@ -740,11 +1718,17 @@
 
                     <!-- السعر (Price) -->
                     <div class="filter-section">
-                        <h3 class="filter-title">السعر</h3>
+                        <h3 class="filter-title">
+                            <span class="ar-text">السعر</span>
+                            <span class="en-text">Price</span>
+                        </h3>
                         <div class="price-range-wrapper">
                             <div class="price-display">
                                 <div class="price-box">
-                                    <label>السعر الأدنى</label>
+                                    <label>
+                                        <span class="ar-text">السعر الأدنى</span>
+                                        <span class="en-text">Min price</span>
+                                    </label>
                                     <div class="price-input-wrapper">
                                         <input type="number" id="minPrice" value="{{ request('min_price', $minPrice) }}" min="{{ $minPrice }}"
                                             max="{{ $maxPrice }}">
@@ -752,7 +1736,10 @@
                                     </div>
                                 </div>
                                 <div class="price-box">
-                                    <label>السعر الأعلى</label>
+                                    <label>
+                                        <span class="ar-text">السعر الأعلى</span>
+                                        <span class="en-text">Max price</span>
+                                    </label>
                                     <div class="price-input-wrapper">
                                         <input type="number" id="maxPrice" value="{{ request('max_price', $maxPrice) }}" min="{{ $minPrice }}"
                                             max="{{ $maxPrice }}">
@@ -765,7 +1752,10 @@
 
                     <!-- استخدام (Apply Button) -->
                     <div class="filter-section">
-                        <button class="apply-filters-btn">استخدام</button>
+                        <button class="apply-filters-btn">
+                            <span class="ar-text">استخدام</span>
+                            <span class="en-text">Apply</span>
+                        </button>
                     </div>
                 </aside>
 
@@ -773,15 +1763,34 @@
                 <section class="shop-content">
                     <div class="shop-header">
                         <div class="shop-results">
-                            <h1>{{ isset($category) ? (app()->getLocale() == 'ar' ? $category->name['ar'] : $category->name['en']) : (app()->getLocale() == 'ar' ? 'جميع المنتجات' : 'All Products') }}</h1>
-                            <p class="results-count">{{ $products->total() }} {{ app()->getLocale() == 'ar' ? 'منتج متاح' : 'Products Available' }}</p>
+                            <h1 id="shopTitle">
+                                @if(isset($category))
+                                    {{ app()->getLocale() == 'ar' ? $category->name['ar'] : $category->name['en'] }}
+                                @else
+                                    {{ app()->getLocale() == 'ar' ? 'جميع المنتجات' : 'All Products' }}
+                                @endif
+                            </h1>
+                            <p class="results-count">
+                                {{ $products->total() }}
+                                {{ app()->getLocale() == 'ar' ? 'منتج' : 'Product' }}{{ $products->total() != 1 ? (app()->getLocale() == 'ar' ? '' : 's') : '' }}
+                                @if($products->total() > 0)
+                                    ({{ app()->getLocale() == 'ar' ? 'صفحة' : 'Page' }} {{ $products->currentPage() }} {{ app()->getLocale() == 'ar' ? 'من' : 'of' }} {{ $products->lastPage() }})
+                                @endif
+                            </p>
                         </div>
                         <div class="shop-controls">
+                            <button class="clear-filters-btn" id="clearFiltersBtn" style="display: none;" title="{{ app()->getLocale() == 'ar' ? 'مسح الفلاتر' : 'Clear Filters' }}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                                    <line x1="16" y1="7" x2="19" y2="10" stroke-width="2.5"></line>
+                                    <line x1="19" y1="7" x2="16" y2="10" stroke-width="2.5"></line>
+                                </svg>
+                            </button>
                             <select class="sort-select custom-select">
-                                <option value="featured">مميز</option>
-                                <option value="price-low">السعر: من الأقل للأعلى</option>
-                                <option value="price-high">السعر: من الأعلى للأقل</option>
-                                <option value="newest">الأحدث</option>
+                                <option value="featured">{{ app()->getLocale() == 'ar' ? 'مميز' : 'Featured' }}</option>
+                                <option value="price-low">{{ app()->getLocale() == 'ar' ? 'السعر: من الأقل للأعلى' : 'Price: low to high' }}</option>
+                                <option value="price-high">{{ app()->getLocale() == 'ar' ? 'السعر: من الأعلى للأقل' : 'Price: high to low' }}</option>
+                                <option value="newest">{{ app()->getLocale() == 'ar' ? 'الأحدث' : 'Newest' }}</option>
                             </select>
                             <div class="view-controls">
                                 <button class="view-btn" data-view="grid-2">
@@ -845,7 +1854,7 @@
                                         <div class="discount-badge-text">
                                             <span class="discount-text-ar">تخفيض</span>
                                             <span class="discount-text-en">DISCOUNT</span>
-                                            <span class="discount-percent">{{ $discountPercent }}%</span>
+                                            <span class="discount-percent">%{{ $discountPercent }}</span>
                                         </div>
                                     </div>
                                 @elseif($product->is_new)
@@ -853,10 +1862,114 @@
                                 @elseif($product->is_on_sale)
                                     <span class="badge discount">{{ app()->getLocale() == 'ar' ? 'عرض خاص' : 'On Sale' }}</span>
                                 @endif
+
+                                <!-- Hover Content: Colors, Gallery, Sizes - Hidden on Mobile/Tablet -->
+                                @php
+                                    $isMobile = request()->header('User-Agent') && (stripos(request()->header('User-Agent'), 'mobile') !== false || stripos(request()->header('User-Agent'), 'tablet') !== false || stripos(request()->header('User-Agent'), 'android') !== false || stripos(request()->header('User-Agent'), 'iphone') !== false || stripos(request()->header('User-Agent'), 'ipad') !== false);
+                                @endphp
+                                @if(!$isMobile)
+                                <div class="product-hover-content">
+                                    <!-- Colors Display - Always show -->
+                                    <div class="product-colors-display">
+                                        @php
+                                            // Get colors from relationship or JSON field
+                                            $productColors = [];
+                                            if($product->productColors && $product->productColors->count() > 0) {
+                                                $productColors = $product->productColors;
+                                            } elseif($product->colors && is_array($product->colors) && count($product->colors) > 0) {
+                                                $productColors = collect($product->colors);
+                                            }
+                                        @endphp
+
+                                        @if($productColors && count($productColors) > 0)
+                                            @foreach($productColors->take(6) as $color)
+                                            @php
+                                                if(is_object($color)) {
+                                                    $hexCode = $color->hex_code ?? '#cccccc';
+                                                    $colorName = is_array($color->name)
+                                                        ? (app()->getLocale() == 'ar' ? ($color->name['ar'] ?? $color->name['en'] ?? '') : ($color->name['en'] ?? $color->name['ar'] ?? ''))
+                                                        : ($color->name ?? '');
+                                                } else {
+                                                    $hexCode = is_array($color) ? ($color['hex'] ?? $color['hex_code'] ?? '#cccccc') : '#cccccc';
+                                                    $colorName = is_array($color)
+                                                        ? (app()->getLocale() == 'ar' ? ($color['name_ar'] ?? $color['name_en'] ?? $color['name'] ?? '') : ($color['name_en'] ?? $color['name_ar'] ?? $color['name'] ?? ''))
+                                                        : '';
+                                                }
+                                            @endphp
+                                            <div class="product-color-circle"
+                                                 style="background-color: {{ $hexCode }}"
+                                                 title="{{ $colorName }}">
+                                            </div>
+                                            @endforeach
+                                        @else
+                                            {{-- Placeholder when no colors available --}}
+                                            <div style="height: 24px;"></div>
+                                        @endif
+                                    </div>
+
+                                    <!-- Sizes Display -->
+                                    <div class="product-sizes-display">
+                                        @if($product->sizes && is_array($product->sizes) && count($product->sizes) > 0)
+                                        <button class="sizes-scroll-btn prev-size" data-product-id="{{ $product->id }}">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </button>
+                                        <div class="product-sizes-wrapper" data-product-id="{{ $product->id }}">
+                                            @foreach($product->sizes as $size)
+                                            <div class="product-size-item" data-size="{{ is_array($size) ? ($size['value'] ?? $size['ar'] ?? $size['en']) : $size }}">
+                                                {{ is_array($size) ? (app()->getLocale() == 'ar' ? ($size['ar'] ?? $size['en']) : ($size['en'] ?? $size['ar'])) : $size }}
+                                            </div>
+                                            @endforeach
+                                        </div>
+                                        <button class="sizes-scroll-btn next-size" data-product-id="{{ $product->id }}">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                        @else
+                                        {{-- Placeholder when no sizes --}}
+                                        <div style="height: 30px;"></div>
+                                        @endif
+                                    </div>
+                                </div>
+                                @endif
                             </div>
+
                             <div class="product-info">
+                                <!-- Gallery Section - Inside product-info, replacing brand on hover - Hidden on Mobile/Tablet -->
+                                @if(!$isMobile)
+                                @if($product->gallery_images && is_array($product->gallery_images) && count($product->gallery_images) > 0)
+                                <div class="product-gallery-section">
+                                    <div class="product-gallery-wrapper">
+                                        <button class="gallery-nav-btn gallery-prev" data-product-id="{{ $product->id }}" type="button">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                <polyline points="9 18 15 12 9 6"></polyline>
+                                            </svg>
+                                        </button>
+                                        <div class="product-gallery-container" data-product-id="{{ $product->id }}">
+                                            @foreach($product->colorImages as $colorImage)
+                                            <a href="{{ route('product.details', $product->getSlug()) }}?color={{ $colorImage->color_id }}" data-product-id="{{ $product->id }}" data-color-id="{{ $colorImage->color_id }}">
+                                                <img src="{{ asset('storage/' . $colorImage->image) }}"
+                                                     alt="{{ $product->getName() }} - {{ $colorImage->color?->translated_name ?? '' }}"
+                                                     class="product-gallery-item"
+                                                     data-product-id="{{ $product->id }}"
+                                                     data-color-id="{{ $colorImage->color_id }}">
+                                            </a>
+                                            @endforeach
+                                        </div>
+                                        <button class="gallery-nav-btn gallery-next" data-product-id="{{ $product->id }}" type="button">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                <polyline points="15 18 9 12 15 6"></polyline>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                @endif
+                                @endif
+
                                 @if($product->brand)
-                                <p class="product-brand">{{ $product->brand }}</p>
+                                <p class="product-brand">{{ is_object($product->brand) ? $product->brand->getName() : $product->brand }}</p>
                                 @endif
                                 <h3 class="product-name">{{ $product->getName() }}</h3>
                                 @if($product->sale_price && $product->sale_price < $product->price)
@@ -867,27 +1980,7 @@
                                 @else
                                 <p class="product-price">{{ number_format($product->price, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</p>
                                 @endif
-                                @if($product->sizes && is_array($product->sizes) && count($product->sizes) > 0)
-                                <div class="size-selector">
-                                    <button class="size-arrow prev">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path d="M15 19l-7-7 7-7" />
-                                        </svg>
-                                    </button>
-                                    <div class="size-options-wrapper">
-                                        @foreach($product->sizes as $size)
-                                        <button class="size-option" data-size="{{ is_array($size) ? ($size['value'] ?? $size['ar'] ?? $size['en']) : $size }}">
-                                            {{ is_array($size) ? (app()->getLocale() == 'ar' ? ($size['ar'] ?? $size['en']) : ($size['en'] ?? $size['ar'])) : $size }}
-                                        </button>
-                                        @endforeach
-                                    </div>
-                                    <button class="size-arrow next">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </button>
-                                </div>
-                                @endif
+
                                 <button class="add-to-cart-btn" data-product-id="{{ $product->id }}">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
@@ -915,19 +2008,19 @@
                             </svg>
                         </button>
                         @else
-                        <a href="{{ $products->previousPageUrl() }}" class="pagination-btn">
+                        <a href="{{ $products->appends(request()->query())->previousPageUrl() }}" class="pagination-btn">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M15 19l-7-7 7-7" />
                             </svg>
                         </a>
                         @endif
 
-                        @foreach($products->getUrlRange(1, $products->lastPage()) as $page => $url)
+                        @foreach($products->appends(request()->query())->getUrlRange(1, $products->lastPage()) as $page => $url)
                         <a href="{{ $url }}" class="pagination-btn {{ $page == $products->currentPage() ? 'active' : '' }}">{{ $page }}</a>
                         @endforeach
 
                         @if($products->hasMorePages())
-                        <a href="{{ $products->nextPageUrl() }}" class="pagination-btn">
+                        <a href="{{ $products->appends(request()->query())->nextPageUrl() }}" class="pagination-btn">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M9 5l7 7-7 7" />
                             </svg>
@@ -951,6 +2044,144 @@
         <script>
             const isArabic = '{{ app()->getLocale() }}' === 'ar';
 
+            // Load More Categories with AJAX
+            document.addEventListener('DOMContentLoaded', function() {
+                const showMoreBtn = document.getElementById('showMoreCategories');
+                if (showMoreBtn) {
+                    showMoreBtn.addEventListener('click', function() {
+                        const btn = this;
+                        const loaded = parseInt(btn.dataset.loaded);
+                        const total = parseInt(btn.dataset.total);
+
+                        // Prevent multiple clicks
+                        if (btn.classList.contains('loading')) return;
+
+                        btn.classList.add('loading');
+                        btn.disabled = true;
+
+                        fetch('{{ route("shop.loadMoreCategories") }}?skip=' + loaded + '&take=10')
+                            .then(response => response.json())
+                            .then(data => {
+                                const categoriesList = document.getElementById('categoriesCheckboxList');
+                                categoriesList.insertAdjacentHTML('beforeend', data.html);
+
+                                const newLoaded = loaded + 10;
+                                btn.dataset.loaded = newLoaded;
+
+                                if (!data.hasMore || newLoaded >= total) {
+                                    btn.remove();
+                                } else {
+                                    btn.classList.remove('loading');
+                                    btn.disabled = false;
+                                }
+
+                                // Add event listeners to new checkboxes
+                                attachCategoryCheckboxListeners();
+                            })
+                            .catch(error => {
+                                console.error('Error loading categories:', error);
+                                btn.classList.remove('loading');
+                                btn.disabled = false;
+                            });
+                    });
+                }
+
+                // Attach checkbox listeners
+                attachCategoryCheckboxListeners();
+            });
+
+            function attachCategoryCheckboxListeners() {
+                // Restore categories from URL for newly loaded checkboxes
+                const urlParams = new URLSearchParams(window.location.search);
+                const categoriesParam = urlParams.getAll('categories[]');
+
+                document.querySelectorAll('.category-checkbox-item input[type="checkbox"]').forEach(checkbox => {
+                    if (!checkbox.dataset.listenerAttached) {
+                        // Restore checked state if this category is in URL
+                        if (categoriesParam.includes(checkbox.value)) {
+                            checkbox.checked = true;
+                        }
+
+                        // Add change listener to update title
+                        checkbox.addEventListener('change', function() {
+                            updateShopTitle();
+                            // Save to localStorage
+                            saveCategorySelections();
+                        });
+
+                        checkbox.dataset.listenerAttached = 'true';
+                    }
+                });
+
+                // Update title after restoring checkboxes
+                updateShopTitle();
+            }
+
+            // Load More Brands with AJAX
+            document.addEventListener('DOMContentLoaded', function() {
+                const showMoreBrandsBtn = document.getElementById('showMoreBrands');
+                if (showMoreBrandsBtn) {
+                    showMoreBrandsBtn.addEventListener('click', function() {
+                        const btn = this;
+                        const loaded = parseInt(btn.dataset.loaded);
+                        const total = parseInt(btn.dataset.total);
+
+                        if (btn.classList.contains('loading')) return;
+
+                        btn.classList.add('loading');
+                        btn.disabled = true;
+
+                        fetch('{{ route("shop.loadMoreBrands") }}?skip=' + loaded + '&take=10')
+                            .then(response => response.json())
+                            .then(data => {
+                                const brandsList = document.getElementById('brandsCheckboxList');
+                                brandsList.insertAdjacentHTML('beforeend', data.html);
+
+                                const newLoaded = loaded + 10;
+                                btn.dataset.loaded = newLoaded;
+
+                                if (!data.hasMore || newLoaded >= total) {
+                                    btn.remove();
+                                } else {
+                                    btn.classList.remove('loading');
+                                    btn.disabled = false;
+                                }
+
+                                attachBrandCheckboxListeners();
+                            })
+                            .catch(error => {
+                                console.error('Error loading brands:', error);
+                                btn.classList.remove('loading');
+                                btn.disabled = false;
+                            });
+                    });
+                }
+
+                attachBrandCheckboxListeners();
+            });
+
+            function attachBrandCheckboxListeners() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const brandsParam = urlParams.getAll('brands[]');
+
+                document.querySelectorAll('.brands-checkbox-list input[type="checkbox"]').forEach(checkbox => {
+                    if (!checkbox.dataset.listenerAttached) {
+                        if (brandsParam.includes(checkbox.value)) {
+                            checkbox.checked = true;
+                        }
+
+                        checkbox.addEventListener('change', function() {
+                            updateShopTitle();
+                            saveBrandSelections();
+                        });
+
+                        checkbox.dataset.listenerAttached = 'true';
+                    }
+                });
+
+                updateShopTitle();
+            }
+
             // Initialize Custom Selects
             document.addEventListener('DOMContentLoaded', function() {
                 // Initialize all custom select dropdowns on page load
@@ -960,169 +2191,6 @@
                             new CustomSelect(select);
                         }
                     });
-                }
-            });
-
-            // Smart Pica Implementation - Preserves aspect ratio
-            document.addEventListener('DOMContentLoaded', function() {
-                if (typeof pica === 'undefined') return;
-
-                const picaInstance = pica();
-
-                // Process images after they load
-                function processProductImage(img) {
-                    // Skip if already processed or loading
-                    if (img.dataset.picaProcessed || img.dataset.picaProcessing) return;
-
-                    // Mark as processing
-                    img.dataset.picaProcessing = 'true';
-
-                    // Wait for image to fully load
-                    if (!img.complete || img.naturalWidth === 0) {
-                        img.addEventListener('load', function() {
-                            enhanceImageWithPica(this);
-                        }, { once: true });
-                        return;
-                    }
-
-                    enhanceImageWithPica(img);
-                }
-
-                function enhanceImageWithPica(img) {
-                    try {
-                        // Get the container dimensions
-                        const container = img.parentElement;
-                        const containerRect = container.getBoundingClientRect();
-
-                        // Calculate proper dimensions maintaining aspect ratio
-                        const originalAspect = img.naturalWidth / img.naturalHeight;
-                        const containerAspect = containerRect.width / containerRect.height;
-
-                        let targetWidth, targetHeight;
-
-                        // Use device pixel ratio for retina displays
-                        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-                        // Calculate target dimensions based on object-fit: cover behavior
-                        if (originalAspect > containerAspect) {
-                            // Image is wider - fit to height
-                            targetHeight = Math.round(containerRect.height * dpr);
-                            targetWidth = Math.round(targetHeight * originalAspect);
-                        } else {
-                            // Image is taller - fit to width
-                            targetWidth = Math.round(containerRect.width * dpr);
-                            targetHeight = Math.round(targetWidth / originalAspect);
-                        }
-
-                        // Don't upscale images
-                        if (targetWidth > img.naturalWidth || targetHeight > img.naturalHeight) {
-                            img.dataset.picaProcessed = 'true';
-                            delete img.dataset.picaProcessing;
-                            return;
-                        }
-
-                        // Create canvas with calculated dimensions
-                        const canvas = document.createElement('canvas');
-                        canvas.width = targetWidth;
-                        canvas.height = targetHeight;
-
-                        // Create temporary image for processing
-                        const tempImg = new Image();
-                        tempImg.crossOrigin = 'anonymous';
-
-                        tempImg.onload = function() {
-                            // Use Pica with high quality settings
-                            picaInstance.resize(tempImg, canvas, {
-                                quality: 3,
-                                alpha: true,
-                                unsharpAmount: 160,
-                                unsharpRadius: 0.6,
-                                unsharpThreshold: 1
-                            }).then(result => {
-                                return picaInstance.toBlob(result, 'image/jpeg', 0.92);
-                            }).then(blob => {
-                                // Create object URL and update image
-                                const url = URL.createObjectURL(blob);
-
-                                // Store original src for potential revert
-                                if (!img.dataset.originalSrc) {
-                                    img.dataset.originalSrc = img.src;
-                                }
-
-                                img.src = url;
-                                img.dataset.picaProcessed = 'true';
-                                delete img.dataset.picaProcessing;
-
-                                // Clean up old blob URL after a delay
-                                if (img.dataset.picaBlobUrl) {
-                                    setTimeout(() => URL.revokeObjectURL(img.dataset.picaBlobUrl), 100);
-                                }
-                                img.dataset.picaBlobUrl = url;
-
-                            }).catch(err => {
-                                console.warn('Pica processing failed:', err);
-                                img.dataset.picaProcessed = 'true';
-                                delete img.dataset.picaProcessing;
-                            });
-                        };
-
-                        tempImg.onerror = function() {
-                            img.dataset.picaProcessed = 'true';
-                            delete img.dataset.picaProcessing;
-                        };
-
-                        tempImg.src = img.src;
-
-                    } catch (err) {
-                        console.warn('Pica setup failed:', err);
-                        img.dataset.picaProcessed = 'true';
-                        delete img.dataset.picaProcessing;
-                    }
-                }
-
-                // Process all product images
-                function processAllProductImages() {
-                    const productImages = document.querySelectorAll('.product-image-primary, .product-image-secondary');
-                    productImages.forEach(img => {
-                        processProductImage(img);
-                    });
-                }
-
-                // Initial processing
-                setTimeout(processAllProductImages, 100);
-
-                // Reprocess on window resize (debounced)
-                let resizeTimer;
-                window.addEventListener('resize', function() {
-                    clearTimeout(resizeTimer);
-                    resizeTimer = setTimeout(function() {
-                        // Reset processed flag for responsive resize
-                        document.querySelectorAll('[data-pica-processed]').forEach(img => {
-                            delete img.dataset.picaProcessed;
-                            delete img.dataset.picaProcessing;
-                        });
-                        processAllProductImages();
-                    }, 250);
-                });
-
-                // Process new images added dynamically (e.g., infinite scroll)
-                if (window.MutationObserver) {
-                    const observer = new MutationObserver(function(mutations) {
-                        mutations.forEach(function(mutation) {
-                            mutation.addedNodes.forEach(function(node) {
-                                if (node.nodeType === 1) {
-                                    const images = node.querySelectorAll ?
-                                        node.querySelectorAll('.product-image-primary, .product-image-secondary') : [];
-                                    images.forEach(processProductImage);
-                                }
-                            });
-                        });
-                    });
-
-                    const productsGrid = document.querySelector('.products-grid');
-                    if (productsGrid) {
-                        observer.observe(productsGrid, { childList: true, subtree: true });
-                    }
                 }
             });
 
@@ -1162,6 +2230,7 @@
                     url.searchParams.delete('sizes[]');
                     url.searchParams.delete('shoe_sizes[]');
                     url.searchParams.delete('colors[]');
+                    url.searchParams.delete('categories[]');
                     url.searchParams.delete('min_price');
                     url.searchParams.delete('max_price');
 
@@ -1192,6 +2261,15 @@
                         url.searchParams.append('colors[]', color);
                     });
 
+                    // Get selected categories
+                    const selectedCategories = [];
+                    document.querySelectorAll('input[name="category"]:checked').forEach(input => {
+                        selectedCategories.push(input.value);
+                    });
+                    selectedCategories.forEach(category => {
+                        url.searchParams.append('categories[]', category);
+                    });
+
                     // Get price range
                     const minPrice = document.getElementById('minPrice').value;
                     const maxPrice = document.getElementById('maxPrice').value;
@@ -1210,6 +2288,74 @@
 
             // Restore filter selections from URL
             const urlParams = new URLSearchParams(window.location.search);
+
+            // Function to save category selections to localStorage
+            function saveCategorySelections() {
+                const selectedCategories = [];
+                const categoryNames = {};
+
+                document.querySelectorAll('input[name="category"]:checked').forEach(cb => {
+                    selectedCategories.push(cb.value);
+                    const label = cb.closest('.category-checkbox-item');
+                    if (label) {
+                        const categoryText = label.querySelector('.category-text');
+                        if (categoryText) {
+                            categoryNames[cb.value] = categoryText.textContent.trim();
+                        }
+                    }
+                });
+
+                if (selectedCategories.length > 0) {
+                    localStorage.setItem('shop_selected_categories', JSON.stringify(selectedCategories));
+                    localStorage.setItem('shop_category_names', JSON.stringify(categoryNames));
+                } else {
+                    localStorage.removeItem('shop_selected_categories');
+                    localStorage.removeItem('shop_category_names');
+                }
+            }
+
+            // Function to save brand selections to localStorage
+            function saveBrandSelections() {
+                const selectedBrands = [];
+                const brandNames = {};
+
+                document.querySelectorAll('input[name="brand"]:checked').forEach(cb => {
+                    selectedBrands.push(cb.value);
+                    const label = cb.closest('.category-checkbox-item');
+                    if (label) {
+                        const brandText = label.querySelector('.category-text');
+                        if (brandText) {
+                            brandNames[cb.value] = brandText.textContent.trim();
+                        }
+                    }
+                });
+
+                if (selectedBrands.length > 0) {
+                    localStorage.setItem('shop_selected_brands', JSON.stringify(selectedBrands));
+                    localStorage.setItem('shop_brand_names', JSON.stringify(brandNames));
+                } else {
+                    localStorage.removeItem('shop_selected_brands');
+                    localStorage.removeItem('shop_brand_names');
+                }
+            }
+
+            // Function to restore from localStorage if URL doesn't have categories
+            function restoreFromLocalStorage() {
+                if (!urlParams.has('categories[]')) {
+                    const savedCategories = localStorage.getItem('shop_selected_categories');
+                    if (savedCategories) {
+                        try {
+                            const categories = JSON.parse(savedCategories);
+                            categories.forEach(categoryId => {
+                                const checkbox = document.querySelector(`input[name="category"][value="${categoryId}"]`);
+                                if (checkbox) checkbox.checked = true;
+                            });
+                        } catch (e) {
+                            console.error('Error parsing saved categories:', e);
+                        }
+                    }
+                }
+            }
 
             // Restore sizes
             const sizesParam = urlParams.getAll('sizes[]');
@@ -1232,9 +2378,117 @@
                 if (checkbox) checkbox.checked = true;
             });
 
+            // Restore brands
+            const brandsParam = urlParams.getAll('brands[]');
+            brandsParam.forEach(brandId => {
+                const checkbox = document.querySelector(`input[name="brand"][value="${brandId}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+
+            // Restore categories with delay to ensure DOM is ready
+            const categoriesParam = urlParams.getAll('categories[]');
+            setTimeout(function() {
+                categoriesParam.forEach(categoryId => {
+                    const checkbox = document.querySelector(`input[name="category"][value="${categoryId}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
+                });
+
+                // If no categories in URL, try localStorage
+                if (categoriesParam.length === 0) {
+                    restoreFromLocalStorage();
+                }
+
+                // Update title after restoration
+                updateShopTitle();
+                saveCategorySelections();
+            }, 100);
+
+            // Clear Filters Button Functionality
+            const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+            const shopTitle = document.getElementById('shopTitle');
+
+            // Function to check if any filters are active
+            function checkActiveFilters() {
+                const hasFilters =
+                    urlParams.has('categories[]') ||
+                    urlParams.has('brands[]') ||
+                    urlParams.has('sizes[]') ||
+                    urlParams.has('shoe_sizes[]') ||
+                    urlParams.has('colors[]') ||
+                    urlParams.has('min_price') ||
+                    urlParams.has('max_price');
+
+                if (clearFiltersBtn) {
+                    clearFiltersBtn.style.display = hasFilters ? 'inline-flex' : 'none';
+                }
+
+                return hasFilters;
+            }
+
+            // Function to update title based on selected category
+            function updateShopTitle() {
+                if (!shopTitle) return;
+
+                const selectedCategories = [];
+                document.querySelectorAll('input[name="category"]:checked').forEach(cb => {
+                    const label = cb.closest('.category-checkbox-item');
+                    if (label) {
+                        const categoryText = label.querySelector('.category-text');
+                        if (categoryText) {
+                            selectedCategories.push(categoryText.textContent.trim());
+                        }
+                    }
+                });
+
+                // If no categories found in DOM, try localStorage
+                if (selectedCategories.length === 0) {
+                    const savedNames = localStorage.getItem('shop_category_names');
+                    if (savedNames) {
+                        try {
+                            const categoryNames = JSON.parse(savedNames);
+                            const urlCategories = urlParams.getAll('categories[]');
+                            urlCategories.forEach(catId => {
+                                if (categoryNames[catId]) {
+                                    selectedCategories.push(categoryNames[catId]);
+                                }
+                            });
+                        } catch (e) {
+                            console.error('Error parsing category names:', e);
+                        }
+                    }
+                }
+
+                if (selectedCategories.length === 1) {
+                    shopTitle.textContent = selectedCategories[0];
+                } else if (selectedCategories.length > 1) {
+                    shopTitle.textContent = isArabic ? 'تصنيفات متعددة' : 'Multiple Categories';
+                } else {
+                    shopTitle.textContent = isArabic ? 'جميع المنتجات' : 'All Products';
+                }
+            }
+
+            // Update title and check filters on page load (will be called again after restoration)
+            checkActiveFilters();
+
+            // Clear all filters when button is clicked
+            if (clearFiltersBtn) {
+                clearFiltersBtn.addEventListener('click', function() {
+                    localStorage.removeItem('shop_selected_categories');
+                    localStorage.removeItem('shop_category_names');
+                    localStorage.removeItem('shop_selected_brands');
+                    localStorage.removeItem('shop_brand_names');
+                    window.location.href = '{{ route("shop") }}';
+                });
+            }
+
             // Product Image Hover Effect & Wishlist - Combined DOMContentLoaded
             document.addEventListener('DOMContentLoaded', function() {
                 console.log('🚀 Shop page initialized - POWER MODE ACTIVATED');
+
+                const isArabic = document.documentElement.getAttribute('dir') === 'rtl' || '{{ app()->getLocale() }}' === 'ar';
+                const t = (ar, en) => (isArabic ? ar : en);
 
                 // Handle image hover for all product cards
                 const productCards = document.querySelectorAll('.product-card');
@@ -1277,36 +2531,14 @@
                         e.preventDefault();
                         e.stopPropagation();
 
-                        @guest
-                            console.log('⚠️ User not logged in');
-                            Swal.fire({
-                                icon: 'warning',
-                                title: 'يجب تسجيل الدخول',
-                                text: 'يجب عليك تسجيل الدخول أولاً لإضافة منتجات إلى قائمة الأمنيات',
-                                confirmButtonText: 'تسجيل الدخول الآن',
-                                showCancelButton: true,
-                                cancelButtonText: 'إلغاء',
-                                confirmButtonColor: '#1a1a1a',
-                                cancelButtonColor: '#666',
-                                background: '#ffffff',
-                                color: '#000000',
-                                iconColor: '#ffc107'
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    window.location.href = "{{ route('login') }}";
-                                }
-                            });
-                            return;
-                        @endguest
-
                         const productId = button.dataset.productId;
 
                         if (!productId) {
                             console.error('❌ Product ID not found on button');
                             Swal.fire({
                                 icon: 'error',
-                                title: 'خطأ!',
-                                text: 'لم يتم العثور على معرف المنتج',
+                                title: t('خطأ!', 'Error'),
+                                text: t('لم يتم العثور على معرف المنتج', 'Product ID not found.'),
                                 confirmButtonColor: '#1a1a1a',
                                 background: '#ffffff',
                                 color: '#000000',
@@ -1335,12 +2567,55 @@
 
                             console.log('📥 Response status:', response.status);
 
+                            const data = await response.json();
+                            console.log('📦 Response data:', data);
+
+                            // إذا كان يتطلب تسجيل دخول
+                            if (response.status === 401 || data.requiresAuth) {
+                                console.log('⚠️ User not logged in - saving to localStorage');
+
+                                // حفظ المنتج في localStorage
+                                const STORAGE_KEY = 'rakaz_pending_wishlist';
+                                let pendingWishlist = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+                                // إضافة المنتج إذا لم يكن موجود
+                                if (!pendingWishlist.includes(productId)) {
+                                    pendingWishlist.push(productId);
+                                    localStorage.setItem(STORAGE_KEY, JSON.stringify(pendingWishlist));
+                                    console.log('💾 Saved to localStorage:', pendingWishlist);
+                                }
+
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: t('يجب تسجيل الدخول', 'Sign in required'),
+                                    html: t(
+                                        'يجب عليك تسجيز الدخول أولاً لإضافة منتجات إلى قائمة الأمنيات<br><strong>سيتم حفظ اختيارك تلقائياً بعد تسجيل الدخول</strong>',
+                                        'Please sign in to add items to your wishlist.<br><strong>Your selection will be saved automatically after login</strong>'
+                                    ),
+                                    confirmButtonText: t('تسجيل الدخول الآن', 'Sign in now'),
+                                    showCancelButton: true,
+                                    cancelButtonText: t('إلغاء', 'Cancel'),
+                                    confirmButtonColor: '#1a1a1a',
+                                    cancelButtonColor: '#666',
+                                    background: '#ffffff',
+                                    color: '#000000',
+                                    iconColor: '#ffc107',
+                                    customClass: {
+                                        container: 'modal-wishlist-alert'
+                                    }
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        window.location.href = "{{ route('login') }}";
+                                    }
+                                });
+                                button.disabled = false;
+                                button.style.opacity = '1';
+                                return;
+                            }
+
                             if (!response.ok) {
                                 throw new Error(`HTTP error! status: ${response.status}`);
                             }
-
-                            const data = await response.json();
-                            console.log('📦 Response data:', data);
 
                             if (data.success) {
                                 // Toggle active class
@@ -1351,10 +2626,12 @@
                                 // Show beautiful success message
                                 Swal.fire({
                                     icon: data.isAdded ? 'success' : 'error',
-                                    title: data.isAdded ? 'تمت الإضافة بنجاح' : 'تم الحذف',
+                                    title: data.isAdded
+                                        ? t('تمت الإضافة بنجاح', 'Added successfully')
+                                        : t('تم الحذف', 'Removed'),
                                     text: data.isAdded
-                                        ? 'تم إضافة المنتج إلى قائمة الأمنيات'
-                                        : 'تم حذف المنتج من قائمة الأمنيات',
+                                        ? t('تم إضافة المنتج إلى قائمة الأمنيات', 'Added to wishlist')
+                                        : t('تم حذف المنتج من قائمة الأمنيات', 'Removed from wishlist'),
                                     timer: 2500,
                                     showConfirmButton: false,
                                     position: 'top-end',
@@ -1376,15 +2653,17 @@
                                     console.log(`🔢 Wishlist count updated: ${currentCount} → ${newCount}`);
                                 }
                             } else {
-                                throw new Error(data.message || 'حدث خطأ غير معروف');
+                                throw new Error(isArabic ? (data.message || 'حدث خطأ غير معروف') : 'An unknown error occurred.');
                             }
                         } catch (error) {
                             console.error('❌ Error:', error);
                             Swal.fire({
                                 icon: 'error',
-                                title: 'خطأ!',
-                                text: error.message || 'حدث خطأ أثناء الإضافة للمفضلة. يرجى المحاولة مرة أخرى.',
-                                confirmButtonText: 'حسناً',
+                                title: t('خطأ!', 'Error'),
+                                text: isArabic
+                                    ? (error.message || 'حدث خطأ أثناء الإضافة للمفضلة. يرجى المحاولة مرة أخرى.')
+                                    : 'Something went wrong while updating your wishlist. Please try again.',
+                                confirmButtonText: t('حسناً', 'OK'),
                                 confirmButtonColor: '#1a1a1a',
                                 background: '#ffffff',
                                 color: '#000000',
@@ -1416,11 +2695,11 @@
                         @guest
                             Swal.fire({
                                 icon: 'warning',
-                                title: 'يجب تسجيل الدخول',
-                                text: 'يجب عليك تسجيل الدخول أولاً',
-                                confirmButtonText: 'تسجيل الدخول',
+                                title: t('يجب تسجيل الدخول', 'Sign in required'),
+                                text: t('يجب عليك تسجيل الدخول أولاً', 'Please sign in first.'),
+                                confirmButtonText: t('تسجيل الدخول', 'Sign in'),
                                 showCancelButton: true,
-                                cancelButtonText: 'إلغاء',
+                                cancelButtonText: t('إلغاء', 'Cancel'),
                                 confirmButtonColor: '#1a1a1a',
                                 cancelButtonColor: '#666',
                                 background: '#ffffff',
@@ -1463,8 +2742,12 @@
 
                                 Swal.fire({
                                     icon: data.isAdded ? 'success' : 'error',
-                                    title: data.isAdded ? 'تمت الإضافة بنجاح' : 'تم الحذف',
-                                    text: data.isAdded ? 'تم إضافة المنتج إلى قائمة الأمنيات' : 'تم حذف المنتج من قائمة الأمنيات',
+                                    title: data.isAdded
+                                        ? t('تمت الإضافة بنجاح', 'Added successfully')
+                                        : t('تم الحذف', 'Removed'),
+                                    text: data.isAdded
+                                        ? t('تم إضافة المنتج إلى قائمة الأمنيات', 'Added to wishlist')
+                                        : t('تم حذف المنتج من قائمة الأمنيات', 'Removed from wishlist'),
                                     timer: 2500,
                                     showConfirmButton: false,
                                     position: 'top-end',
@@ -1486,8 +2769,8 @@
                             console.error('❌ Error:', error);
                             Swal.fire({
                                 icon: 'error',
-                                title: 'خطأ!',
-                                text: 'حدث خطأ. يرجى المحاولة مرة أخرى.',
+                                title: t('خطأ!', 'Error'),
+                                text: t('حدث خطأ. يرجى المحاولة مرة أخرى.', 'Something went wrong. Please try again.'),
                                 confirmButtonColor: '#1a1a1a',
                                 background: '#ffffff',
                                 color: '#000000',
@@ -1527,10 +2810,12 @@
 
                         if (view === 'one') {
                             // عرض منتج واحد - يملأ الشاشة
-                            productsGrid.setAttribute('data-view', 'list');
+                            productsGrid.classList.remove('mobile-view-two');
+                            productsGrid.classList.add('mobile-view-one');
                         } else {
                             // عرض منتجين بجانب بعض
-                            productsGrid.setAttribute('data-view', 'grid-2');
+                            productsGrid.classList.remove('mobile-view-one');
+                            productsGrid.classList.add('mobile-view-two');
                         }
                     });
                 });
@@ -1650,7 +2935,51 @@
 
                     modalBrand.textContent = product.brand || '';
                     modalProductName.textContent = product.name;
-                    modalPrice.textContent = product.price;
+
+                    // Handle price and sale badge
+                    const modalSaleBadgeContainer = document.getElementById('modalSaleBadgeContainer');
+                    const modalOriginalPrice = document.getElementById('modalOriginalPrice');
+
+                    // Check if product is on sale
+                    if (product.is_on_sale && product.sale_price) {
+                        // Show sale badge container
+                        if (modalSaleBadgeContainer) {
+                            modalSaleBadgeContainer.style.display = 'block';
+                        }
+
+                        // Show original price (crossed out)
+                        if (modalOriginalPrice) {
+                            modalOriginalPrice.textContent = product.price;
+                            modalOriginalPrice.style.display = 'inline';
+                        }
+
+                        // Show sale price as current price
+                        modalPrice.textContent = product.sale_price;
+
+                        console.log('✅ Sale detected:', {
+                            original: product.price,
+                            sale: product.sale_price,
+                            is_on_sale: product.is_on_sale
+                        });
+                    } else {
+                        // Hide sale badge container
+                        if (modalSaleBadgeContainer) {
+                            modalSaleBadgeContainer.style.display = 'none';
+                        }
+
+                        // Hide original price
+                        if (modalOriginalPrice) {
+                            modalOriginalPrice.style.display = 'none';
+                        }
+
+                        // Show regular price
+                        modalPrice.textContent = product.price;
+
+                        console.log('❌ No sale:', {
+                            price: product.price,
+                            is_on_sale: product.is_on_sale
+                        });
+                    }
 
                     // Update description
                     const modalDescription = document.getElementById('modalDescription');
@@ -1738,9 +3067,22 @@
 
                     // Add all thumbnails (main image + all gallery images)
                     modalThumbnails.innerHTML = '';
+                    const modalThumbnailsExtra = document.getElementById('modalThumbnailsExtra');
+                    modalThumbnailsExtra.innerHTML = '';
+                    modalThumbnailsExtra.style.display = 'none';
+
                     console.log('Total images for product:', allImages.length);
 
-                    allImages.forEach((img, index) => {
+                    const maxVisibleThumbnails = 5;
+                    const visibleImages = allImages.slice(0, maxVisibleThumbnails);
+                    const extraImages = allImages.slice(maxVisibleThumbnails);
+                    const hasExtraImages = extraImages.length > 0;
+
+                    visibleImages.forEach((img, index) => {
+                        const thumbnailWrapper = document.createElement('div');
+                        thumbnailWrapper.style.position = 'relative';
+                        thumbnailWrapper.style.display = 'inline-block';
+
                         const thumbnail = document.createElement('img');
                         thumbnail.src = img;
                         thumbnail.alt = `صورة ${index + 1}`;
@@ -1748,8 +3090,99 @@
                         thumbnail.addEventListener('click', function() {
                             updateModalImage(index);
                         });
-                        modalThumbnails.appendChild(thumbnail);
+
+                        thumbnailWrapper.appendChild(thumbnail);
+
+                        // Add overlay on last visible thumbnail if there are extra images
+                        if (hasExtraImages && index === visibleImages.length - 1) {
+                            const overlay = document.createElement('div');
+                            overlay.className = 'modal-thumbnail-overlay';
+                            overlay.innerHTML = `<span class="modal-thumbnail-overlay-text">+${extraImages.length}</span>`;
+                            overlay.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                loadExtraThumbnails(product.id, extraImages, allImages.length);
+                            });
+                            thumbnailWrapper.appendChild(overlay);
+                        }
+
+                        modalThumbnails.appendChild(thumbnailWrapper);
                     });
+
+                    // Function to load extra thumbnails
+                    function loadExtraThumbnails(productId, extraImages, totalImages) {
+                        // Remove overlay
+                        const overlay = document.querySelector('.modal-thumbnail-overlay');
+                        if (overlay) overlay.remove();
+
+                        // Show extra thumbnails container
+                        modalThumbnailsExtra.style.display = 'flex';
+
+                        // Add extra thumbnails
+                        extraImages.forEach((img, index) => {
+                            const actualIndex = maxVisibleThumbnails + index;
+                            const thumbnail = document.createElement('img');
+                            thumbnail.src = img;
+                            thumbnail.alt = `صورة ${actualIndex + 1}`;
+                            thumbnail.className = 'modal-thumbnail';
+                            thumbnail.addEventListener('click', function() {
+                                updateModalImage(actualIndex);
+                            });
+                            modalThumbnailsExtra.appendChild(thumbnail);
+                        });
+                    }
+
+                    // Handle Color Images Section
+                    const colorImagesSection = document.getElementById('modalColorImagesSection');
+                    const colorImagesRow = document.getElementById('modalColorImagesRow');
+                    const selectedColorNameSpan = document.getElementById('modalSelectedColorName');
+
+                    // Clear previous color images
+                    colorImagesRow.innerHTML = '';
+
+                    // Check if product has color images
+                    if (product.colorImages && product.colorImages.length > 0) {
+                        colorImagesSection.style.display = 'block';
+
+                        // Set first color name
+                        const firstColor = product.colorImages[0];
+                        const isArabic = '{{ app()->getLocale() }}' === 'ar';
+                        selectedColorNameSpan.textContent = isArabic ? firstColor.color_ar : firstColor.color_en;
+
+                        // Create color image thumbnails
+                        product.colorImages.forEach((colorImg, index) => {
+                            const thumb = document.createElement('div');
+                            thumb.className = 'modal-color-image-thumb' + (index === 0 ? ' active' : '');
+                            thumb.dataset.colorId = colorImg.color_id;
+                            thumb.dataset.colorAr = colorImg.color_ar;
+                            thumb.dataset.colorEn = colorImg.color_en;
+                            thumb.dataset.image = colorImg.image;
+
+                            const img = document.createElement('img');
+                            img.src = colorImg.image;
+                            img.alt = isArabic ? colorImg.color_ar : colorImg.color_en;
+
+                            thumb.appendChild(img);
+                            colorImagesRow.appendChild(thumb);
+
+                            // Click handler
+                            thumb.addEventListener('click', function() {
+                                // Update active state
+                                document.querySelectorAll('.modal-color-image-thumb').forEach(t => t.classList.remove('active'));
+                                this.classList.add('active');
+
+                                // Update color name
+                                const colorName = isArabic ? this.dataset.colorAr : this.dataset.colorEn;
+                                selectedColorNameSpan.textContent = colorName;
+
+                                // Update main image
+                                if (this.dataset.image && modalMainImage) {
+                                    modalMainImage.src = this.dataset.image;
+                                }
+                            });
+                        });
+                    } else {
+                        colorImagesSection.style.display = 'none';
+                    }
 
                     // Add sizes to dropdown
                     const modalSizeSelect = document.getElementById('modalSizeSelect');
@@ -1769,15 +3202,8 @@
                         // Update sizes count
                         document.getElementById('modalSizesCount').textContent = '(' + product.sizes.length + ')';
 
-                        // Display available sizes list as badges
-                        const sizesHTML = product.sizes.map(size =>
-                            '<span style="display: inline-block; padding: 8px 16px; margin: 4px; background: #007bff; color: white; border-radius: 4px; font-weight: bold; font-size: 14px;">' +
-                            size +
-                            '</span>'
-                        ).join('');
-
-                        modalSizesList.innerHTML = sizesHTML;
-                        modalAvailableSizes.style.display = 'block';
+                        // Hide available sizes list (badges display)
+                        modalAvailableSizes.style.display = 'none';
 
                         // Add sizes to dropdown
                         product.sizes.forEach(size => {
@@ -1851,12 +3277,153 @@
                     // Show modal
                     modal.style.display = 'block';
                     document.body.style.overflow = 'hidden';
+
+                    // Process modal images with Pica on mobile and tablet only
+                    if (window.innerWidth <= 1024) {
+                        setTimeout(() => {
+                            processModalImages();
+                        }, 100);
+                    }
+                }
+
+                // Process modal images with Pica for mobile and tablet - DISABLED
+                function processModalImages() {
+                    // تم تعطيل Pica لأنها تسبب تكسير الصور
+                    console.log('✅ Using original images without Pica processing');
+                    return; // تعطيل كامل
+
+                    /* DISABLED CODE:
+                    if (typeof pica === 'undefined') {
+                        console.log('Pica not available for modal images');
+                        return;
+                    }
+
+                    const picaInstance = pica();
+                    const modalImages = document.querySelectorAll('#modalMainImage, .modal-thumbnail img, .modal-color-image-thumb img');
+
+                    modalImages.forEach(img => {
+                        if (img.dataset.picaProcessed || img.dataset.picaProcessing) return;
+
+                        img.dataset.picaProcessing = 'true';
+
+                        function processImage() {
+                            try {
+                                const container = img.parentElement;
+                                const containerRect = container.getBoundingClientRect();
+
+                                if (!containerRect.width || !containerRect.height) {
+                                    img.dataset.picaProcessed = 'true';
+                                    delete img.dataset.picaProcessing;
+                                    return;
+                                }
+
+                                // استخدام الحجم الفعلي المعروض على الشاشة
+                                const displayedWidth = img.getBoundingClientRect().width;
+                                const displayedHeight = img.getBoundingClientRect().height;
+
+                                // استخدام DPR معتدل ومتوافق مع معظم الشاشات
+                                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+                                let targetWidth = Math.round(displayedWidth * dpr);
+                                let targetHeight = Math.round(displayedHeight * dpr);
+
+                                // إذا كانت الصورة الأصلية أصغر، استخدم حجمها الأصلي
+                                // إذا كانت أكبر، قم بعمل downscale للحجم المطلوب
+                                if (targetWidth > img.naturalWidth) {
+                                    targetWidth = img.naturalWidth;
+                                    targetHeight = Math.round(targetWidth / (displayedWidth / displayedHeight));
+                                }
+                                if (targetHeight > img.naturalHeight) {
+                                    targetHeight = img.naturalHeight;
+                                    targetWidth = Math.round(targetHeight * (displayedWidth / displayedHeight));
+                                }
+
+                                // تخطي إذا كانت الصورة صغيرة جداً
+                                if (img.naturalWidth < 300 || img.naturalHeight < 300) {
+                                    img.dataset.picaProcessed = 'true';
+                                    delete img.dataset.picaProcessing;
+                                    return;
+                                }
+
+                                const canvas = document.createElement('canvas');
+                                canvas.width = targetWidth;
+                                canvas.height = targetHeight;
+
+                                const tempImg = new Image();
+                                tempImg.crossOrigin = 'anonymous';
+
+                                tempImg.onload = function() {
+                                    // استخدام أعلى جودة ممكنة للتنعيم الكامل
+                                    picaInstance.resize(tempImg, canvas, {
+                                        quality: 3,           // أعلى جودة خوارزمية (Lanczos)
+                                        alpha: true,
+                                        unsharpAmount: 0,     // بدون حدة للحصول على أقصى تنعيم
+                                        unsharpRadius: 0,
+                                        unsharpThreshold: 0
+                                    }).then(result => {
+                                        return picaInstance.toBlob(result, 'image/jpeg', 0.98);
+                                    }).then(blob => {
+                                        const url = URL.createObjectURL(blob);
+                                        if (!img.dataset.originalSrc) {
+                                            img.dataset.originalSrc = img.src;
+                                        }
+                                        img.src = url;
+                                        img.dataset.picaProcessed = 'true';
+                                        delete img.dataset.picaProcessing;
+
+                                        if (img.dataset.picaBlobUrl) {
+                                            setTimeout(() => URL.revokeObjectURL(img.dataset.picaBlobUrl), 100);
+                                        }
+                                        img.dataset.picaBlobUrl = url;
+                                    }).catch(err => {
+                                        console.warn('Pica modal processing failed:', err);
+                                        img.dataset.picaProcessed = 'true';
+                                        delete img.dataset.picaProcessing;
+                                    });
+                                };
+
+                                tempImg.onerror = function() {
+                                    img.dataset.picaProcessed = 'true';
+                                    delete img.dataset.picaProcessing;
+                                };
+
+                                tempImg.src = img.src;
+
+                            } catch (err) {
+                                console.warn('Pica modal setup failed:', err);
+                                img.dataset.picaProcessed = 'true';
+                                delete img.dataset.picaProcessing;
+                            }
+                        }
+
+                        if (!img.complete || img.naturalWidth === 0) {
+                            img.addEventListener('load', processImage, { once: true });
+                        } else {
+                            processImage();
+                        }
+                    });
+                    */ // END DISABLED CODE
                 }
 
                 function closeProductModal() {
                     const modal = document.getElementById('productModal');
                     modal.style.display = 'none';
                     document.body.style.overflow = 'auto';
+
+                    // Clean up Pica processed images
+                    const modalImages = document.querySelectorAll('#modalMainImage, .modal-thumbnail img, .modal-color-image-thumb img');
+                    modalImages.forEach(img => {
+                        if (img.dataset.picaBlobUrl) {
+                            URL.revokeObjectURL(img.dataset.picaBlobUrl);
+                        }
+                        delete img.dataset.picaProcessed;
+                        delete img.dataset.picaProcessing;
+                        delete img.dataset.picaBlobUrl;
+                        if (img.dataset.originalSrc) {
+                            img.src = img.dataset.originalSrc;
+                            delete img.dataset.originalSrc;
+                        }
+                    });
                 }
 
                 // Close modal button
@@ -1885,6 +3452,171 @@
                 // Add to bag from modal
                 let currentProductId = null;
 
+                // Add to wishlist from modal
+                document.querySelector('.modal-btn-add-to-wishlist').addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (!currentProductId) {
+                        console.error('❌ No product ID available');
+                        Swal.fire({
+                            icon: 'error',
+                            title: t('خطأ!', 'Error'),
+                            text: t('لم يتم العثور على معرف المنتج', 'Product ID not found.'),
+                            confirmButtonColor: '#1a1a1a',
+                            background: '#ffffff',
+                            color: '#000000',
+                            iconColor: '#dc3545'
+                        });
+                        return;
+                    }
+
+                    console.log('📤 Adding product to wishlist from modal:', currentProductId);
+
+                    // Show loading state
+                    const button = this;
+                    const originalHTML = button.innerHTML;
+                    button.disabled = true;
+                    button.style.opacity = '0.6';
+
+                    try {
+                        const response = await fetch("{{ route('wishlist.toggle') }}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ product_id: currentProductId })
+                        });
+
+                        console.log('📥 Response status:', response.status);
+
+                        const data = await response.json();
+                        console.log('📦 Response data:', data);
+
+                        // إذا كان يتطلب تسجيل دخول
+                        if (response.status === 401 || data.requiresAuth) {
+                            console.log('⚠️ User not logged in - saving to localStorage');
+
+                            // حفظ المنتج في localStorage
+                            const STORAGE_KEY = 'rakaz_pending_wishlist';
+                            let pendingWishlist = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+                            // إضافة المنتج إذا لم يكن موجود
+                            if (!pendingWishlist.includes(currentProductId)) {
+                                pendingWishlist.push(currentProductId);
+                                localStorage.setItem(STORAGE_KEY, JSON.stringify(pendingWishlist));
+                                console.log('💾 Saved to localStorage:', pendingWishlist);
+                            }
+
+                            Swal.fire({
+                                icon: 'warning',
+                                title: t('يجب تسجيل الدخول', 'Sign in required'),
+                                html: t(
+                                    'يجب عليك تسجيز الدخول أولاً لإضافة منتجات إلى قائمة الأمنيات<br><strong>سيتم حفظ اختيارك تلقائياً بعد تسجيل الدخول</strong>',
+                                    'Please sign in to add items to your wishlist.<br><strong>Your selection will be saved automatically after login</strong>'
+                                ),
+                                confirmButtonText: t('تسجيل الدخول الآن', 'Sign in now'),
+                                showCancelButton: true,
+                                cancelButtonText: t('إلغاء', 'Cancel'),
+                                confirmButtonColor: '#1a1a1a',
+                                cancelButtonColor: '#666',
+                                background: '#ffffff',
+                                color: '#000000',
+                                iconColor: '#ffc107',
+                                customClass: {
+                                    container: 'modal-wishlist-alert'
+                                }
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = "{{ route('login') }}";
+                                }
+                            });
+                            button.disabled = false;
+                            button.style.opacity = '1';
+                            return;
+                        }
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        if (data.success) {
+                            // Update button appearance
+                            if (data.isAdded) {
+                                button.style.background = '#dc2626';
+                                button.style.borderColor = '#dc2626';
+                            } else {
+                                button.style.background = 'white';
+                                button.style.borderColor = '#ddd';
+                            }
+
+                            console.log('✅ Success! isAdded:', data.isAdded);
+
+                            // Show beautiful success message
+                            Swal.fire({
+                                icon: data.isAdded ? 'success' : 'info',
+                                title: data.isAdded
+                                    ? t('تمت الإضافة بنجاح', 'Added successfully')
+                                    : t('تم الحذف', 'Removed'),
+                                text: data.isAdded
+                                    ? t('تم إضافة المنتج إلى قائمة الأمنيات', 'Added to wishlist')
+                                    : t('تم حذف المنتج من قائمة الأمنيات', 'Removed from wishlist'),
+                                timer: 2500,
+                                showConfirmButton: false,
+                                position: 'top-end',
+                                toast: true,
+                                background: '#ffffff',
+                                color: '#000000',
+                                iconColor: data.isAdded ? '#28a745' : '#6c757d',
+                                customClass: {
+                                    popup: 'animated fadeInRight',
+                                    container: 'modal-wishlist-toast'
+                                }
+                            });
+
+                            // Update wishlist count in header badge
+                            const wishlistBadge = document.querySelector('.header-link[href*="wishlist"] .badge');
+                            if (wishlistBadge) {
+                                const currentCount = parseInt(wishlistBadge.textContent) || 0;
+                                const newCount = data.isAdded ? currentCount + 1 : Math.max(0, currentCount - 1);
+                                wishlistBadge.textContent = newCount;
+                                console.log(`🔢 Wishlist count updated: ${currentCount} → ${newCount}`);
+                            }
+
+                            // Update all wishlist buttons for this product
+                            document.querySelectorAll(`.wishlist-btn[data-product-id="${currentProductId}"]`).forEach(btn => {
+                                if (data.isAdded) {
+                                    btn.classList.add('active');
+                                } else {
+                                    btn.classList.remove('active');
+                                }
+                            });
+                        } else {
+                            throw new Error(isArabic ? (data.message || 'حدث خطأ غير معروف') : 'An unknown error occurred.');
+                        }
+                    } catch (error) {
+                        console.error('❌ Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: t('خطأ!', 'Error'),
+                            text: isArabic
+                                ? (error.message || 'حدث خطأ أثناء الإضافة للمفضلة. يرجى المحاولة مرة أخرى.')
+                                : 'Something went wrong while updating your wishlist. Please try again.',
+                            confirmButtonText: t('حسناً', 'OK'),
+                            confirmButtonColor: '#1a1a1a',
+                            background: '#ffffff',
+                            color: '#000000',
+                            iconColor: '#dc3545'
+                        });
+                    } finally {
+                        // Restore button state
+                        button.disabled = false;
+                        button.style.opacity = '1';
+                    }
+                });
+
                 document.getElementById('modalAddToBag').addEventListener('click', function() {
                     const modalSizeSelect = document.getElementById('modalSizeSelect');
                     const selectedSize = modalSizeSelect ? modalSizeSelect.value : null;
@@ -1893,9 +3625,9 @@
                     if (modalSizeSelect && !selectedSize) {
                         Swal.fire({
                             icon: 'warning',
-                            title: 'اختر المقاس',
-                            text: 'الرجاء اختيار المقاس أولاً',
-                            confirmButtonText: 'حسناً',
+                            title: t('اختر المقاس', 'Select size'),
+                            text: t('الرجاء اختيار المقاس أولاً', 'Please select a size first.'),
+                            confirmButtonText: t('حسناً', 'OK'),
                             confirmButtonColor: '#1a1a1a'
                         });
                         return;
@@ -1937,14 +3669,14 @@
 
                             // Add visual feedback
                             button.innerHTML =
-                                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> تمت الإضافة';
+                                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> ' + (isArabic ? 'تمت الإضافة' : 'Added');
                             button.style.background = '#4CAF50';
 
                             // Show success message
                             Swal.fire({
                                 icon: 'success',
-                                title: 'تمت الإضافة!',
-                                text: data.message,
+                                title: t('تمت الإضافة!', 'Added!'),
+                                text: isArabic ? (data.message || 'تمت الإضافة!') : 'Added to bag successfully.',
                                 timer: 1500,
                                 showConfirmButton: false
                             });
@@ -1952,7 +3684,7 @@
                             // Close modal after adding
                             setTimeout(() => {
                                 button.innerHTML =
-                                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> إضافة إلى حقيبة التسوق';
+                                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> ' + (isArabic ? 'إضافة إلى حقيبة التسوق' : 'Add to bag');
                                 button.style.background = '#1a1a1a';
                                 button.disabled = false;
                                 closeProductModal();
@@ -1964,10 +3696,130 @@
                         button.disabled = false;
                         Swal.fire({
                             icon: 'error',
-                            title: 'خطأ!',
-                            text: 'حدث خطأ أثناء الإضافة للسلة',
-                            confirmButtonText: 'حسناً'
+                            title: t('خطأ!', 'Error'),
+                            text: t('حدث خطأ أثناء الإضافة للسلة', 'Something went wrong while adding to bag.'),
+                            confirmButtonText: t('حسناً', 'OK')
                         });
+                    });
+                });
+            });
+
+            // ========================================
+            // Product Hover - Sizes Scroll
+            // ========================================
+            document.addEventListener('DOMContentLoaded', function() {
+                // Sizes Scroll Buttons
+                document.querySelectorAll('.prev-size').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const productId = this.dataset.productId;
+                        const wrapper = document.querySelector(`.product-sizes-wrapper[data-product-id="${productId}"]`);
+                        if (wrapper) {
+                            wrapper.scrollBy({ left: -40, behavior: 'smooth' });
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.next-size').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const productId = this.dataset.productId;
+                        const wrapper = document.querySelector(`.product-sizes-wrapper[data-product-id="${productId}"]`);
+                        if (wrapper) {
+                            wrapper.scrollBy({ left: 40, behavior: 'smooth' });
+                        }
+                    });
+                });
+
+                // Prevent clicks on hover content from triggering product link
+                document.querySelectorAll('.product-hover-content').forEach(content => {
+                    content.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                    });
+                });
+
+                // Gallery item click to change main image
+                document.querySelectorAll('.product-gallery-item').forEach(galleryItem => {
+                    galleryItem.addEventListener('click', function(e) {
+                        // Check if the image is wrapped in an anchor tag with href (color link)
+                        const parentLink = this.closest('a[href]');
+                        if (parentLink && parentLink.getAttribute('href') !== '#') {
+                            // Allow navigation to product page with color
+                            console.log('🔗 Navigating to product with color:', parentLink.getAttribute('data-color-id'));
+                            return; // Allow default link behavior
+                        }
+
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const productCard = this.closest('.product-card');
+                        const mainImage = productCard.querySelector('.product-image-primary');
+                        if (mainImage) {
+                            mainImage.src = this.src;
+                        }
+                    });
+                });
+
+                // Size item click to select
+                document.querySelectorAll('.product-size-item').forEach(sizeItem => {
+                    sizeItem.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const productCard = this.closest('.product-card');
+                        const allSizes = productCard.querySelectorAll('.product-size-item');
+                        allSizes.forEach(s => s.style.cssText = '');
+                        this.style.cssText = 'background: #1a1a1a; color: #fff; border-color: #1a1a1a;';
+                    });
+                });
+
+                // Gallery Navigation - Fixed
+                document.querySelectorAll('.gallery-prev, .gallery-next').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        const productId = this.getAttribute('data-product-id');
+                        const container = document.querySelector(`.product-gallery-container[data-product-id="${productId}"]`);
+
+                        if (!container) {
+                            console.log('Container not found for product:', productId);
+                            return;
+                        }
+
+                        const firstItem = container.querySelector('.product-gallery-item');
+                        if (!firstItem) {
+                            console.log('No gallery items found');
+                            return;
+                        }
+
+                        const itemWidth = firstItem.offsetWidth + 2; // width + gap
+                        const scrollAmount = itemWidth; // scroll 1 item at a time
+
+                        console.log('Scrolling:', this.classList.contains('gallery-prev') ? 'prev' : 'next', 'Amount:', scrollAmount);
+
+                        // prev goes left (decrease scrollLeft), next goes right (increase scrollLeft)
+                        if (this.classList.contains('gallery-prev')) {
+                            container.scrollLeft -= scrollAmount;
+                        } else {
+                            container.scrollLeft += scrollAmount;
+                        }
+                    });
+                });
+
+                // Color circle click to filter/highlight
+                document.querySelectorAll('.product-color-circle').forEach(colorCircle => {
+                    colorCircle.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const productCard = this.closest('.product-card');
+                        const allColors = productCard.querySelectorAll('.product-color-circle');
+                        allColors.forEach(c => {
+                            c.style.borderColor = '#fff';
+                            c.style.borderWidth = '2px';
+                        });
+                        this.style.borderColor = '#1a1a1a';
+                        this.style.borderWidth = '3px';
                     });
                 });
             });

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Overlay Navigation</title>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <style>
+        body {
+            padding: 50px;
+            background: #f5f5f5;
+        }
+
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .product-card {
+            width: 350px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .product-image-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 3/4;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .test-info {
+            background: #fff3cd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 2px solid #ffc107;
+        }
+
+        .test-info h3 {
+            margin: 0 0 10px 0;
+            color: #856404;
+        }
+
+        .test-info p {
+            margin: 5px 0;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-info">
+            <h3>🧪 اختبار أزرار Overlay</h3>
+            <p><strong>التعليمات:</strong> مرر الماوس على الكارت لإظهار الـ overlay، ثم جرب الأزرار</p>
+            <p><strong>المتوقع:</strong> أزرار الصور والأحجام يجب أن تعمل وتظهر رسائل في Console</p>
+            <p><strong>افتح Console:</strong> اضغط F12 لرؤية السجلات</p>
+        </div>
+
+        <div class="product-card" data-product-id="1">
+            <a href="#" class="product-image-wrapper">
+                <!-- Placeholder Image -->
+            </a>
+
+            <!-- Overlay -->
+            <div class="featured-product-overlay">
+                <div class="overlay-image-section">
+                    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                </div>
+
+                <div class="overlay-info-section">
+                    <p class="overlay-product-brand">ORIGINAL</p>
+                    <h3 class="overlay-product-name">هودي شتوي U0KR</h3>
+                    <p class="overlay-product-price">310 درهم إماراتي</p>
+
+                    <!-- Gallery Navigation -->
+                    <div class="overlay-gallery-section">
+                        <button class="overlay-gallery-nav prev-gallery" data-direction="prev">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                        <div class="overlay-gallery-images">
+                            <div class="overlay-gallery-thumb" style="background: #ff6b6b;">1</div>
+                            <div class="overlay-gallery-thumb" style="background: #4ecdc4;">2</div>
+                            <div class="overlay-gallery-thumb" style="background: #45b7d1;">3</div>
+                            <div class="overlay-gallery-thumb" style="background: #f7dc6f;">4</div>
+                            <div class="overlay-gallery-thumb" style="background: #bb8fce;">5</div>
+                            <div class="overlay-gallery-thumb" style="background: #85c1e2;">6</div>
+                        </div>
+                        <button class="overlay-gallery-nav next-gallery" data-direction="next">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Sizes Navigation -->
+                    <div class="overlay-sizes-wrapper">
+                        <button class="overlay-sizes-nav prev-sizes" data-direction="prev">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                        <div class="overlay-sizes-section">
+                            <span class="overlay-size-item">XS</span>
+                            <span class="overlay-size-item">S</span>
+                            <span class="overlay-size-item">M</span>
+                            <span class="overlay-size-item">L</span>
+                            <span class="overlay-size-item">XL</span>
+                            <span class="overlay-size-item">XXL</span>
+                            <span class="overlay-size-item">3XL</span>
+                        </div>
+                        <button class="overlay-sizes-nav next-sizes" data-direction="next">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/js/featured-section.js"></script>
+</body>
+</html>

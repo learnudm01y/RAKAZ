@@ -1,0 +1,36 @@
+// Add this temporary test route to routes/web.php
+
+Route::get('admin/test-featured-update', function() {
+    \Log::info('🧪 TEST ROUTE ACCESSED');
+
+    $section = \App\Models\FeaturedSection::first();
+
+    if (!$section) {
+        \Log::error('❌ No FeaturedSection found');
+        return response()->json(['error' => 'No section found']);
+    }
+
+    \Log::info('✅ Section found - ID: ' . $section->id);
+    \Log::info('📦 Current products:', $section->products->pluck('id')->toArray());
+
+    // Test sync with fewer products
+    $testProducts = [1, 2]; // Change these IDs to actual product IDs in your DB
+
+    \Log::info('🧪 Testing sync with products:', $testProducts);
+
+    $syncData = [];
+    foreach ($testProducts as $index => $productId) {
+        $syncData[$productId] = ['order' => $index];
+    }
+
+    $section->products()->sync($syncData);
+
+    $afterProducts = $section->fresh()->products->pluck('id')->toArray();
+    \Log::info('📦 Products after sync:', $afterProducts);
+
+    return response()->json([
+        'success' => true,
+        'before' => $section->products->pluck('id')->toArray(),
+        'after' => $afterProducts
+    ]);
+})->name('admin.featured-section.test');

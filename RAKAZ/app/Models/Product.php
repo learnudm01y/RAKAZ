@@ -17,6 +17,7 @@ class Product extends Model
         'sizing_info',
         'design_details',
         'category_id',
+        'brand_id',
         'price',
         'sale_price',
         'cost',
@@ -90,6 +91,14 @@ class Product extends Model
     }
 
     /**
+     * Get the brand that owns the product.
+     */
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
+    /**
      * Get the sizes for the product (many-to-many relationship)
      */
     public function productSizes()
@@ -120,12 +129,43 @@ class Product extends Model
     }
 
     /**
+     * Get color images for the product
+     */
+    public function colorImages()
+    {
+        return $this->hasMany(ProductColorImage::class)->ordered();
+    }
+
+    /**
+     * Get images for a specific color
+     */
+    public function getColorImages($colorId)
+    {
+        return $this->colorImages()->where('color_id', $colorId)->get();
+    }
+
+    /**
+     * Get primary image for a specific color
+     */
+    public function getColorPrimaryImage($colorId)
+    {
+        return $this->colorImages()
+            ->where('color_id', $colorId)
+            ->where('is_primary', true)
+            ->first();
+    }
+
+    /**
      * Get name by locale
      */
     public function getName($locale = null)
     {
         $locale = $locale ?? app()->getLocale();
-        return $this->name[$locale] ?? $this->name['ar'] ?? '';
+        if ($locale === 'ar') {
+            return $this->name['ar'] ?? $this->name['en'] ?? '';
+        }
+
+        return $this->name[$locale] ?? $this->name['en'] ?? '';
     }
 
     /**
@@ -134,7 +174,11 @@ class Product extends Model
     public function getSlug($locale = null)
     {
         $locale = $locale ?? app()->getLocale();
-        return $this->slug[$locale] ?? $this->slug['ar'] ?? '';
+        if ($locale === 'ar') {
+            return $this->slug['ar'] ?? $this->slug['en'] ?? '';
+        }
+
+        return $this->slug[$locale] ?? $this->slug['en'] ?? '';
     }
 
     /**
@@ -143,7 +187,11 @@ class Product extends Model
     public function getDescription($locale = null)
     {
         $locale = $locale ?? app()->getLocale();
-        return $this->description[$locale] ?? $this->description['ar'] ?? '';
+        if ($locale === 'ar') {
+            return $this->description['ar'] ?? $this->description['en'] ?? '';
+        }
+
+        return $this->description[$locale] ?? $this->description['en'] ?? '';
     }
 
     /**
@@ -152,7 +200,11 @@ class Product extends Model
     public function getSizingInfo($locale = null)
     {
         $locale = $locale ?? app()->getLocale();
-        return $this->sizing_info[$locale] ?? $this->sizing_info['ar'] ?? '';
+        if ($locale === 'ar') {
+            return $this->sizing_info['ar'] ?? $this->sizing_info['en'] ?? '';
+        }
+
+        return $this->sizing_info[$locale] ?? $this->sizing_info['en'] ?? '';
     }
 
     /**
@@ -161,7 +213,11 @@ class Product extends Model
     public function getDesignDetails($locale = null)
     {
         $locale = $locale ?? app()->getLocale();
-        return $this->design_details[$locale] ?? $this->design_details['ar'] ?? '';
+        if ($locale === 'ar') {
+            return $this->design_details['ar'] ?? $this->design_details['en'] ?? '';
+        }
+
+        return $this->design_details[$locale] ?? $this->design_details['en'] ?? '';
     }
 
     /**

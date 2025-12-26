@@ -69,4 +69,38 @@ class OrderController extends Controller
 
         return redirect()->route('orders.show', $order->id);
     }
+
+    public function cancel($id)
+    {
+        $order = Order::findOrFail($id);
+
+        // التحقق من أن المستخدم يمتلك هذا الطلب
+        if ($order->user_id !== auth()->id()) {
+            return response()->json([
+                'success' => false,
+                'message' => app()->getLocale() == 'ar' ? 'غير مصرح لك بإلغاء هذا الطلب' : 'You are not authorized to cancel this order'
+            ], 403);
+        }
+
+        // التحقق من حالة الطلب - لا يمكن إلغاء الطلبات المكتملة أو الملغاة
+        if (in_array($order->status, ['completed', 'cancelled', 'shipped', 'delivered'])) {
+            return response()->json([
+                'success' => false,
+                'message' => app()->getLocale() == 'ar'
+                    ? 'لا يمكن إلغاء هذا الطلب في الوضع الحالي'
+                    : 'Cannot cancel this order in its current status'
+            ], 400);
+        }
+
+        // تحديث حالة الطلب إلى ملغي
+        $order->status = 'cancelled';
+        $order->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => app()->getLocale() == 'ar'
+                ? 'تم إلغاء الطلب بنجاح'
+                : 'Order cancelled successfully'
+        ]);
+    }
 }

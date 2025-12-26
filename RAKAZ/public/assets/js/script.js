@@ -80,34 +80,247 @@ document.addEventListener('DOMContentLoaded', function() {
     // Dropdown menus functionality with dynamic positioning
     const navItems = document.querySelectorAll('.nav-item.dropdown');
 
-    function positionDropdown(item, menu) {
-        const header = document.querySelector('.main-header');
-
-        if (header) {
-            const headerRect = header.getBoundingClientRect();
-            const topPosition = headerRect.bottom;
-
-            menu.style.top = topPosition + 'px';
+    // استخدام الدالة من desktop-mega-menu.js إذا كانت متاحة ونحن على سطح المكتب
+    function buildMegaMenuIfNeeded(menu) {
+        // إذا كنا على سطح المكتب واستخدام ملف desktop-mega-menu.js
+        if (window.innerWidth > 1024 && typeof window.buildDesktopMegaMenu === 'function') {
+            window.buildDesktopMegaMenu(menu);
+            return;
         }
+
+        // الكود الأصلي للهاتف
+        if (!menu || menu.dataset.defer !== '1') return;
+        if (menu.dataset.built === '1' || menu.dataset.built === 'building') return;
+
+        const dataEl = menu.querySelector('.js-mobile-menu-data, .js-mega-menu-data');
+        const contentEl = menu.querySelector('.js-mega-menu-content');
+        if (!dataEl || !contentEl) {
+            menu.dataset.built = '1';
+            return;
+        }
+
+        let data;
+        try {
+            data = JSON.parse(dataEl.textContent || '[]');
+        } catch (e) {
+            menu.dataset.built = '1';
+            return;
+        }
+
+        if (!Array.isArray(data) || data.length === 0) {
+            menu.dataset.built = '1';
+            return;
+        }
+
+        menu.dataset.built = 'building';
+        contentEl.textContent = '';
+
+        const frag = document.createDocumentFragment();
+        const columnsState = [];
+
+        function createTextSpans(arText, enText) {
+            const wrap = document.createDocumentFragment();
+
+            const ar = document.createElement('span');
+            ar.className = 'ar-text';
+            ar.textContent = arText || '';
+
+            const en = document.createElement('span');
+            en.className = 'en-text';
+            en.textContent = enText || '';
+
+            wrap.appendChild(ar);
+            wrap.appendChild(en);
+            return wrap;
+        }
+
+        // Create columns structure up-front (cheap), populate items in idle batches.
+        for (const col of data) {
+            const colEl = document.createElement('div');
+            colEl.className = 'dropdown-column';
+
+            const title = document.createElement('h4');
+            title.className = 'dropdown-title';
+            title.appendChild(createTextSpans(col.title_ar, col.title_en));
+            colEl.appendChild(title);
+
+            const ul = document.createElement('ul');
+            colEl.appendChild(ul);
+
+            frag.appendChild(colEl);
+            columnsState.push({ ul, items: Array.isArray(col.items) ? col.items : [], idx: 0 });
+        }
+
+        contentEl.appendChild(frag);
+
+
+        // Round-robin item population across columns to make the menu feel responsive quickly.
+        const perChunk = 80;
+        const immediate = 40;
+        let remainingCols = columnsState.length;
+
+        function appendItem(ul, item) {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = item.link || '#';
+            a.appendChild(createTextSpans(item.name_ar, item.name_en));
+            li.appendChild(a);
+
+            if (Array.isArray(item.children) && item.children.length) {
+                const childUl = document.createElement('ul');
+                for (const child of item.children) {
+                    const childLi = document.createElement('li');
+                    const childA = document.createElement('a');
+                    childA.href = child.link || '#';
+                    childA.appendChild(createTextSpans(child.name_ar, child.name_en));
+                    childLi.appendChild(childA);
+                    childUl.appendChild(childLi);
+                }
+                li.appendChild(childUl);
+            }
+
+            ul.appendChild(li);
+        }
+
+        // Immediate small batch so the menu isn't empty.
+        let added = 0;
+        while (added < immediate) {
+            let progressed = false;
+            for (const st of columnsState) {
+                if (st.idx < st.items.length) {
+                    appendItem(st.ul, st.items[st.idx]);
+                    st.idx++;
+                    added++;
+                    progressed = true;
+                    if (added >= immediate) break;
+                }
+            }
+            if (!progressed) break;
+        }
+
+        function work(deadline) {
+            let count = 0;
+            while (count < perChunk && columnsState.some(st => st.idx < st.items.length) && (!deadline || deadline.timeRemaining() > 4)) {
+                for (const st of columnsState) {
+                    if (st.idx < st.items.length) {
+                        appendItem(st.ul, st.items[st.idx]);
+                        st.idx++;
+                        count++;
+                        if (count >= perChunk) break;
+                    }
+                }
+            }
+
+            if (columnsState.some(st => st.idx < st.items.length)) {
+                if (window.requestIdleCallback) {
+                    window.requestIdleCallback(work, { timeout: 200 });
+                } else {
+                    window.requestAnimationFrame(() => work(null));
+                }
+            } else {
+                menu.dataset.built = '1';
+            }
+        }
+
+        if (window.requestIdleCallback) {
+            window.requestIdleCallback(work, { timeout: 200 });
+        } else {
+            window.requestAnimationFrame(() => work(null));
+        }
+    }
+
+    function closeAllDropdowns() {
+        navItems.forEach(navItem => {
+            navItem.classList.remove('is-open');
+        });
+    }
+
+    function positionDropdown(item, menu) {
+        const mainNav = document.querySelector('.main-nav');
+        const anchorEl = mainNav || document.querySelector('.main-header');
+        if (!anchorEl) return;
+
+        const rect = anchorEl.getBoundingClientRect();
+        const topPosition = rect.bottom;
+
+        // Used by CSS to compute max-height and keep the menu scrollable
+        menu.style.top = topPosition + 'px';
+        menu.style.setProperty('--dropdown-top', topPosition + 'px');
+
+        // Responsive horizontal alignment: match hero banner position/width when present.
+        // This avoids non-responsive magic numbers like left: 753px.
+        const hero = document.querySelector('.hero-banner');
+        if (hero) {
+            const heroRect = hero.getBoundingClientRect();
+            if (heroRect.width > 0) {
+                menu.style.left = heroRect.left + 'px';
+                menu.style.right = 'auto';
+                menu.style.transform = 'none';
+                menu.style.width = heroRect.width + 'px';
+                menu.style.maxWidth = heroRect.width + 'px';
+            }
+        }
+    }
+
+    function loadMenuImageAfterText(menu) {
+        if (!menu) return;
+        const img = menu.querySelector('.dropdown-image img[data-src]');
+        if (!img) return;
+        if (img.dataset.loaded === '1') return;
+
+        // Ensure text is painted first, then start image loading.
+        window.requestAnimationFrame(() => {
+            if (img.dataset.loaded === '1') return;
+            img.src = img.dataset.src;
+            img.dataset.loaded = '1';
+        });
     }
 
     navItems.forEach(item => {
         const trigger = item.querySelector('.dropdown-trigger');
         const menu = item.querySelector('.dropdown-menu');
 
+        let hideTimer = null;
+
+        function showMenu() {
+            if (window.innerWidth < 1024) return;
+            if (hideTimer) {
+                clearTimeout(hideTimer);
+                hideTimer = null;
+            }
+            closeAllDropdowns();
+            positionDropdown(item, menu);
+            item.classList.add('is-open');
+            buildMegaMenuIfNeeded(menu);
+            loadMenuImageAfterText(menu);
+        }
+
+        function hideMenu() {
+            if (hideTimer) clearTimeout(hideTimer);
+            hideTimer = setTimeout(() => {
+                item.classList.remove('is-open');
+            }, 140);
+        }
+
         if (trigger && menu) {
             // Mouse events for desktop
             item.addEventListener('mouseenter', function() {
-                positionDropdown(item, menu);
-                menu.style.opacity = '1';
-                menu.style.visibility = 'visible';
-                menu.style.marginTop = '0';
+                showMenu();
             });
 
             item.addEventListener('mouseleave', function() {
-                menu.style.opacity = '0';
-                menu.style.visibility = 'hidden';
-                menu.style.marginTop = '15px';
+                hideMenu();
+            });
+
+            menu.addEventListener('mouseenter', function() {
+                if (hideTimer) {
+                    clearTimeout(hideTimer);
+                    hideTimer = null;
+                }
+            });
+
+            menu.addEventListener('mouseleave', function() {
+                hideMenu();
             });
 
             // Click events for mobile
@@ -182,17 +395,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const button = newsletterForm.querySelector('button');
         const input = newsletterForm.querySelector('input');
 
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const email = input.value.trim();
+        if (button && input) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const email = input.value.trim();
 
-            if (email && validateEmail(email)) {
-                alert('شكراً لاشتراكك في نشرتنا الإخبارية!');
-                input.value = '';
-            } else {
-                alert('الرجاء إدخال عنوان بريد إلكتروني صحيح');
-            }
-        });
+                if (email && validateEmail(email)) {
+                    alert('شكراً لاشتراكك في نشرتنا الإخبارية!');
+                    input.value = '';
+                } else {
+                    alert('الرجاء إدخال عنوان بريد إلكتروني صحيح');
+                }
+            });
+        }
     }
 
     function validateEmail(email) {
@@ -217,6 +432,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 100);
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Keep open dropdown aligned on resize.
+    window.addEventListener('resize', throttle(function() {
+        document.querySelectorAll('.nav-item.dropdown.is-open').forEach(item => {
+            const menu = item.querySelector('.dropdown-menu');
+            if (menu) positionDropdown(item, menu);
+        });
+    }, 100));
 
     // Image lazy loading
     const images = document.querySelectorAll('img[data-src]');
@@ -393,7 +616,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateCartBadge(count) {
         const badges = document.querySelectorAll('.header-link .badge');
         badges.forEach(badge => {
-            if (badge.closest('.header-link').querySelector('span')?.textContent.includes('الحقيبة')) {
+            if (badge.closest('a#cartToggle')) {
                 badge.textContent = count;
             }
         });
@@ -403,7 +626,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateWishlistBadge(count) {
         const badges = document.querySelectorAll('.header-link .badge');
         badges.forEach(badge => {
-            if (badge.closest('.header-link').querySelector('span')?.textContent.includes('المفضلة')) {
+            if (badge.closest('a[href*="wishlist"]')) {
                 badge.textContent = count;
             }
         });

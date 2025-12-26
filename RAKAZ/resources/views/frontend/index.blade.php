@@ -6,9 +6,22 @@
     <section class="hero-banner">
         <div class="hero-slider">
             @foreach($homePage->hero_slides as $index => $slide)
+            @php
+                $desktopImage = $slide['image'];
+                $tabletImage = isset($homePage->hero_slides_tablet[$index]['image']) && !empty($homePage->hero_slides_tablet[$index]['image'])
+                    ? $homePage->hero_slides_tablet[$index]['image']
+                    : $desktopImage;
+                $mobileImage = isset($homePage->hero_slides_mobile[$index]['image']) && !empty($homePage->hero_slides_mobile[$index]['image'])
+                    ? $homePage->hero_slides_mobile[$index]['image']
+                    : $desktopImage;
+            @endphp
             <div class="hero-slide {{ $index === 0 ? 'active' : '' }}">
-                <a href="{{ $slide['link'] ?? '#' }}">
-                    <img src="{{ $slide['image'] }}" alt="{{ $slide['alt'] ?? 'Hero Banner ' . ($index + 1) }}" class="hero-banner-image">
+                <a href="{{ $slide['link'] ?? '#' }}" class="hero-slide-link" rel="noopener">
+                    <picture>
+                        <source media="(max-width: 767px)" srcset="{{ $mobileImage }}">
+                        <source media="(max-width: 1024px)" srcset="{{ $tabletImage }}">
+                        <img src="{{ $desktopImage }}" alt="{{ $slide['alt'] ?? 'Hero Banner ' . ($index + 1) }}" class="hero-banner-image" loading="eager">
+                    </picture>
                 </a>
             </div>
             @endforeach
@@ -28,254 +41,88 @@
 
     <!-- Cyber Sale Banner -->
     @if($homePage && $homePage->cyber_sale_active && $homePage->cyber_sale_image)
+    @php
+        $desktopImage = $homePage->cyber_sale_image;
+        $tabletImage = !empty($homePage->cyber_sale_image_tablet) ? $homePage->cyber_sale_image_tablet : $desktopImage;
+        $mobileImage = !empty($homePage->cyber_sale_image_mobile) ? $homePage->cyber_sale_image_mobile : $desktopImage;
+    @endphp
     <a href="{{ $homePage->cyber_sale_link ?? '#' }}" class="cyber-sale-banner">
-        <img src="{{ $homePage->cyber_sale_image }}"
-             alt="{{ $homePage->cyber_sale_alt ?? 'Cyber Sale' }}"
-             class="cyber-sale-image">
+        <picture class="cyber-sale-picture">
+            <source media="(max-width: 480px)" srcset="{{ $mobileImage }}" type="image/jpeg">
+            <source media="(max-width: 767px)" srcset="{{ $mobileImage }}" type="image/jpeg">
+            <source media="(max-width: 1024px)" srcset="{{ $tabletImage }}" type="image/jpeg">
+            <img src="{{ $desktopImage }}"
+                 alt="{{ $homePage->cyber_sale_alt ?? 'Cyber Sale' }}"
+                 class="cyber-sale-image"
+                 loading="lazy">
+        </picture>
     </a>
-    @endif
-
-    <!-- Gifts Section -->
-    @if($homePage && $homePage->gifts_section_active && $homePage->gifts_items && count($homePage->gifts_items) > 0)
-    <section class="gifts-section">
-        <h2 class="section-title">{{ $giftsTitle ?? 'الهدايا' }}</h2>
-        <div class="gifts-grid">
-            @foreach($homePage->gifts_items as $gift)
-            <div class="gift-card">
-                <a href="{{ $gift['link'] ?? '#' }}">
-                    <img src="{{ is_array($gift['image'] ?? null) ? ($gift['image'][app()->getLocale()] ?? $gift['image']['ar'] ?? '') : ($gift['image'] ?? '') }}"
-                         alt="{{ $gift['title'][app()->getLocale()] ?? 'Gift' }}"
-                         class="gift-image">
-                    <h3 class="gift-title">{{ $gift['title'][app()->getLocale()] ?? '' }}</h3>
-                </a>
-            </div>
-            @endforeach
-        </div>
-    </section>
     @endif
 
     <!-- Dolce & Gabbana Casa Banner -->
     @if($homePage && $homePage->dg_banner_active && $homePage->dg_banner_image)
+    @php
+        $currentLocale = app()->getLocale();
+        $desktopImage = is_array($homePage->dg_banner_image) ? ($homePage->dg_banner_image[$currentLocale] ?? $homePage->dg_banner_image['ar'] ?? '') : $homePage->dg_banner_image;
+
+        $tabletImage = $desktopImage;
+        if (is_array($homePage->dg_banner_image_tablet) && !empty($homePage->dg_banner_image_tablet[$currentLocale])) {
+            $tabletImage = $homePage->dg_banner_image_tablet[$currentLocale];
+        }
+
+        $mobileImage = $desktopImage;
+        if (is_array($homePage->dg_banner_image_mobile) && !empty($homePage->dg_banner_image_mobile[$currentLocale])) {
+            $mobileImage = $homePage->dg_banner_image_mobile[$currentLocale];
+        }
+    @endphp
     <a href="{{ $homePage->dg_banner_link ?? '#' }}" class="dg-banner">
-        <img src="{{ is_array($homePage->dg_banner_image) ? ($homePage->dg_banner_image[app()->getLocale()] ?? $homePage->dg_banner_image['ar'] ?? '') : $homePage->dg_banner_image }}"
-             alt="Dolce & Gabbana Casa"
-             class="dg-banner-image">
+        <picture>
+            <source media="(max-width: 767px)" srcset="{{ $mobileImage }}">
+            <source media="(max-width: 1024px)" srcset="{{ $tabletImage }}">
+            <img src="{{ $desktopImage }}"
+                 alt="Dolce & Gabbana Casa"
+                 class="dg-banner-image">
+        </picture>
         <div class="dg-content">
             <!-- Optional: يمكن إضافة عنوان ووصف هنا لاحقاً -->
         </div>
     </a>
     @endif
 
-    <!-- Must-Have Styles -->
-    <section class="must-have-section">
-        <div class="section-header">
-            <h2 class="section-title">كنادر مميزة</h2>
-            <a href="{{ route('shop') }}" class="shop-all">تسوق الكل</a>
-        </div>
-        <div class="products-slider">
-            <button class="slider-btn prev">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                </svg>
-            </button>
-            <div class="products-container">
-                <div class="product-card">
-                    <a href="{{ route('shop') }}" class="product-image-wrapper">
-                        <img src="/assets/images/New folder/Emirati_Gold_Edition_Blue.jpg" alt="Product" class="product-image-primary">
-                        <img src="/assets/images/New folder/Emirati_Gold_Edition_White.jpg" alt="Product" class="product-image-secondary">
-                        <button class="wishlist-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                        <span class="badge new-season">موسم جديد</span>
-                    </a>
-                    <div class="product-info">
-                        <p class="product-brand">ركاز</p>
-                        <h3 class="product-name">كندورة إماراتية فاخرة - لون أزرق</h3>
-                        <p class="product-price">850 درهم إماراتي</p>
-                        <div class="size-selector">
-                            <button class="size-arrow prev">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M15 19l-7-7 7-7"/>
-                                </svg>
-                            </button>
-                            <div class="size-options-wrapper">
-                                <button class="size-option" data-size="S">S</button>
-                                <button class="size-option" data-size="M">M</button>
-                                <button class="size-option" data-size="L">L</button>
-                                <button class="size-option" data-size="XL">XL</button>
-                                <button class="size-option" data-size="XXL">XXL</button>
-                            </div>
-                            <button class="size-arrow next">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M9 5l7 7-7 7"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <a href="{{ route('shop') }}" class="product-image-wrapper">
-                        <img src="/assets/images/New folder/Kuwaiti_Gold_Edition_White.jpg" alt="Product" class="product-image-primary">
-                        <img src="/assets/images/New folder/Kuwaiti_blue_image_3_treated.jpg" alt="Product" class="product-image-secondary">
-                        <button class="wishlist-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                    </a>
-                    <div class="product-info">
-                        <p class="product-brand">ركاز</p>
-                        <h3 class="product-name">شماغ أحمر فاخر - قطن سويسري</h3>
-                        <p class="product-price">180 درهم إماراتي</p>
-                        <div class="size-selector">
-                            <button class="size-arrow prev">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M15 19l-7-7 7-7"/>
-                                </svg>
-                            </button>
-                            <div class="size-options-wrapper">
-                                <button class="size-option" data-size="واحد">مقاس واحد</button>
-                            </div>
-                            <button class="size-arrow next">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M9 5l7 7-7 7"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <a href="{{ route('shop') }}" class="product-image-wrapper">
-                        <img src="/assets/images/New folder/Treated_1.jpg" alt="Product" class="product-image-primary">
-                        <img src="/assets/images/New folder/Treated_image_2.jpg" alt="Product" class="product-image-secondary">
-                        <button class="wishlist-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                        <span class="badge new-season">موسم جديد</span>
-                    </a>
-                    <div class="product-info">
-                        <p class="product-brand">ركاز</p>
-                        <h3 class="product-name">فانيلة قطن - أبيض</h3>
-                        <p class="product-price">120 درهم إماراتي</p>
-                        <div class="size-selector">
-                            <button class="size-arrow prev">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M15 19l-7-7 7-7"/>
-                                </svg>
-                            </button>
-                            <div class="size-options-wrapper">
-                                <button class="size-option" data-size="S">S</button>
-                                <button class="size-option" data-size="M">M</button>
-                                <button class="size-option" data-size="L">L</button>
-                                <button class="size-option" data-size="XL">XL</button>
-                                <button class="size-option" data-size="XXL">XXL</button>
-                            </div>
-                            <button class="size-arrow next">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M9 5l7 7-7 7"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <a href="{{ route('shop') }}" class="product-image-wrapper">
-                        <img src="/assets/images/New folder/Image_treated_4.jpg" alt="Product" class="product-image-primary">
-                        <img src="/assets/images/New folder/Updated_size.jpg" alt="Product" class="product-image-secondary">
-                        <button class="wishlist-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                    </a>
-                    <div class="product-info">
-                        <p class="product-brand">ركاز</p>
-                        <h3 class="product-name">سروال تقليدي - بيج</h3>
-                        <p class="product-price">280 درهم إماراتي</p>
-                        <div class="size-selector">
-                            <button class="size-arrow prev">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M15 19l-7-7 7-7"/>
-                                </svg>
-                            </button>
-                            <div class="size-options-wrapper">
-                                <button class="size-option" data-size="28">28</button>
-                                <button class="size-option" data-size="30">30</button>
-                                <button class="size-option" data-size="32">32</button>
-                                <button class="size-option" data-size="34">34</button>
-                                <button class="size-option" data-size="36">36</button>
-                            </div>
-                            <button class="size-arrow next">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M9 5l7 7-7 7"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <a href="{{ route('shop') }}" class="product-image-wrapper">
-                        <img src="/assets/images/New folder/2_0665cfeb-d5d6-429a-b541-168097c14ccb.jpg" alt="Product" class="product-image-primary">
-                        <img src="/assets/images/New folder/2_98b84880-82eb-4ddf-8923-63083d78ffbf.jpg" alt="Product" class="product-image-secondary">
-                        <button class="wishlist-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                        <span class="badge new-season">موسم جديد</span>
-                    </a>
-                    <div class="product-info">
-                        <p class="product-brand">ركاز</p>
-                        <h3 class="product-name">وزارة فاخرة - قطن مصري</h3>
-                        <p class="product-price">320 درهم إماراتي</p>
-                        <div class="size-selector">
-                            <button class="size-arrow prev">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M15 19l-7-7 7-7"/>
-                                </svg>
-                            </button>
-                            <div class="size-options-wrapper">
-                                <button class="size-option" data-size="S">S</button>
-                                <button class="size-option" data-size="M">M</button>
-                                <button class="size-option" data-size="L">L</button>
-                                <button class="size-option" data-size="XL">XL</button>
-                                <button class="size-option" data-size="XXL">XXL</button>
-                            </div>
-                            <button class="size-arrow next">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M9 5l7 7-7 7"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <button class="slider-btn next">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
-            </button>
-        </div>
-    </section>
+    <!-- Featured Products Section -->
+    @include('frontend.partials.featured-section-skeleton')
+    <div id="featured-content">
+        {{-- Content will be loaded via AJAX --}}
+    </div>
 
     <!-- Gucci Spotlight -->
     @if($homePage && $homePage->gucci_spotlight_active && $homePage->gucci_spotlight_image)
         @php
+            $currentLocale = app()->getLocale();
             $gucciImage = null;
             if (is_array($homePage->gucci_spotlight_image)) {
-                $currentLocale = app()->getLocale();
                 $gucciImage = $homePage->gucci_spotlight_image[$currentLocale] ?? $homePage->gucci_spotlight_image['ar'] ?? null;
             } else {
                 $gucciImage = $homePage->gucci_spotlight_image;
             }
+
+            $gucciTabletImage = $gucciImage;
+            if (is_array($homePage->gucci_spotlight_image_tablet) && !empty($homePage->gucci_spotlight_image_tablet[$currentLocale])) {
+                $gucciTabletImage = $homePage->gucci_spotlight_image_tablet[$currentLocale];
+            }
+
+            $gucciMobileImage = $gucciImage;
+            if (is_array($homePage->gucci_spotlight_image_mobile) && !empty($homePage->gucci_spotlight_image_mobile[$currentLocale])) {
+                $gucciMobileImage = $homePage->gucci_spotlight_image_mobile[$currentLocale];
+            }
         @endphp
         @if($gucciImage)
         <a href="{{ $homePage->gucci_spotlight_link ?? '#' }}" class="gucci-spotlight">
-            <img src="{{ $gucciImage }}" alt="Gucci Spotlight" class="gucci-spotlight-image">
+            <picture>
+                <source media="(max-width: 767px)" srcset="{{ $gucciMobileImage }}">
+                <source media="(max-width: 1024px)" srcset="{{ $gucciTabletImage }}">
+                <img src="{{ $gucciImage }}" alt="Gucci Spotlight" class="gucci-spotlight-image">
+            </picture>
             <div class="gucci-content">
                 <!-- Content overlay if needed -->
             </div>
@@ -324,204 +171,15 @@
         </section>
     @endif
 
-    <!-- Perfect Present -->
-    <section class="perfect-present-section">
-        <div class="section-header">
-            <h2 class="section-title">الهدية المثالية</h2>
-            <a href="{{ route('shop') }}" class="shop-all">تسوق الكل</a>
-        </div>
-        <div class="products-slider">
-            <button class="slider-btn prev">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                </svg>
-            </button>
-            <div class="products-container">
-                <div class="product-card">
-                    <a href="{{ route('shop') }}" class="product-image-wrapper">
-                        <img src="/assets/images/New folder/2_fa42623b-b79c-423e-be3d-a63ede9ff974.jpg" alt="Product" class="product-image-primary">
-                        <img src="/assets/images/New folder/3_36dc3051-f361-4a0a-bfd5-3c984f283a01.jpg" alt="Product" class="product-image-secondary">
-                        <button class="wishlist-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                        <span class="badge new-season">موسم جديد</span>
-                    </a>
-                    <div class="product-info">
-                        <p class="product-brand">ركاز</p>
-                        <h3 class="product-name">كندورة كويتية فاخرة</h3>
-                        <p class="product-price">950 درهم إماراتي</p>
-                        <div class="size-selector">
-                            <button class="size-arrow prev">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M15 19l-7-7 7-7"/>
-                                </svg>
-                            </button>
-                            <div class="size-options-wrapper">
-                                <button class="size-option" data-size="S">S</button>
-                                <button class="size-option" data-size="M">M</button>
-                                <button class="size-option" data-size="L">L</button>
-                                <button class="size-option" data-size="XL">XL</button>
-                                <button class="size-option" data-size="XXL">XXL</button>
-                            </div>
-                            <button class="size-arrow next">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M9 5l7 7-7 7"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <a href="{{ route('shop') }}" class="product-image-wrapper">
-                        <img src="/assets/images/New folder/3_5d1a45bd-0fb0-46aa-9bf1-0251f1e8a513.jpg" alt="Product" class="product-image-primary">
-                        <img src="/assets/images/New folder/3_70b1a53a-2b15-4598-8e56-eb5b979e18fd.jpg" alt="Product" class="product-image-secondary">
-                        <button class="wishlist-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                        <span class="badge new-season">موسم جديد</span>
-                    </a>
-                    <div class="product-info">
-                        <p class="product-brand">ركاز</p>
-                        <h3 class="product-name">شماغ أبيض قطن فاخر</h3>
-                        <p class="product-price">220 درهم إماراتي</p>
-                        <div class="size-selector">
-                            <button class="size-arrow prev">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M15 19l-7-7 7-7"/>
-                                </svg>
-                            </button>
-                            <div class="size-options-wrapper">
-                                <button class="size-option" data-size="موحد">موحد</button>
-                            </div>
-                            <button class="size-arrow next">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M9 5l7 7-7 7"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <a href="{{ route('shop') }}" class="product-image-wrapper">
-                        <img src="/assets/images/New folder/3_a0c29748-9d72-43bc-8fbd-9704da8d885f.jpg" alt="Product" class="product-image-primary">
-                        <img src="/assets/images/New folder/3_ac5cf230-1e12-4c93-9db4-bfb900263827.jpg" alt="Product" class="product-image-secondary">
-                        <button class="wishlist-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                        <span class="badge new-season">موسم جديد</span>
-                    </a>
-                    <div class="product-info">
-                        <p class="product-brand">ركاز</p>
-                        <h3 class="product-name">فانيلة قطن ناعمة بيضاء</h3>
-                        <p class="product-price">95 درهم إماراتي</p>
-                        <div class="size-selector">
-                            <button class="size-arrow prev">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M15 19l-7-7 7-7"/>
-                                </svg>
-                            </button>
-                            <div class="size-options-wrapper">
-                                <button class="size-option" data-size="S">S</button>
-                                <button class="size-option" data-size="M">M</button>
-                                <button class="size-option" data-size="L">L</button>
-                                <button class="size-option" data-size="XL">XL</button>
-                                <button class="size-option" data-size="XXL">XXL</button>
-                            </div>
-                            <button class="size-arrow next">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M9 5l7 7-7 7"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <a href="{{ route('shop') }}" class="product-image-wrapper">
-                        <img src="/assets/images/New folder/3_c079fc2f-cb5e-4337-a2fb-d4055f9dd23c.jpg" alt="Product" class="product-image-primary">
-                        <img src="/assets/images/New folder/3_c379f95c-dc6b-4058-b6d4-962885eec798.jpg" alt="Product" class="product-image-secondary">
-                        <button class="wishlist-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                        <span class="badge new-season">موسم جديد</span>
-                    </a>
-                    <div class="product-info">
-                        <p class="product-brand">ركاز</p>
-                        <h3 class="product-name">وزارة عمانية مطرزة</h3>
-                        <p class="product-price">380 درهم إماراتي</p>
-                        <div class="size-selector">
-                            <button class="size-arrow prev">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M15 19l-7-7 7-7"/>
-                                </svg>
-                            </button>
-                            <div class="size-options-wrapper">
-                                <button class="size-option" data-size="S">S</button>
-                                <button class="size-option" data-size="M">M</button>
-                                <button class="size-option" data-size="L">L</button>
-                                <button class="size-option" data-size="XL">XL</button>
-                                <button class="size-option" data-size="XXL">XXL</button>
-                            </div>
-                            <button class="size-arrow next">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M9 5l7 7-7 7"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <a href="{{ route('shop') }}" class="product-image-wrapper">
-                        <img src="/assets/images/New folder/51.jpg" alt="Product" class="product-image-primary">
-                        <img src="/assets/images/New folder/Updated_10943a34-f761-4c6b-b807-a21f83974ed1.jpg" alt="Product" class="product-image-secondary">
-                        <button class="wishlist-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                        <span class="badge new-season">موسم جديد</span>
-                    </a>
-                    <div class="product-info">
-                        <p class="product-brand">ركاز</p>
-                        <h3 class="product-name">سروال تقليدي قطن خالص</h3>
-                        <p class="product-price">295 درهم إماراتي</p>
-                        <div class="size-selector">
-                            <button class="size-arrow prev">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M15 19l-7-7 7-7"/>
-                                </svg>
-                            </button>
-                            <div class="size-options-wrapper">
-                                <button class="size-option" data-size="S">S</button>
-                                <button class="size-option" data-size="M">M</button>
-                                <button class="size-option" data-size="L">L</button>
-                                <button class="size-option" data-size="XL">XL</button>
-                                <button class="size-option" data-size="XXL">XXL</button>
-                            </div>
-                            <button class="size-arrow next">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M9 5l7 7-7 7"/>
-                                </svg>
-                            </button>
-                        </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <button class="slider-btn next">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
-            </button>
-        </div>
-    </section>
+    <!-- Perfect Gift Section (from database) -->
+    @if($perfectGiftSection && $perfectGiftSection->products && $perfectGiftSection->products->count() > 0)
+        @include('frontend.partials.perfect-gift-section-content')
+    @endif
+
+    <!-- Featured Section (Must Have Items) - Loaded via AJAX in featured-content div above -->
+    {{-- @if($featuredSection && $featuredSection->products && $featuredSection->products->count() > 0)
+        @include('frontend.partials.featured-section-content')
+    @endif --}}
 
     <!-- Membership & App Section -->
     @if($homePage && ($homePage->membership_section_active || $homePage->app_section_active))
@@ -621,8 +279,33 @@
 
 @push('scripts')
     <script>
-        // Wishlist functionality
+        // Wishlist functionality and Slider initialization
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Page loaded, initializing components...');
+
+            // Force reinitialize sliders after content is loaded
+            setTimeout(function() {
+                console.log('🔄 Reinitializing sliders...');
+
+                // Dispatch custom event to reinit sliders
+                window.dispatchEvent(new Event('reinit-sliders'));
+
+                // Check if slider elements exist
+                const perfectGiftSlider = document.querySelector('.perfect-gift-section .products-container');
+                const featuredSlider = document.querySelector('.must-have-section .products-container');
+                const perfectGiftPrev = document.querySelector('.perfect-gift-section .slider-btn.prev');
+                const perfectGiftNext = document.querySelector('.perfect-gift-section .slider-btn.next');
+                const featuredPrev = document.querySelector('.must-have-section .slider-btn.prev');
+                const featuredNext = document.querySelector('.must-have-section .slider-btn.next');
+
+                console.log('Perfect Gift Slider:', perfectGiftSlider);
+                console.log('Perfect Gift Prev:', perfectGiftPrev);
+                console.log('Perfect Gift Next:', perfectGiftNext);
+                console.log('Featured Slider:', featuredSlider);
+                console.log('Featured Prev:', featuredPrev);
+                console.log('Featured Next:', featuredNext);
+            }, 500);
+
             // Wishlist buttons
             const wishlistButtons = document.querySelectorAll('.wishlist-btn');
             wishlistButtons.forEach(button => {

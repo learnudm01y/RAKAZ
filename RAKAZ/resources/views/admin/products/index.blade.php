@@ -2,6 +2,11 @@
 
 @section('title', app()->getLocale() == 'ar' ? 'إدارة المنتجات' : 'Products Management')
 
+@section('page-title')
+    <span class="ar-text">إدارة المنتجات</span>
+    <span class="en-text">Products Management</span>
+@endsection
+
 @section('content')
 <div class="products-management">
     <!-- Page Header -->
@@ -29,8 +34,8 @@
     <div class="card mb-4">
         <div class="card-body">
             <form method="GET" action="{{ route('admin.products.index') }}" class="products-search-form">
-                <div class="row">
-                    <div class="col-md-4 mb-3">
+                <div class="row g-3">
+                    <div class="col-md-3">
                         <label class="form-label">{{ app()->getLocale() == 'ar' ? 'البحث' : 'Search' }}</label>
                         <div class="input-with-icon">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="input-icon">
@@ -40,7 +45,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-2">
                         <label class="form-label">{{ app()->getLocale() == 'ar' ? 'التصنيف' : 'Category' }}</label>
                         <select name="category_id" class="form-control">
                             <option value="">{{ app()->getLocale() == 'ar' ? 'كل التصنيفات' : 'All Categories' }}</option>
@@ -52,7 +57,19 @@
                         </select>
                     </div>
 
-                    <div class="col-md-2 mb-3">
+                    <div class="col-md-2">
+                        <label class="form-label">{{ app()->getLocale() == 'ar' ? 'العلامة التجارية' : 'Brand' }}</label>
+                        <select name="brand_id" class="form-control">
+                            <option value="">{{ app()->getLocale() == 'ar' ? 'كل العلامات التجارية' : 'All Brands' }}</option>
+                            @foreach($brands as $brand)
+                                <option value="{{ $brand->id }}" {{ request('brand_id') == $brand->id ? 'selected' : '' }}>
+                                    {{ $brand->getName() }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
                         <label class="form-label">{{ app()->getLocale() == 'ar' ? 'الحالة' : 'Status' }}</label>
                         <select name="status" class="form-control">
                             <option value="">{{ app()->getLocale() == 'ar' ? 'الكل' : 'All' }}</option>
@@ -63,7 +80,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-1 mb-3">
+                    <div class="col-md-1">
                         <label class="form-label">{{ app()->getLocale() == 'ar' ? 'عدد' : 'Per Page' }}</label>
                         <select name="per_page" class="form-control">
                             <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
@@ -73,7 +90,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-2 mb-3 d-flex align-items-end gap-2">
+                    <div class="col-md-2 d-flex align-items-end gap-2">
                         <button type="submit" class="btn btn-primary flex-1">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px;">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -110,15 +127,60 @@
                     <table class="table products-table">
                         <thead>
                             <tr>
-                                <th width="60">{{ app()->getLocale() == 'ar' ? 'الصورة' : 'Image' }}</th>
-                                <th>{{ app()->getLocale() == 'ar' ? 'المنتج' : 'Product' }}</th>
-                                <th width="100">{{ app()->getLocale() == 'ar' ? 'SKU' : 'SKU' }}</th>
-                                <th width="120">{{ app()->getLocale() == 'ar' ? 'التصنيف' : 'Category' }}</th>
-                                <th width="150">{{ app()->getLocale() == 'ar' ? 'المتغيرات' : 'Variants' }}</th>
-                                <th width="100">{{ app()->getLocale() == 'ar' ? 'السعر' : 'Price' }}</th>
-                                <th width="80">{{ app()->getLocale() == 'ar' ? 'المخزون' : 'Stock' }}</th>
-                                <th width="100">{{ app()->getLocale() == 'ar' ? 'الحالة' : 'Status' }}</th>
-                                <th width="150">{{ app()->getLocale() == 'ar' ? 'الإجراءات' : 'Actions' }}</th>
+                                <th width="60">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    {{ app()->getLocale() == 'ar' ? 'الصورة' : 'Image' }}
+                                </th>
+                                <th>
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                    </svg>
+                                    {{ app()->getLocale() == 'ar' ? 'المنتج' : 'Product' }}
+                                </th>
+                                <th width="100">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
+                                    </svg>
+                                    SKU
+                                </th>
+                                <th width="120">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                    </svg>
+                                    {{ app()->getLocale() == 'ar' ? 'التصنيف' : 'Category' }}
+                                </th>
+                                <th width="150">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                                    </svg>
+                                    {{ app()->getLocale() == 'ar' ? 'المتغيرات' : 'Variants' }}
+                                </th>
+                                <th width="100">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    {{ app()->getLocale() == 'ar' ? 'السعر' : 'Price' }}
+                                </th>
+                                <th width="80">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                    </svg>
+                                    {{ app()->getLocale() == 'ar' ? 'المخزون' : 'Stock' }}
+                                </th>
+                                <th width="100">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    {{ app()->getLocale() == 'ar' ? 'الحالة' : 'Status' }}
+                                </th>
+                                <th width="150">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                                    </svg>
+                                    {{ app()->getLocale() == 'ar' ? 'الإجراءات' : 'Actions' }}
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -127,7 +189,7 @@
                                     <td>
                                         <div class="product-image">
                                             @if($product->main_image)
-                                                <img src="{{ asset('storage/' . $product->main_image) }}" alt="{{ $product->getName() }}">
+                                                <img src="{{ asset('storage/' . $product->main_image) }}" alt="{{ $product->getName(app()->getLocale()) }}">
                                             @else
                                                 <div class="no-image">
                                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,8 +201,12 @@
                                     </td>
                                     <td>
                                         <div class="product-info">
-                                            <div class="product-name">{{ $product->getName('ar') }}</div>
-                                            <div class="product-name-en">{{ $product->getName('en') }}</div>
+                                            <div class="product-name">{{ $product->getName(app()->getLocale()) }}</div>
+                                            @if(app()->getLocale() == 'ar' && $product->getName('en'))
+                                                <div class="product-name-en">{{ $product->getName('en') }}</div>
+                                            @elseif(app()->getLocale() == 'en' && $product->getName('ar'))
+                                                <div class="product-name-en">{{ $product->getName('ar') }}</div>
+                                            @endif
                                             @if($product->brand)
                                                 <div class="product-brand">{{ $product->brand }}</div>
                                             @endif
@@ -281,7 +347,7 @@
                             {{ app()->getLocale() == 'ar' ? 'منتج' : 'products' }}
                         </div>
                         <div class="pagination-links">
-                            {{ $products->links() }}
+                            {{ $products->onEachSide(1)->links('pagination::bootstrap-5') }}
                         </div>
                     </div>
                 </div>
@@ -294,6 +360,70 @@
 /* Products Management Styles */
 .products-management {
     padding: 20px;
+}
+
+/* Filters: keep all controls the same height */
+.products-management .products-search-form {
+    --products-filter-control-height: 36px;
+}
+
+.products-management .products-search-form .form-control,
+.products-management .products-search-form .custom-select-trigger,
+.products-management .products-search-form button.btn,
+.products-management .products-search-form a.btn {
+    height: var(--products-filter-control-height);
+    min-height: var(--products-filter-control-height);
+}
+
+.products-management .products-search-form .input-with-icon input.form-control {
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.products-management .products-search-form .custom-select-trigger {
+    line-height: 1.2;
+}
+
+/* Filters: allow dropdown to render outside the card */
+.products-management .card.mb-4,
+.products-management .card.mb-4 .card-body {
+    overflow: visible !important;
+}
+
+/* Filters: smaller custom-select fields */
+.products-management .products-search-form .custom-select-wrapper {
+    min-width: 0 !important;
+}
+
+.products-management .products-search-form .custom-select-trigger {
+    min-height: var(--products-filter-control-height);
+    min-width: 0 !important;
+    padding: 4px 10px;
+    font-size: 13px;
+    border-width: 1px;
+}
+
+.products-management .products-search-form .custom-select-trigger .arrow {
+    border-left-width: 5px;
+    border-right-width: 5px;
+    border-top-width: 5px;
+    margin-left: 8px;
+}
+
+.products-management .products-search-form .custom-option {
+    padding: 8px 10px;
+    font-size: 13px;
+    min-height: 34px;
+}
+
+/* Ensure dropdown stacks above the card/table */
+.products-management .products-search-form .custom-select-trigger.active {
+    position: relative;
+    z-index: 2001;
+}
+
+.products-management .products-search-form .custom-select-options.active {
+    z-index: 2000;
 }
 
 .page-header {
@@ -340,17 +470,48 @@
 /* Products Table */
 .products-table {
     margin: 0;
+    border-collapse: collapse;
+}
+
+.products-table thead {
+    position: relative;
+    border: none;
+    outline: none;
+}
+
+.products-table thead::before,
+.products-table thead::after,
+.products-table thead th::before,
+.products-table thead th::after {
+    display: none !important;
+    content: none !important;
 }
 
 .products-table thead th {
-    background: #f9fafb;
-    color: #374151;
+    background: #1a1a1a;
+    background-image: none !important;
+    color: white;
     font-weight: 600;
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    padding: 12px 16px;
-    border-bottom: 2px solid #e5e7eb;
+    padding: 16px 20px;
+    border-bottom: 3px solid #000;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    white-space: nowrap;
+    outline: none !important;
+    box-shadow: none !important;
+    position: relative;
+    z-index: 1;
+}
+
+.products-table thead th svg {
+    opacity: 0.9;
+    display: inline-block;
+    vertical-align: middle;
+    margin-inline-end: 6px;
 }
 
 .products-table tbody td {
@@ -528,18 +689,123 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 20px;
-    background: #fafbfc;
+    padding: 20px;
+    background: white;
+    border-top: 2px solid #f0f0f0;
+    margin-top: 0;
 }
 
 .pagination-info {
     color: #6b7280;
     font-size: 14px;
+    font-weight: 500;
+}
+
+/* Force hide English text in Arabic mode */
+html[lang="ar"] .en-text,
+html[data-locale="ar"] .en-text,
+[dir="rtl"] .en-text {
+    display: none !important;
+}
+
+/* Force hide Arabic text in English mode */
+html[lang="en"] .ar-text,
+html[data-locale="en"] .ar-text,
+[dir="ltr"] .ar-text {
+    display: none !important;
+}
+
+.pagination-links {
+    display: flex;
+    align-items: center;
+}
+
+/* Hide default Bootstrap pagination text */
+.pagination-links nav > div:first-child {
+    display: none !important;
 }
 
 .pagination-links nav {
+    display: block !important;
+}
+
+/* Hide the English stats in Bootstrap pagination */
+.pagination-links .d-none.flex-sm-fill div:first-child,
+.pagination-links .small.text-muted,
+.pagination-links p.small {
+    display: none !important;
+}
+
+/* Ensure pagination nav uses flex for proper alignment */
+.pagination-links nav.d-flex {
+    display: flex !important;
+    justify-content: flex-end !important;
+}
+
+.pagination-links nav.d-flex > div:last-child {
+    display: flex !important;
+}
+
+.pagination {
     display: flex;
-    gap: 4px;
+    gap: 6px;
+    margin: 0;
+    list-style: none;
+    padding: 0;
+}
+
+[dir="rtl"] .pagination {
+    flex-direction: row-reverse;
+}
+
+.pagination .page-item {
+    margin: 0;
+}
+
+.pagination .page-link {
+    padding: 8px 14px;
+    border: 2px solid #e5e7eb;
+    background: white;
+    color: #374151;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+}
+
+.pagination .page-link:hover {
+    background: #1a1a1a;
+    color: white;
+    border-color: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.pagination .page-item.active .page-link {
+    background: #1a1a1a;
+    color: white;
+    border-color: #1a1a1a;
+    font-weight: 600;
+}
+
+.pagination .page-item.disabled .page-link {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f9fafb;
+    color: #9ca3af;
+}
+
+.pagination .page-item.disabled .page-link:hover {
+    background: #f9fafb;
+    color: #9ca3af;
+    border-color: #e5e7eb;
+    transform: none;
+    box-shadow: none;
 }
 
 /* Variants Styles */

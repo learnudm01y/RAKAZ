@@ -2,6 +2,16 @@
 // Cart Sidebar Functionality
 // ===================================
 
+(function() {
+    'use strict';
+
+    // Check if already defined globally, otherwise define locally
+    const __isArabic = window.__isArabic ||
+        document.documentElement.getAttribute('dir') === 'rtl' ||
+        (document.documentElement.getAttribute('lang') || '').toLowerCase().startsWith('ar');
+
+    const __t = window.__t || ((ar, en) => (__isArabic ? ar : en));
+
 class CartSidebar {
     constructor() {
         this.cart = [];
@@ -110,12 +120,15 @@ class CartSidebar {
                     }
 
                     // Show notification
-                    this.showNotification('تم الحذف', data.message || 'تم إزالة المنتج من السلة');
+                    this.showNotification(
+                        __t('تم الحذف', 'Removed'),
+                        __isArabic ? (data.message || 'تم إزالة المنتج من السلة') : 'Removed from bag.'
+                    );
                 }
             }
         } catch (error) {
             console.error('Error removing from cart:', error);
-            this.showNotification('خطأ', 'حدث خطأ أثناء حذف المنتج');
+            this.showNotification(__t('خطأ', 'Error'), __t('حدث خطأ أثناء حذف المنتج', 'Something went wrong while removing the item.'));
         }
     }
 
@@ -158,7 +171,7 @@ class CartSidebar {
             }
         } catch (error) {
             console.error('Error updating quantity:', error);
-            this.showNotification('خطأ', 'حدث خطأ أثناء تحديث الكمية');
+            this.showNotification(__t('خطأ', 'Error'), __t('حدث خطأ أثناء تحديث الكمية', 'Something went wrong while updating quantity.'));
         }
     }
 
@@ -179,6 +192,9 @@ class CartSidebar {
             this.cartFooter.classList.add('show');
             this.renderCartItems();
             this.updateSubtotal();
+
+            // Enhance images after rendering
+            setTimeout(() => this.enhanceCartImages(), 100);
         }
     }
 
@@ -201,7 +217,7 @@ class CartSidebar {
             <div class="cart-item-details">
                 <p class="cart-item-brand">${item.brand}</p>
                 <h4 class="cart-item-name">${item.name}</h4>
-                <p class="cart-item-size">المقاس: ${item.size}</p>
+                <p class="cart-item-size">${__t('المقاس', 'Size')}: ${item.size}</p>
                 <p class="cart-item-price">${item.price}</p>
                 <div class="cart-item-actions">
                     <div class="cart-item-quantity">
@@ -256,7 +272,7 @@ class CartSidebar {
         });
 
         if (this.cartSubtotal) {
-            this.cartSubtotal.textContent = `${total.toLocaleString('ar-AE')} درهم`;
+            this.cartSubtotal.textContent = `${total.toLocaleString(__isArabic ? 'ar-AE' : 'en-US')} ${__t('درهم', 'AED')}`;
         }
     }
 
@@ -277,7 +293,7 @@ class CartSidebar {
                 title: title,
                 html: message,
                 icon: 'success',
-                confirmButtonText: 'حسناً',
+                confirmButtonText: __t('حسناً', 'OK'),
                 confirmButtonColor: '#000',
                 timer: 2000,
                 timerProgressBar: true,
@@ -311,12 +327,12 @@ class CartSidebar {
                         updateCartCount();
                     }
 
-                    this.showNotification('تم التفريغ', data.message || 'تم تفريغ السلة');
+                    this.showNotification(__t('تم التفريغ', 'Cleared'), __isArabic ? (data.message || 'تم تفريغ السلة') : 'Cart cleared.');
                 }
             }
         } catch (error) {
             console.error('Error clearing cart:', error);
-            this.showNotification('خطأ', 'حدث خطأ أثناء تفريغ السلة');
+            this.showNotification(__t('خطأ', 'Error'), __t('حدث خطأ أثناء تفريغ السلة', 'Something went wrong while clearing the cart.'));
         }
     }
 
@@ -339,6 +355,70 @@ class CartSidebar {
         });
         return total;
     }
+
+    // Pica Image Enhancement for Cart Sidebar
+    enhanceCartImages() {
+        if (typeof pica === 'undefined') {
+            console.log('⚠️ Pica not loaded for cart sidebar');
+            return;
+        }
+
+        const picaInstance = pica();
+        const cartImages = this.cartItemsContainer.querySelectorAll('.cart-item-image');
+
+        console.log('🛒 Processing', cartImages.length, 'cart images');
+
+        cartImages.forEach(img => {
+            if (img.dataset.picaProcessed || img.dataset.picaProcessing) return;
+            img.dataset.picaProcessing = 'true';
+
+            if (!img.complete || img.naturalWidth === 0) {
+                img.addEventListener('load', () => this.processCartImage(img, picaInstance), { once: true });
+                return;
+            }
+
+            this.processCartImage(img, picaInstance);
+        });
+    }
+
+    processCartImage(img, picaInstance) {
+        try {
+            const originalSrc = img.src;
+            const canvas = document.createElement('canvas');
+            const naturalWidth = img.naturalWidth;
+            const naturalHeight = img.naturalHeight;
+
+            // Upscale by 4x for maximum smoothness
+            canvas.width = naturalWidth * 4;
+            canvas.height = naturalHeight * 4;
+
+            picaInstance.resize(img, canvas, {
+                unsharpAmount: 500,
+                unsharpRadius: 2.0,
+                unsharpThreshold: 0,
+                quality: 3,
+                alpha: true,
+                filter: 'lanczos3'
+            })
+            .then(() => picaInstance.toBlob(canvas, 'image/jpeg', 0.98))
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                img.src = url;
+                img.dataset.picaProcessed = 'true';
+                delete img.dataset.picaProcessing;
+
+                img.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+            })
+            .catch(err => {
+                console.error('Pica cart image error:', err);
+                img.src = originalSrc;
+                delete img.dataset.picaProcessing;
+            });
+        } catch (err) {
+            console.error('Pica cart setup error:', err);
+            delete img.dataset.picaProcessing;
+        }
+    }
 }
 
 // Initialize Cart Sidebar when DOM is loaded
@@ -350,3 +430,5 @@ document.addEventListener('DOMContentLoaded', () => {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = CartSidebar;
 }
+
+})(); // End IIFE

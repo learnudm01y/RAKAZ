@@ -9,6 +9,128 @@
 
 @push('styles')
 <style>
+    /* Pagination Styles */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        background: white;
+        border-top: 2px solid #f0f0f0;
+        margin-top: 20px;
+    }
+
+    .pagination-info {
+        color: #6b7280;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    html[lang="ar"] .en-text,
+    html[data-locale="ar"] .en-text,
+    [dir="rtl"] .en-text {
+        display: none !important;
+    }
+
+    html[lang="en"] .ar-text,
+    html[data-locale="en"] .ar-text,
+    [dir="ltr"] .ar-text {
+        display: none !important;
+    }
+
+    .pagination-links {
+        display: flex;
+        align-items: center;
+    }
+
+    .pagination-links nav > div:first-child {
+        display: none !important;
+    }
+
+    .pagination-links nav {
+        display: block !important;
+    }
+
+    .pagination-links .d-none.flex-sm-fill div:first-child,
+    .pagination-links .small.text-muted,
+    .pagination-links p.small {
+        display: none !important;
+    }
+
+    .pagination-links nav.d-flex {
+        display: flex !important;
+        justify-content: flex-end !important;
+    }
+
+    .pagination-links nav.d-flex > div:last-child {
+        display: flex !important;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 6px;
+        margin: 0;
+        list-style: none;
+        padding: 0;
+    }
+
+    [dir="rtl"] .pagination {
+        flex-direction: row-reverse;
+    }
+
+    .pagination .page-item {
+        margin: 0;
+    }
+
+    .pagination .page-link {
+        padding: 8px 14px;
+        border: 2px solid #e5e7eb;
+        background: white;
+        color: #374151;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 14px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        min-width: 40px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .pagination .page-link:hover {
+        background: #1a1a1a;
+        border-color: #1a1a1a;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .pagination .page-item.active .page-link {
+        background: #1a1a1a;
+        border-color: #1a1a1a;
+        color: white;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(26, 26, 26, 0.2);
+    }
+
+    .pagination .page-item.disabled .page-link {
+        background: #f9fafb;
+        border-color: #e5e7eb;
+        color: #9ca3af;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .pagination .page-item.disabled .page-link:hover {
+        background: #f9fafb;
+        border-color: #e5e7eb;
+        color: #9ca3af;
+        transform: none;
+        box-shadow: none;
+    }
+
     .categories-container {
         background: white;
         border-radius: 12px;
@@ -227,6 +349,68 @@
         margin: 0 auto 1rem;
         color: #cbd5e0;
     }
+
+    /* Pagination */
+    .categories-pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1.25rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+        flex-wrap: wrap;
+    }
+
+    .categories-pagination .pagination-info {
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+
+    .categories-pagination .pagination {
+        margin: 0;
+    }
+
+    [dir="rtl"] .categories-pagination {
+        flex-direction: row-reverse;
+    }
+
+    /* Drag & Drop */
+    .drop-zone {
+        position: relative;
+    }
+
+    .draggable-item {
+        cursor: grab;
+    }
+
+    .draggable-item:active {
+        cursor: grabbing;
+    }
+
+    .drop-zone.drop-hover {
+        outline: 2px dashed rgba(59, 130, 246, 0.7);
+        outline-offset: 4px;
+        background: #e0f2fe;
+    }
+
+    .drop-target.drop-before {
+        box-shadow: inset 0 3px 0 rgba(59, 130, 246, 0.8);
+    }
+
+    .drop-target.drop-after {
+        box-shadow: inset 0 -3px 0 rgba(59, 130, 246, 0.8);
+    }
+
+    .drag-hint {
+        margin-bottom: 1rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: #f8fafc;
+        color: #374151;
+        font-size: 0.9rem;
+    }
 </style>
 @endpush
 
@@ -252,12 +436,47 @@
         </a>
     </div>
 
+    <div class="drag-hint">
+        <span class="ar-text">يمكنك نقل التصنيف الفرعي بسحبه وإفلاته فوق تصنيف رئيسي آخر.</span>
+        <span class="en-text">You can move a subcategory by dragging it onto another main category.</span>
+    </div>
+
+    <form method="GET" action="{{ route('admin.categories.index') }}" class="mb-3" style="display:flex; gap: 12px; align-items: end; flex-wrap: wrap;">
+        <div style="min-width: 180px;">
+            <label class="form-label" style="margin-bottom: 0.35rem;">
+                <span class="ar-text">عدد التصنيفات الرئيسية بالصفحة</span>
+                <span class="en-text">Main categories per page</span>
+            </label>
+            <select name="per_page" class="form-control" style="height: 38px;">
+                <option value="10" {{ request('per_page', 25) == 10 ? 'selected' : '' }}>10</option>
+                <option value="25" {{ request('per_page', 25) == 25 ? 'selected' : '' }}>25</option>
+                <option value="50" {{ request('per_page', 25) == 50 ? 'selected' : '' }}>50</option>
+                <option value="100" {{ request('per_page', 25) == 100 ? 'selected' : '' }}>100</option>
+                <option value="1000" {{ request('per_page', 25) == 1000 ? 'selected' : '' }}>1000</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="height: 38px;">
+            <span class="ar-text">تطبيق</span>
+            <span class="en-text">Apply</span>
+        </button>
+    </form>
+
     @if($categories->count() > 0)
         <ul class="category-tree">
             @foreach($categories as $category)
                 @include('admin.categories.partials.category-item', ['category' => $category, 'level' => 0])
             @endforeach
         </ul>
+
+        <div class="categories-pagination">
+            <div class="pagination-info">
+                <span class="ar-text">عرض {{ $categories->firstItem() }} إلى {{ $categories->lastItem() }} من إجمالي {{ $categories->total() }} تصنيف رئيسي</span>
+                <span class="en-text">Showing {{ $categories->firstItem() }} to {{ $categories->lastItem() }} of {{ $categories->total() }} main categories</span>
+            </div>
+            <div class="pagination-links">
+                {{ $categories->onEachSide(1)->links('pagination::bootstrap-5') }}
+            </div>
+        </div>
     @else
         <div class="empty-state">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -278,6 +497,179 @@
 
 @push('scripts')
 <script>
+const categoriesMoveUrl = "{{ route('admin.categories.move') }}";
+
+let draggedCategoryId = null;
+let isDraggingCategory = false;
+let lastPointerY = 0;
+
+let autoScrollTimer = null;
+let autoScrollDir = 0;
+
+function clearDropHighlights() {
+    document.querySelectorAll('.drop-target.drop-hover, .drop-target.drop-before, .drop-target.drop-after')
+        .forEach((el) => el.classList.remove('drop-hover', 'drop-before', 'drop-after'));
+}
+
+function startAutoScroll() {
+    if (autoScrollTimer) return;
+    autoScrollTimer = window.setInterval(() => {
+        if (!isDraggingCategory || autoScrollDir === 0) return;
+        const speed = 18; // px per tick
+        window.scrollBy(0, autoScrollDir * speed);
+    }, 16);
+}
+
+function stopAutoScroll() {
+    if (autoScrollTimer) {
+        window.clearInterval(autoScrollTimer);
+        autoScrollTimer = null;
+    }
+    autoScrollDir = 0;
+}
+
+function updateAutoScrollFromPointer(clientY) {
+    lastPointerY = clientY;
+    const edge = 90; // px
+    const viewportH = window.innerHeight;
+
+    if (clientY < edge) {
+        autoScrollDir = -1;
+    } else if (clientY > viewportH - edge) {
+        autoScrollDir = 1;
+    } else {
+        autoScrollDir = 0;
+    }
+}
+
+async function sendDragDrop(categoryId, targetId, position) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    if (!csrfToken) {
+        Swal.fire({
+            icon: 'error',
+            title: document.documentElement.getAttribute('lang') === 'ar' ? 'خطأ' : 'Error',
+            text: document.documentElement.getAttribute('lang') === 'ar' ? 'CSRF token غير موجود.' : 'Missing CSRF token.',
+        });
+        return;
+    }
+
+    const res = await fetch(categoriesMoveUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({ category_id: categoryId, target_id: targetId, position }),
+    });
+
+    if (!res.ok) {
+        let msg = 'Request failed';
+        try {
+            const data = await res.json();
+            msg = data?.message || msg;
+        } catch (_) {}
+        throw new Error(msg);
+    }
+}
+
+function setupCategoryDragAndDrop() {
+    // Drag start/end on rows (direct listeners)
+    document.querySelectorAll('.category-row[draggable="true"]').forEach((el) => {
+        el.addEventListener('dragstart', (e) => {
+            draggedCategoryId = el.dataset.categoryId;
+            isDraggingCategory = true;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', draggedCategoryId);
+            startAutoScroll();
+        });
+
+        el.addEventListener('dragend', () => {
+            draggedCategoryId = null;
+            isDraggingCategory = false;
+            clearDropHighlights();
+            stopAutoScroll();
+        });
+    });
+
+    // Event delegation in capture phase so drop works over the full row (even over icons/buttons/text)
+    document.addEventListener('dragover', (e) => {
+        if (!isDraggingCategory) return;
+
+        updateAutoScrollFromPointer(e.clientY);
+
+        const row = e.target?.closest?.('.category-row.drop-target');
+        if (!row) return;
+
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+
+        // Visual hint before/after for reordering
+        const rect = row.getBoundingClientRect();
+        const before = e.clientY < rect.top + rect.height / 2;
+
+        clearDropHighlights();
+        row.classList.add('drop-hover');
+        row.classList.add(before ? 'drop-before' : 'drop-after');
+    }, true);
+
+    document.addEventListener('dragleave', (e) => {
+        // When leaving the document or moving between children, we don't want to flicker;
+        // highlights are re-applied on dragover.
+        if (!isDraggingCategory) return;
+        if (e.relatedTarget == null) {
+            clearDropHighlights();
+        }
+    }, true);
+
+    document.addEventListener('drop', async (e) => {
+        if (!isDraggingCategory) return;
+
+        const row = e.target?.closest?.('.category-row.drop-target');
+        if (!row) return;
+
+        e.preventDefault();
+
+        const categoryId = e.dataTransfer.getData('text/plain') || draggedCategoryId;
+        const targetId = row.dataset.categoryId;
+        if (!categoryId || !targetId) return;
+
+        const rect = row.getBoundingClientRect();
+        const position = e.clientY < rect.top + rect.height / 2 ? 'before' : 'after';
+
+        try {
+            await sendDragDrop(categoryId, targetId, position);
+
+            Swal.fire({
+                icon: 'success',
+                title: document.documentElement.getAttribute('lang') === 'ar' ? 'تم' : 'Done',
+                text: document.documentElement.getAttribute('lang') === 'ar'
+                    ? 'تم تحديث ترتيب/مكان التصنيف بنجاح.'
+                    : 'Category position/order updated successfully.',
+                timer: 900,
+                showConfirmButton: false,
+            }).then(() => window.location.reload());
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: document.documentElement.getAttribute('lang') === 'ar' ? 'فشل' : 'Failed',
+                text: err?.message || (document.documentElement.getAttribute('lang') === 'ar'
+                    ? 'تعذر تحديث التصنيف.'
+                    : 'Could not update category.'),
+            });
+        } finally {
+            clearDropHighlights();
+            stopAutoScroll();
+        }
+    }, true);
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupCategoryDragAndDrop);
+} else {
+    setupCategoryDragAndDrop();
+}
+
 function deleteCategory(id, name) {
     const isArabic = document.documentElement.getAttribute('lang') === 'ar';
 

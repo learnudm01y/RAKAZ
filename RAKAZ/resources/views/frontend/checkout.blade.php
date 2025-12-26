@@ -425,182 +425,178 @@
             </div>
         </div>
 
-        <div class="checkout-content">
-            <!-- Checkout Form -->
-            <div class="checkout-form">
-                <!-- Contact Information -->
-                <div class="form-section">
-                    <h2 class="form-section-title">معلومات الاتصال</h2>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label">الاسم الأول <span class="required">*</span></label>
-                            <input type="text" class="form-input" required>
+        <form action="{{ route('checkout.process') }}" method="POST" id="checkoutForm">
+            @csrf
+            <div class="checkout-content">
+                <!-- Checkout Form -->
+                <div class="checkout-form">
+                    @if($errors->any())
+                        <div class="alert alert-danger">
+                            <ul>
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">اسم العائلة <span class="required">*</span></label>
-                            <input type="text" class="form-input" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">البريد الإلكتروني <span class="required">*</span></label>
-                            <input type="email" class="form-input" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">رقم الهاتف <span class="required">*</span></label>
-                            <input type="tel" class="form-input" required>
-                        </div>
-                    </div>
-                </div>
+                    @endif
 
-                <!-- Shipping Address -->
-                <div class="form-section">
-                    <h2 class="form-section-title">عنوان الشحن</h2>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label">الدولة <span class="required">*</span></label>
-                            <select class="custom-select-init" required>
-                                <option value="">اختر الدولة</option>
-                                <option value="ae">الإمارات العربية المتحدة</option>
-                                <option value="sa">المملكة العربية السعودية</option>
-                                <option value="kw">الكويت</option>
-                                <option value="bh">البحرين</option>
-                                <option value="qa">قطر</option>
-                                <option value="om">عُمان</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">المدينة <span class="required">*</span></label>
-                            <input type="text" class="form-input" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">المنطقة / الحي</label>
-                            <input type="text" class="form-input">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">الرمز البريدي</label>
-                            <input type="text" class="form-input">
-                        </div>
-                    </div>
-                    <div class="form-grid full">
-                        <div class="form-group">
-                            <label class="form-label">العنوان بالتفصيل <span class="required">*</span></label>
-                            <textarea class="form-textarea" placeholder="الشارع، رقم المبنى، الطابق، رقم الشقة..." required></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Shipping Method -->
-                <div class="form-section">
-                    <h2 class="form-section-title">طريقة الشحن</h2>
-                    <div class="shipping-methods">
-                        <label class="shipping-option selected">
-                            <input type="radio" name="shipping" value="standard" checked>
-                            <div class="shipping-header">
-                                <span class="shipping-name">الشحن القياسي</span>
-                                <span class="shipping-price">مجاني</span>
+                    <!-- Contact Information -->
+                    <div class="form-section">
+                        <h2 class="form-section-title">معلومات الاتصال</h2>
+                        <div class="form-grid full">
+                            <div class="form-group">
+                                <label class="form-label">الاسم الكامل <span class="required">*</span></label>
+                                <input type="text" name="customer_name" class="form-input" value="{{ old('customer_name', auth()->user()->name ?? '') }}" required>
                             </div>
-                            <div class="shipping-description">التسليم خلال 3-5 أيام عمل</div>
-                        </label>
-                        <label class="shipping-option">
-                            <input type="radio" name="shipping" value="express">
-                            <div class="shipping-header">
-                                <span class="shipping-name">الشحن السريع</span>
-                                <span class="shipping-price">50 د.إ</span>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">البريد الإلكتروني <span class="required">*</span></label>
+                                <input type="email" name="customer_email" class="form-input" value="{{ old('customer_email', auth()->user()->email ?? '') }}" required>
                             </div>
-                            <div class="shipping-description">التسليم خلال يوم عمل واحد</div>
-                        </label>
-                        <label class="shipping-option">
-                            <input type="radio" name="shipping" value="same-day">
-                            <div class="shipping-header">
-                                <span class="shipping-name">التوصيل في نفس اليوم</span>
-                                <span class="shipping-price">100 د.إ</span>
+                            <div class="form-group">
+                                <label class="form-label">رقم الهاتف <span class="required">*</span></label>
+                                <input type="tel" name="customer_phone" class="form-input" value="{{ old('customer_phone') }}" required>
                             </div>
-                            <div class="shipping-description">التسليم خلال ساعتين (دبي فقط)</div>
-                        </label>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Payment Method -->
-                <div class="form-section">
-                    <h2 class="form-section-title">طريقة الدفع</h2>
-                    <div class="payment-methods">
-                        <label class="payment-option selected">
-                            <input type="radio" name="payment" value="card" checked>
-                            <div class="payment-icon">💳</div>
-                            <div class="payment-name">بطاقة الائتمان</div>
-                        </label>
-                        <label class="payment-option">
-                            <input type="radio" name="payment" value="apple-pay">
-                            <div class="payment-icon">🍎</div>
-                            <div class="payment-name">Apple Pay</div>
-                        </label>
-                        <label class="payment-option">
-                            <input type="radio" name="payment" value="cod">
-                            <div class="payment-icon">💵</div>
-                            <div class="payment-name">الدفع عند الاستلام</div>
-                        </label>
-                        <label class="payment-option">
-                            <input type="radio" name="payment" value="tabby">
-                            <div class="payment-icon">📱</div>
-                            <div class="payment-name">Tabby - قسطها</div>
-                        </label>
+                    <!-- Shipping Address -->
+                    <div class="form-section">
+                        <h2 class="form-section-title">عنوان الشحن</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">الدولة <span class="required">*</span></label>
+                                <select name="shipping_country" class="form-input" required>
+                                    <option value="">اختر الدولة</option>
+                                    <option value="UAE" {{ old('shipping_country') == 'UAE' ? 'selected' : '' }}>الإمارات العربية المتحدة</option>
+                                    <option value="Saudi Arabia" {{ old('shipping_country') == 'Saudi Arabia' ? 'selected' : '' }}>المملكة العربية السعودية</option>
+                                    <option value="Kuwait" {{ old('shipping_country') == 'Kuwait' ? 'selected' : '' }}>الكويت</option>
+                                    <option value="Bahrain" {{ old('shipping_country') == 'Bahrain' ? 'selected' : '' }}>البحرين</option>
+                                    <option value="Qatar" {{ old('shipping_country') == 'Qatar' ? 'selected' : '' }}>قطر</option>
+                                    <option value="Oman" {{ old('shipping_country') == 'Oman' ? 'selected' : '' }}>عُمان</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">المدينة <span class="required">*</span></label>
+                                <input type="text" name="shipping_city" class="form-input" value="{{ old('shipping_city') }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">المنطقة / الحي</label>
+                                <input type="text" name="shipping_state" class="form-input" value="{{ old('shipping_state') }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">الرمز البريدي</label>
+                                <input type="text" name="shipping_postal_code" class="form-input" value="{{ old('shipping_postal_code') }}">
+                            </div>
+                        </div>
+                        <div class="form-grid full">
+                            <div class="form-group">
+                                <label class="form-label">العنوان بالتفصيل <span class="required">*</span></label>
+                                <textarea name="shipping_address" class="form-textarea" placeholder="الشارع، رقم المبنى، الطابق، رقم الشقة..." required>{{ old('shipping_address') }}</textarea>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Additional Notes -->
-                <div class="form-section">
-                    <h2 class="form-section-title">ملاحظات إضافية (اختياري)</h2>
-                    <div class="form-grid full">
-                        <div class="form-group">
-                            <textarea class="form-textarea" placeholder="أضف أي ملاحظات خاصة بطلبك..."></textarea>
+                    <!-- Shipping Method -->
+                    <div class="form-section">
+                        <h2 class="form-section-title">طريقة الشحن</h2>
+                        <div class="shipping-methods">
+                            <label class="shipping-option selected">
+                                <input type="radio" name="shipping_method" value="standard" data-cost="0" checked>
+                                <div class="shipping-header">
+                                    <span class="shipping-name">الشحن القياسي</span>
+                                    <span class="shipping-price">مجاني</span>
+                                </div>
+                                <div class="shipping-description">التسليم خلال 3-5 أيام عمل</div>
+                            </label>
+                            <label class="shipping-option">
+                                <input type="radio" name="shipping_method" value="express" data-cost="50">
+                                <div class="shipping-header">
+                                    <span class="shipping-name">الشحن السريع</span>
+                                    <span class="shipping-price">50 د.إ</span>
+                                </div>
+                                <div class="shipping-description">التسليم خلال يوم عمل واحد</div>
+                            </label>
+                            <label class="shipping-option">
+                                <input type="radio" name="shipping_method" value="same-day" data-cost="100">
+                                <div class="shipping-header">
+                                    <span class="shipping-name">التوصيل في نفس اليوم</span>
+                                    <span class="shipping-price">100 د.إ</span>
+                                </div>
+                                <div class="shipping-description">التسليم خلال ساعتين (دبي فقط)</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="form-section">
+                        <h2 class="form-section-title">طريقة الدفع</h2>
+                        <div class="payment-methods">
+                            <label class="payment-option selected">
+                                <input type="radio" name="payment_method" value="cash" checked>
+                                <div class="payment-icon">💵</div>
+                                <div class="payment-name">الدفع عند الاستلام</div>
+                            </label>
+                        </div>
+                        <p style="margin-top: 15px; font-size: 13px; color: #666;">حالياً متاح فقط الدفع عند الاستلام. طرق دفع إضافية قريباً.</p>
+                    </div>
+
+                    <!-- Additional Notes -->
+                    <div class="form-section">
+                        <h2 class="form-section-title">ملاحظات إضافية (اختياري)</h2>
+                        <div class="form-grid full">
+                            <div class="form-group">
+                                <textarea name="notes" class="form-textarea" placeholder="أضف أي ملاحظات خاصة بطلبك...">{{ old('notes') }}</textarea>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
             <!-- Order Summary -->
             <div class="order-summary">
                 <h3 class="summary-title">ملخص الطلب</h3>
 
                 <!-- Items -->
+                @foreach($cartItems as $item)
                 <div class="summary-item">
-                    <img src="/assets/images/New folder/Emirati_Gold_Edition_White.jpg" alt="كندورة" class="summary-item-image">
+                    <img src="{{ $item->product->main_image ? asset('storage/' . $item->product->main_image) : asset('assets/images/placeholder.jpg') }}"
+                         alt="{{ $item->product->getName() }}"
+                         class="summary-item-image">
                     <div class="summary-item-details">
-                        <div class="summary-item-name">كندورة إماراتية كلاسيكية بيضاء</div>
-                        <div class="summary-item-specs">المقاس: L | اللون: أبيض</div>
+                        <div class="summary-item-name">{{ $item->product->getName() }}</div>
+                        <div class="summary-item-specs">
+                            @if($item->size)المقاس: {{ $item->size }}@endif
+                            @if($item->shoe_size)@if($item->size) | @endif مقاس الحذاء: {{ $item->shoe_size }}@endif
+                            @if($item->color)@if($item->size || $item->shoe_size) | @endif اللون: {{ $item->color }}@endif
+                            | الكمية: {{ $item->quantity }}
+                        </div>
                     </div>
-                    <div class="summary-item-price">775 د.إ</div>
+                    <div class="summary-item-price">{{ number_format($item->subtotal, 2) }} د.إ</div>
                 </div>
-
-                <div class="summary-item">
-                    <img src="/assets/images/New folder/Kuwaiti_blue_image_3_treated.jpg" alt="كندورة" class="summary-item-image">
-                    <div class="summary-item-details">
-                        <div class="summary-item-name">كندورة كويتية فاخرة زرقاء</div>
-                        <div class="summary-item-specs">المقاس: M | اللون: أزرق</div>
-                    </div>
-                    <div class="summary-item-price">850 د.إ</div>
-                </div>
+                @endforeach
 
                 <!-- Totals -->
                 <div class="summary-totals">
                     <div class="summary-row">
                         <span>المجموع الفرعي</span>
-                        <span>1,625 د.إ</span>
+                        <span id="subtotalDisplay">{{ number_format($cartTotal, 2) }} د.إ</span>
                     </div>
                     <div class="summary-row">
                         <span>الشحن</span>
-                        <span>مجاني</span>
+                        <span id="shippingDisplay">مجاني</span>
                     </div>
                     <div class="summary-row">
                         <span>الضريبة (5%)</span>
-                        <span>81.25 د.إ</span>
+                        <span id="taxDisplay">{{ number_format($tax, 2) }} د.إ</span>
                     </div>
                     <div class="summary-total">
                         <span>المجموع الكلي</span>
-                        <span>1,706.25 د.إ</span>
+                        <span id="totalDisplay">{{ number_format($total, 2) }} د.إ</span>
                     </div>
                 </div>
 
-                <button class="place-order-btn" id="placeOrderBtn">تأكيد وإتمام الطلب</button>
+                <button type="submit" class="place-order-btn" id="placeOrderBtn">تأكيد وإتمام الطلب</button>
                 <a href="{{ route('cart.index') }}" class="back-to-cart">العودة إلى السلة</a>
 
                 <div class="secure-checkout">
@@ -611,11 +607,26 @@
                 </div>
             </div>
         </div>
+        </form>
     </div>
     @endsection
 @push('scripts')
 
     <script>
+        const subtotal = {{ $cartTotal }};
+        const taxRate = 0.05;
+        let shippingCost = 0;
+
+        // Update totals display
+        function updateTotals() {
+            const tax = (subtotal + shippingCost) * taxRate;
+            const total = subtotal + shippingCost + tax;
+
+            document.getElementById('shippingDisplay').textContent = shippingCost > 0 ? shippingCost.toFixed(2) + ' د.إ' : 'مجاني';
+            document.getElementById('taxDisplay').textContent = tax.toFixed(2) + ' د.إ';
+            document.getElementById('totalDisplay').textContent = total.toFixed(2) + ' د.إ';
+        }
+
         // Shipping method selection
         document.querySelectorAll('.shipping-option').forEach(option => {
             option.addEventListener('click', function() {
@@ -623,6 +634,10 @@
                     opt.classList.remove('selected');
                 });
                 this.classList.add('selected');
+
+                const radioInput = this.querySelector('input[type="radio"]');
+                shippingCost = parseFloat(radioInput.getAttribute('data-cost')) || 0;
+                updateTotals();
             });
         });
 
@@ -636,11 +651,21 @@
             });
         });
 
-        // Place Order with SweetAlert2
-        document.getElementById('placeOrderBtn').addEventListener('click', function() {
+        // Form validation and submission
+        document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Validate form
+            const form = this;
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Show confirmation dialog
             Swal.fire({
                 title: 'تأكيد الطلب',
-                text: 'هل أنت متأكد من رغبتك في إتمام الطلب؟',
+                html: 'هل أنت متأكد من رغبتك في إتمام الطلب؟<br><small>المجموع الكلي: ' + document.getElementById('totalDisplay').textContent + '</small>',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'نعم، أكمل الطلب',
@@ -650,19 +675,24 @@
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // Show loading
                     Swal.fire({
-                        title: 'تم إرسال طلبك بنجاح!',
-                        html: 'شكراً لك على طلبك<br>سيتم التواصل معك قريباً لتأكيد التفاصيل',
-                        icon: 'success',
-                        confirmButtonText: 'العودة للرئيسية',
-                        confirmButtonColor: '#000',
-                        allowOutsideClick: false
-                    }).then(() => {
-                        window.location.href = '{{ route('home') }}';
+                        title: 'جاري معالجة الطلب...',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
                     });
+
+                    // Submit the form
+                    form.submit();
                 }
             });
         });
+
+        // Initialize totals
+        updateTotals();
     </script>
 
 @endpush

@@ -1,0 +1,498 @@
+@extends('admin.layouts.app')
+
+@section('title', 'إدارة قسم الهدية المثالية')
+
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .admin-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+    
+    .admin-card-header {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 20px 25px;
+        border-bottom: none;
+    }
+    
+    .admin-card-header h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+    }
+    
+    .admin-card-body {
+        padding: 25px;
+    }
+    
+    .form-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .form-section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #f093fb;
+    }
+    
+    .product-search-container {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        border: 2px dashed #e0e0e0;
+        margin-bottom: 20px;
+    }
+    
+    .search-label {
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 10px;
+        display: block;
+    }
+    
+    /* Select2 Custom Styling */
+    .select2-container--default .select2-selection--single {
+        border: 2px solid #e0e0e0 !important;
+        border-radius: 8px !important;
+        height: 45px !important;
+        padding: 8px 15px !important;
+    }
+    
+    .select2-container--default .select2-selection--single:focus,
+    .select2-container--default .select2-selection--single:hover {
+        border-color: #f093fb !important;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 28px !important;
+        color: #333 !important;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 43px !important;
+    }
+    
+    .select2-dropdown {
+        border: 2px solid #f093fb !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .select2-results__option {
+        padding: 12px 15px !important;
+    }
+    
+    .select2-results__option:hover {
+        background: #fff5f8 !important;
+    }
+    
+    .select2-results__option--highlighted {
+        background: #f093fb !important;
+    }
+    
+    /* Product Items */
+    .products-list {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        min-height: 100px;
+    }
+    
+    .product-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border: 2px solid #e8e8e8;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        background: white;
+        transition: all 0.3s ease;
+        cursor: move;
+    }
+    
+    .product-item:hover {
+        border-color: #f093fb;
+        box-shadow: 0 4px 12px rgba(240, 147, 251, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    .product-item .drag-handle {
+        margin-left: 12px;
+        color: #999;
+        cursor: grab;
+        font-size: 18px;
+    }
+    
+    .product-item .drag-handle:active {
+        cursor: grabbing;
+    }
+    
+    .product-item img {
+        width: 70px;
+        height: 70px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-right: 15px;
+        border: 2px solid #f0f0f0;
+    }
+    
+    .product-item .product-info {
+        flex: 1;
+    }
+    
+    .product-item .product-name {
+        font-weight: 600;
+        color: #333;
+        font-size: 15px;
+        margin-bottom: 4px;
+    }
+    
+    .product-item .product-id {
+        font-size: 12px;
+        color: #999;
+        background: #f5f5f5;
+        padding: 2px 8px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    
+    .product-item .remove-btn {
+        background: linear-gradient(135deg, #ff4757, #ff6348);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .product-item .remove-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+    }
+    
+    .sortable-ghost {
+        opacity: 0.4;
+        background: #fff5f8;
+    }
+    
+    .sortable-chosen {
+        background: #fff5f8;
+        border-color: #f093fb;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #999;
+    }
+    
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+    
+    .btn-save {
+        background: linear-gradient(135deg, #f093fb, #f5576c);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(240, 147, 251, 0.4);
+    }
+    
+    .alert {
+        border-radius: 8px;
+        border: none;
+    }
+    
+    .alert-success {
+        background: linear-gradient(135deg, #00b894, #00cec9);
+        color: white;
+    }
+</style>
+@endpush
+
+@section('content')
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3><i class="fas fa-gift me-2"></i> إدارة قسم الهدية المثالية</h3>
+                </div>
+                <div class="admin-card-body">
+                    @if(session('success'))
+                        <div class="alert alert-success alert-dismissible fade show">
+                            <i class="fas fa-check-circle me-2"></i>
+                            {{ session('success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    @endif
+
+                    <form action="{{ route('admin.perfect-gift-section.update') }}" method="POST">
+                        @csrf
+
+                        <!-- Section Information -->
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="fas fa-info-circle me-2"></i>معلومات القسم
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">العنوان (عربي)</label>
+                                    <input type="text" name="title_ar" class="form-control" 
+                                           value="{{ $section->title['ar'] ?? 'الهدية المثالية' }}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">العنوان (إنجليزي)</label>
+                                    <input type="text" name="title_en" class="form-control" 
+                                           value="{{ $section->title['en'] ?? 'Perfect Gift' }}" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">رابط "تسوق الكل"</label>
+                                    <input type="text" name="link_url" class="form-control" 
+                                           value="{{ $section->link_url ?? '/shop' }}" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">نص الرابط (عربي)</label>
+                                    <input type="text" name="link_text_ar" class="form-control" 
+                                           value="{{ $section->link_text['ar'] ?? 'تسوق الكل' }}" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">نص الرابط (إنجليزي)</label>
+                                    <input type="text" name="link_text_en" class="form-control" 
+                                           value="{{ $section->link_text['en'] ?? 'Shop All' }}" required>
+                                </div>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_active" 
+                                       id="is_active" {{ $section->is_active ? 'checked' : '' }}>
+                                <label class="form-check-label" for="is_active">تفعيل القسم</label>
+                            </div>
+                        </div>
+
+                        <!-- Product Search -->
+                        <div class="product-search-container">
+                            <label class="search-label">
+                                <i class="fas fa-search me-2"></i>البحث وإضافة المنتجات
+                            </label>
+                            <select id="product-select" class="form-control" style="width: 100%;">
+                                <option value="">ابحث عن منتج باسمه أو رقمه...</option>
+                            </select>
+                            <small class="text-muted d-block mt-2">
+                                <i class="fas fa-info-circle me-1"></i>
+                                اكتب اسم المنتج أو رقمه للبحث، ثم اختر المنتج لإضافته
+                            </small>
+                        </div>
+
+                        <!-- Selected Products -->
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="fas fa-box me-2"></i>المنتجات المختارة
+                                <span class="badge bg-primary ms-2" id="product-count">{{ $section->products->count() ?? 0 }}</span>
+                            </div>
+                            <div id="selected-products" class="products-list">
+                                @if($section && $section->products && $section->products->count() > 0)
+                                    @foreach($section->products as $product)
+                                        <div class="product-item" data-product-id="{{ $product->id }}">
+                                            <span class="drag-handle">
+                                                <i class="fas fa-grip-vertical"></i>
+                                            </span>
+                                            <input type="hidden" name="product_ids[]" value="{{ $product->id }}">
+                                            @if($product->main_image)
+                                                <img src="{{ asset('storage/' . $product->main_image) }}" alt="{{ $product->getName() }}">
+                                            @else
+                                                <img src="/assets/images/placeholder.jpg" alt="No Image">
+                                            @endif
+                                            <div class="product-info">
+                                                <div class="product-name">{{ $product->getName() }}</div>
+                                                <span class="product-id">ID: {{ $product->id }}</span>
+                                            </div>
+                                            <button type="button" class="remove-btn" onclick="removeProduct(this)">
+                                                <i class="fas fa-times me-1"></i> إزالة
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="empty-state">
+                                        <i class="fas fa-box-open"></i>
+                                        <p>لا توجد منتجات مضافة بعد</p>
+                                        <small>استخدم البحث أعلاه لإضافة منتجات</small>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-save btn-lg">
+                                <i class="fas fa-save me-2"></i> حفظ التغييرات
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Initialize Select2
+    $('#product-select').select2({
+        ajax: {
+            url: '{{ route('admin.perfect-gift-section.products') }}',
+            dataType: 'json',
+            delay: 300,
+            data: function (params) {
+                return {
+                    q: params.term || ''
+                };
+            },
+            processResults: function (data) {
+                return {
+                    results: data
+                };
+            },
+            cache: true
+        },
+        placeholder: 'ابحث عن منتج باسمه أو رقمه...',
+        minimumInputLength: 1,
+        language: {
+            inputTooShort: function() {
+                return 'اكتب حرف واحد على الأقل للبحث';
+            },
+            searching: function() {
+                return 'جاري البحث...';
+            },
+            noResults: function() {
+                return 'لا توجد نتائج';
+            }
+        },
+        templateResult: formatProduct,
+        templateSelection: formatProductSelection
+    });
+
+    // Add product on select
+    $('#product-select').on('select2:select', function (e) {
+        var data = e.params.data;
+        addProduct(data.id, data.text, data.image);
+        $(this).val(null).trigger('change');
+    });
+
+    // Initialize Sortable
+    const el = document.getElementById('selected-products');
+    if (el) {
+        Sortable.create(el, {
+            animation: 150,
+            handle: '.drag-handle',
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            onEnd: function() {
+                updateProductCount();
+            }
+        });
+    }
+    
+    updateProductCount();
+});
+
+function formatProduct(product) {
+    if (!product.id) return product.text;
+    
+    var $product = $(
+        '<div class="d-flex align-items-center p-2">' +
+            (product.image ? '<img src="' + product.image + '" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px; margin-left: 12px;">' : '<div style="width: 50px; height: 50px; background: #f0f0f0; border-radius: 6px; margin-left: 12px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-image text-muted"></i></div>') +
+            '<span style="font-weight: 500;">' + product.text + '</span>' +
+        '</div>'
+    );
+    return $product;
+}
+
+function formatProductSelection(product) {
+    return product.text;
+}
+
+function addProduct(id, name, image) {
+    // Check if already exists
+    if ($('#selected-products').find('[data-product-id="' + id + '"]').length > 0) {
+        alert('هذا المنتج موجود بالفعل!');
+        return;
+    }
+    
+    // Remove empty state if exists
+    $('#selected-products .empty-state').remove();
+    
+    var imageHtml = image ? 
+        '<img src="' + image + '" alt="' + name + '">' : 
+        '<img src="/assets/images/placeholder.jpg" alt="No Image">';
+    
+    var productHtml = `
+        <div class="product-item" data-product-id="${id}">
+            <span class="drag-handle">
+                <i class="fas fa-grip-vertical"></i>
+            </span>
+            <input type="hidden" name="product_ids[]" value="${id}">
+            ${imageHtml}
+            <div class="product-info">
+                <div class="product-name">${name}</div>
+                <span class="product-id">ID: ${id}</span>
+            </div>
+            <button type="button" class="remove-btn" onclick="removeProduct(this)">
+                <i class="fas fa-times me-1"></i> إزالة
+            </button>
+        </div>
+    `;
+    
+    $('#selected-products').append(productHtml);
+    updateProductCount();
+}
+
+function removeProduct(btn) {
+    $(btn).closest('.product-item').fadeOut(300, function() {
+        $(this).remove();
+        updateProductCount();
+        
+        // Add empty state if no products
+        if ($('#selected-products .product-item').length === 0) {
+            $('#selected-products').html(`
+                <div class="empty-state">
+                    <i class="fas fa-box-open"></i>
+                    <p>لا توجد منتجات مضافة بعد</p>
+                    <small>استخدم البحث أعلاه لإضافة منتجات</small>
+                </div>
+            `);
+        }
+    });
+}
+
+function updateProductCount() {
+    var count = $('#selected-products .product-item').length;
+    $('#product-count').text(count);
+}
+</script>
+@endpush
