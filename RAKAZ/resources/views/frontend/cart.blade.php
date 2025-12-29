@@ -369,21 +369,67 @@
 
         @media (max-width: 768px) {
             .cart-container {
-                padding: 40px 20px;
+                padding: 30px 15px;
             }
 
             .cart-title {
-                font-size: 32px;
+                font-size: 28px;
+            }
+
+            .cart-header {
+                margin-bottom: 30px;
+            }
+
+            .wishlist-actions {
+                gap: 10px;
+            }
+
+            .wishlist-action-btn {
+                min-width: 100px;
+                max-width: none;
+                flex: 1;
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+
+            .cart-content {
+                gap: 25px;
+                margin-top: 30px;
             }
 
             .cart-item {
-                grid-template-columns: 80px 1fr;
-                gap: 15px;
+                grid-template-columns: 90px 1fr;
+                gap: 12px;
+                padding: 15px;
+                margin-bottom: 15px;
             }
 
             .cart-item-image {
-                width: 80px;
-                height: 80px;
+                width: 90px;
+                height: 90px;
+            }
+
+            .cart-item-brand {
+                font-size: 11px;
+            }
+
+            .cart-item-name {
+                font-size: 14px;
+                line-height: 1.3;
+            }
+
+            .cart-item-specs {
+                font-size: 12px;
+            }
+
+            .cart-item-spec {
+                display: block;
+                margin-left: 0;
+                margin-bottom: 3px;
+            }
+
+            .cart-item-price {
+                font-size: 16px;
             }
 
             .cart-item-actions {
@@ -391,6 +437,107 @@
                 flex-direction: row;
                 justify-content: space-between;
                 align-items: center;
+                margin-top: 10px;
+                padding-top: 10px;
+                border-top: 1px solid #eee;
+            }
+
+            .remove-item-btn {
+                order: 2;
+            }
+
+            .quantity-selector {
+                order: 1;
+            }
+
+            /* Summary Box Mobile */
+            .cart-summary {
+                padding: 20px;
+            }
+
+            .summary-title {
+                font-size: 18px;
+            }
+
+            .summary-row {
+                font-size: 14px;
+            }
+
+            .summary-total {
+                font-size: 16px;
+            }
+
+            .checkout-btn {
+                padding: 14px 20px;
+                font-size: 15px;
+            }
+
+            .continue-shopping-btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
+            .promo-code-input input {
+                font-size: 14px;
+            }
+
+            .promo-code-input button {
+                font-size: 13px;
+                padding: 10px 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .cart-container {
+                padding: 20px 12px;
+            }
+
+            .cart-title {
+                font-size: 24px;
+            }
+
+            .wishlist-action-btn {
+                font-size: 11px;
+                padding: 8px 10px;
+            }
+
+            .wishlist-action-btn svg {
+                width: 14px;
+                height: 14px;
+            }
+
+            .cart-item {
+                grid-template-columns: 75px 1fr;
+                gap: 10px;
+                padding: 12px;
+            }
+
+            .cart-item-image {
+                width: 75px;
+                height: 75px;
+            }
+
+            .cart-item-name {
+                font-size: 13px;
+            }
+
+            .cart-item-price {
+                font-size: 14px;
+            }
+
+            .quantity-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 14px;
+            }
+
+            .quantity-value {
+                min-width: 30px;
+                font-size: 13px;
+            }
+
+            .cart-summary {
+                padding: 15px;
             }
         }
     </style>
@@ -447,22 +594,43 @@
                         }
 
                         // Get product name (handle if it's array or string)
-                        $productName = is_array($product->name)
-                            ? (
-                                $isAr
-                                    ? ($product->name['ar'] ?? $product->name['en'] ?? 'منتج')
-                                    : ($product->name['en'] ?? 'Product')
-                            )
-                            : $product->name;
+                        $productName = '';
+                        if (is_array($product->name)) {
+                            $productName = $isAr
+                                ? ($product->name['ar'] ?? $product->name['en'] ?? 'منتج')
+                                : ($product->name['en'] ?? $product->name['ar'] ?? 'Product');
+                        } elseif (is_string($product->name)) {
+                            $productName = $product->name;
+                        } else {
+                            $productName = $isAr ? 'منتج' : 'Product';
+                        }
 
+                        // Fallback for Arabic text in English mode
                         if (!$isAr && is_string($productName) && preg_match('/[\x{0600}-\x{06FF}]/u', $productName)) {
-                            $productName = 'Product';
+                            $productName = $isAr ? 'منتج' : 'Product';
+                        }
+
+                        // Get brand name properly (handle Brand model object)
+                        $brandName = $isAr ? 'ركاز' : 'Rakaz';
+                        if ($product->brand) {
+                            if (is_object($product->brand) && isset($product->brand->name)) {
+                                // Brand is a model object
+                                $brandName = is_array($product->brand->name)
+                                    ? ($isAr ? ($product->brand->name['ar'] ?? $product->brand->name['en'] ?? $brandName) : ($product->brand->name['en'] ?? $product->brand->name['ar'] ?? $brandName))
+                                    : $product->brand->name;
+                            } elseif (is_string($product->brand)) {
+                                $brandName = $product->brand;
+                            } elseif (is_array($product->brand) && isset($product->brand['name'])) {
+                                $brandName = is_array($product->brand['name'])
+                                    ? ($isAr ? ($product->brand['name']['ar'] ?? $product->brand['name']['en'] ?? $brandName) : ($product->brand['name']['en'] ?? $product->brand['name']['ar'] ?? $brandName))
+                                    : $product->brand['name'];
+                            }
                         }
                     @endphp
 
                     <img src="{{ $mainImage }}" alt="{{ $productName }}" class="cart-item-image">
                     <div class="cart-item-details">
-                        <div class="cart-item-brand">{{ $product->brand ?? ($isAr ? 'ركاز' : 'Rakaz') }}</div>
+                        <div class="cart-item-brand">{{ $brandName }}</div>
                         <div class="cart-item-name">{{ $productName }}</div>
                         <div class="cart-item-specs">
                             @if($item->size)
