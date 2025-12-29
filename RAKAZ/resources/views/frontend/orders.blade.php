@@ -705,6 +705,42 @@
             }
         }
 
+        /* Tablet Landscape & Small Desktop */
+        @media (max-width: 1024px) {
+            .orders-table th,
+            .orders-table td {
+                padding: 14px 12px;
+                font-size: 13px;
+            }
+
+            .table-actions {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .btn-table {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+        }
+
+        /* Tablet Portrait */
+        @media (max-width: 900px) {
+            .orders-table th,
+            .orders-table td {
+                padding: 12px 10px;
+                font-size: 12px;
+            }
+
+            .orders-table th:nth-child(3),
+            .orders-table td:nth-child(3) {
+                max-width: 150px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+
         @media (max-width: 768px) {
             .orders-page {
                 padding: 20px 15px;
