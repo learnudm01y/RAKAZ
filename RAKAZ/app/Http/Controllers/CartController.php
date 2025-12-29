@@ -44,22 +44,41 @@ class CartController extends Controller
         $product = Product::findOrFail($request->product_id);
         $identifier = $this->getIdentifier();
 
-        // Check if item already exists in cart
-        $cartItem = Cart::where('product_id', $product->id)
-            ->where($identifier['user_id'] ? 'user_id' : 'session_id', $identifier['user_id'] ?: $identifier['session_id'])
-            ->where('size', $request->size)
-            ->where('shoe_size', $request->shoe_size)
-            ->where('color', $request->color)
-            ->first();
+        // Check if item already exists in cart with same details
+        $query = Cart::where('product_id', $product->id)
+            ->where($identifier['user_id'] ? 'user_id' : 'session_id', $identifier['user_id'] ?: $identifier['session_id']);
+
+        // Handle nullable fields correctly
+        if ($request->size) {
+            $query->where('size', $request->size);
+        } else {
+            $query->whereNull('size');
+        }
+
+        if ($request->shoe_size) {
+            $query->where('shoe_size', $request->shoe_size);
+        } else {
+            $query->whereNull('shoe_size');
+        }
+
+        if ($request->color) {
+            $query->where('color', $request->color);
+        } else {
+            $query->whereNull('color');
+        }
+
+        $cartItem = $query->first();
 
         $price = $product->sale_price && $product->sale_price < $product->price
             ? $product->sale_price
             : $product->price;
 
         if ($cartItem) {
+            // Item exists with same details - increase quantity
             $cartItem->quantity += $request->quantity;
             $cartItem->save();
         } else {
+            // Create new cart item
             Cart::create([
                 'user_id' => $identifier['user_id'],
                 'session_id' => $identifier['session_id'],
@@ -130,6 +149,14 @@ class CartController extends Controller
     }
 
     public function count()
+    {
+        $identifier = $this->getIdentifier();
+        return response()->json([
+            'count' => Cart::getCartCount($identifier['user_id'], $identifier['session_id'])
+        ]);
+    }
+
+    public function apiCount()
     {
         $identifier = $this->getIdentifier();
         return response()->json([

@@ -15,8 +15,58 @@
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+
     <!-- Toastr CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+    <!-- jQuery - Load FIRST to ensure it's available for all scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Toastr JS - Load EARLY to prevent Livewire errors -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <!-- Initialize toastr globally IMMEDIATELY -->
+    <script>
+        // Ensure toastr is defined globally to prevent Livewire errors
+        window.toastr = window.toastr || {
+            success: function(msg) { console.log('Success:', msg); },
+            error: function(msg) { console.log('Error:', msg); },
+            warning: function(msg) { console.log('Warning:', msg); },
+            info: function(msg) { console.log('Info:', msg); }
+        };
+
+        // Global showToast wrapper
+        window.showToast = function(type, message) {
+            if (typeof toastr !== 'undefined' && toastr[type]) {
+                toastr[type](message);
+            } else {
+                console.log(type.toUpperCase() + ': ' + message);
+            }
+        };
+
+        // Configure toastr
+        if (typeof toastr !== 'undefined' && typeof toastr.options !== 'undefined') {
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "newestOnTop": true,
+                "progressBar": true,
+                "positionClass": "{{ app()->getLocale() == 'ar' ? 'toast-top-left' : 'toast-top-right' }}",
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
+        }
+    </script>
 
     <!-- Custom Select CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/custom-select.css') }}">
@@ -917,10 +967,7 @@
         });
     </script>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Bootstrap 5 JS -->
+    <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Select2 JS -->
@@ -929,47 +976,25 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- Toastr JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
     <!-- Custom Select JS -->
     <script src="{{ asset('assets/js/custom-select.js') }}"></script>
 
     <script>
-        // Toastr Configuration
-        toastr.options = {
-            "closeButton": true,
-            "debug": false,
-            "newestOnTop": true,
-            "progressBar": true,
-            "positionClass": "{{ app()->getLocale() == 'ar' ? 'toast-top-left' : 'toast-top-right' }}",
-            "preventDuplicates": false,
-            "onclick": null,
-            "showDuration": "300",
-            "hideDuration": "1000",
-            "timeOut": "5000",
-            "extendedTimeOut": "1000",
-            "showEasing": "swing",
-            "hideEasing": "linear",
-            "showMethod": "fadeIn",
-            "hideMethod": "fadeOut"
-        };
-
         // Display session messages
         @if(session('success'))
-            toastr.success("{{ session('success') }}");
+            showToast('success', "{{ session('success') }}");
         @endif
 
         @if(session('error'))
-            toastr.error("{{ session('error') }}");
+            showToast('error', "{{ session('error') }}");
         @endif
 
         @if(session('info'))
-            toastr.info("{{ session('info') }}");
+            showToast('info', "{{ session('info') }}");
         @endif
 
         @if(session('warning'))
-            toastr.warning("{{ session('warning') }}");
+            showToast('warning', "{{ session('warning') }}");
         @endif
 
         // Initialize Custom Select for all select elements

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\ProductColorImage;
+use App\Services\ImageCompressionService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -14,6 +15,13 @@ use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
+    protected ImageCompressionService $imageService;
+
+    public function __construct(ImageCompressionService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
+
     /**
      * Generate Arabic-friendly slug
      */
@@ -143,6 +151,7 @@ class ProductController extends Controller
                 'main_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
                 'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
                 'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
+                'brand_id' => 'nullable|exists:brands,id',
                 'brand' => 'nullable|string|max:255',
                 'manufacturer' => 'nullable|string|max:255',
                 'is_active' => 'nullable|in:on,1,true',
@@ -152,28 +161,59 @@ class ProductController extends Controller
                 'sort_order' => 'nullable|integer',
             ]);
 
-            // Handle main image upload
+            // Handle main image - check for pre-compressed image first
             $mainImagePath = null;
-            if ($request->hasFile('main_image')) {
-                $mainImagePath = $request->file('main_image')->store('products', 'public');
+            if ($request->filled('compressed_main_image')) {
+                // Move from temp to permanent location
+                $tempPath = $request->input('compressed_main_image');
+                $newPath = str_replace('/temp', '', $tempPath);
+                if (Storage::disk('public')->exists($tempPath)) {
+                    Storage::disk('public')->move($tempPath, $newPath);
+                    $mainImagePath = $newPath;
+                    Log::info('Main image moved from temp', ['from' => $tempPath, 'to' => $newPath]);
+                }
+            } elseif ($request->hasFile('main_image')) {
+                $mainImagePath = $this->imageService->compressAndStore($request->file('main_image'), 'products');
+                Log::info('Main image compressed and stored', ['path' => $mainImagePath]);
             }
 
-            // Handle hover image upload
+            // Handle hover image - check for pre-compressed image first
             $hoverImagePath = null;
-            if ($request->hasFile('hover_image')) {
-                $hoverImagePath = $request->file('hover_image')->store('products', 'public');
+            if ($request->filled('compressed_hover_image')) {
+                // Move from temp to permanent location
+                $tempPath = $request->input('compressed_hover_image');
+                $newPath = str_replace('/temp', '', $tempPath);
+                if (Storage::disk('public')->exists($tempPath)) {
+                    Storage::disk('public')->move($tempPath, $newPath);
+                    $hoverImagePath = $newPath;
+                    Log::info('Hover image moved from temp', ['from' => $tempPath, 'to' => $newPath]);
+                }
+            } elseif ($request->hasFile('hover_image')) {
+                $hoverImagePath = $this->imageService->compressAndStore($request->file('hover_image'), 'products');
+                Log::info('Hover image compressed and stored', ['path' => $hoverImagePath]);
             }
 
-            // Handle gallery images upload
+            // Handle gallery images - check for pre-compressed images first
             $galleryImages = [];
-            if ($request->hasFile('gallery_images')) {
+            if ($request->filled('compressed_gallery_images')) {
+                $compressedGalleryImages = $request->input('compressed_gallery_images');
+                foreach ($compressedGalleryImages as $tempPath) {
+                    $newPath = str_replace('/temp', '', $tempPath);
+                    if (Storage::disk('public')->exists($tempPath)) {
+                        Storage::disk('public')->move($tempPath, $newPath);
+                        $galleryImages[] = $newPath;
+                        Log::info('Gallery image moved from temp', ['from' => $tempPath, 'to' => $newPath]);
+                    }
+                }
+            } elseif ($request->hasFile('gallery_images')) {
                 Log::info('Gallery images received:', [
                     'count' => count($request->file('gallery_images'))
                 ]);
-                foreach ($request->file('gallery_images') as $image) {
-                    $galleryImages[] = $image->store('products/gallery', 'public');
-                }
-                Log::info('Gallery images stored:', [
+                $galleryImages = $this->imageService->compressAndStoreMultiple(
+                    $request->file('gallery_images'),
+                    'products/gallery'
+                );
+                Log::info('Gallery images compressed and stored:', [
                     'count' => count($galleryImages),
                     'paths' => $galleryImages
                 ]);
@@ -213,6 +253,7 @@ class ProductController extends Controller
                 'main_image' => $mainImagePath,
                 'hover_image' => $hoverImagePath,
                 'gallery_images' => $galleryImages,
+                'brand_id' => $request->brand_id ?? null,
                 'brand' => $validated['brand'] ?? null,
                 'manufacturer' => $validated['manufacturer'] ?? null,
                 'is_active' => $request->has('is_active'),
@@ -256,12 +297,33 @@ class ProductController extends Controller
                 }
                 $product->productColors()->sync($colorsData);
 
-                // Handle color-specific images
-                if ($request->hasFile('color_images')) {
+                // Handle color-specific images - check for pre-compressed images first
+                if ($request->filled('compressed_color_images')) {
+                    $compressedColorImages = $request->input('compressed_color_images');
+                    foreach ($compressedColorImages as $colorId => $tempPath) {
+                        // Check if this color is selected
+                        if (in_array($colorId, $request->colors)) {
+                            $newPath = str_replace('/temp', '', $tempPath);
+                            if (Storage::disk('public')->exists($tempPath)) {
+                                Storage::disk('public')->move($tempPath, $newPath);
+                                Log::info('Color image moved from temp', ['color_id' => $colorId, 'from' => $tempPath, 'to' => $newPath]);
+
+                                ProductColorImage::create([
+                                    'product_id' => $product->id,
+                                    'color_id' => $colorId,
+                                    'image' => $newPath,
+                                    'is_primary' => isset($request->color_image_primary[$colorId]),
+                                    'sort_order' => 0
+                                ]);
+                            }
+                        }
+                    }
+                } elseif ($request->hasFile('color_images')) {
                     foreach ($request->file('color_images') as $colorId => $imageFile) {
                         // Check if this color is selected
                         if (in_array($colorId, $request->colors)) {
-                            $imagePath = $imageFile->store('products/colors', 'public');
+                            $imagePath = $this->imageService->compressAndStore($imageFile, 'products/colors');
+                            Log::info('Color image compressed and stored', ['color_id' => $colorId, 'path' => $imagePath]);
 
                             ProductColorImage::create([
                                 'product_id' => $product->id,
@@ -373,6 +435,7 @@ class ProductController extends Controller
                 'main_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
                 'hover_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
                 'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
+                'brand_id' => 'nullable|exists:brands,id',
                 'brand' => 'nullable|string|max:255',
                 'manufacturer' => 'nullable|string|max:255',
                 'is_active' => 'nullable|in:on,1,true',
@@ -382,24 +445,56 @@ class ProductController extends Controller
                 'sort_order' => 'nullable|integer',
             ]);
 
-            // Handle main image upload
-            if ($request->hasFile('main_image')) {
+            // Handle main image - check for pre-compressed image first
+            if ($request->filled('compressed_main_image')) {
                 // Delete old image
                 if ($product->main_image) {
                     Storage::disk('public')->delete($product->main_image);
                 }
-                $mainImagePath = $request->file('main_image')->store('products', 'public');
+                // Move from temp to permanent location
+                $tempPath = $request->input('compressed_main_image');
+                $newPath = str_replace('/temp', '', $tempPath);
+                if (Storage::disk('public')->exists($tempPath)) {
+                    Storage::disk('public')->move($tempPath, $newPath);
+                    $mainImagePath = $newPath;
+                    Log::info('Main image moved from temp (update)', ['from' => $tempPath, 'to' => $newPath]);
+                } else {
+                    $mainImagePath = $product->main_image;
+                }
+            } elseif ($request->hasFile('main_image')) {
+                // Delete old image
+                if ($product->main_image) {
+                    Storage::disk('public')->delete($product->main_image);
+                }
+                $mainImagePath = $this->imageService->compressAndStore($request->file('main_image'), 'products');
+                Log::info('Main image compressed and stored (update)', ['path' => $mainImagePath]);
             } else {
                 $mainImagePath = $product->main_image;
             }
 
-            // Handle hover image upload
-            if ($request->hasFile('hover_image')) {
+            // Handle hover image - check for pre-compressed image first
+            if ($request->filled('compressed_hover_image')) {
                 // Delete old image
                 if ($product->hover_image) {
                     Storage::disk('public')->delete($product->hover_image);
                 }
-                $hoverImagePath = $request->file('hover_image')->store('products', 'public');
+                // Move from temp to permanent location
+                $tempPath = $request->input('compressed_hover_image');
+                $newPath = str_replace('/temp', '', $tempPath);
+                if (Storage::disk('public')->exists($tempPath)) {
+                    Storage::disk('public')->move($tempPath, $newPath);
+                    $hoverImagePath = $newPath;
+                    Log::info('Hover image moved from temp (update)', ['from' => $tempPath, 'to' => $newPath]);
+                } else {
+                    $hoverImagePath = $product->hover_image;
+                }
+            } elseif ($request->hasFile('hover_image')) {
+                // Delete old image
+                if ($product->hover_image) {
+                    Storage::disk('public')->delete($product->hover_image);
+                }
+                $hoverImagePath = $this->imageService->compressAndStore($request->file('hover_image'), 'products');
+                Log::info('Hover image compressed and stored (update)', ['path' => $hoverImagePath]);
             } else {
                 $hoverImagePath = $product->hover_image;
             }
@@ -419,15 +514,27 @@ class ProductController extends Controller
                 $galleryImages = array_values($galleryImages);
             }
 
-            // Add new gallery images
-            if ($request->hasFile('gallery_images')) {
+            // Add new gallery images - check for pre-compressed images first
+            if ($request->filled('compressed_gallery_images')) {
+                $compressedGalleryImages = $request->input('compressed_gallery_images');
+                foreach ($compressedGalleryImages as $tempPath) {
+                    $newPath = str_replace('/temp', '', $tempPath);
+                    if (Storage::disk('public')->exists($tempPath)) {
+                        Storage::disk('public')->move($tempPath, $newPath);
+                        $galleryImages[] = $newPath;
+                        Log::info('Gallery image moved from temp (update)', ['from' => $tempPath, 'to' => $newPath]);
+                    }
+                }
+            } elseif ($request->hasFile('gallery_images')) {
                 Log::info('Gallery images received for update:', [
                     'count' => count($request->file('gallery_images')),
                     'existing_count' => count($galleryImages)
                 ]);
-                foreach ($request->file('gallery_images') as $image) {
-                    $galleryImages[] = $image->store('products/gallery', 'public');
-                }
+                $newGalleryImages = $this->imageService->compressAndStoreMultiple(
+                    $request->file('gallery_images'),
+                    'products/gallery'
+                );
+                $galleryImages = array_merge($galleryImages, $newGalleryImages);
                 Log::info('Gallery images after update:', [
                     'total_count' => count($galleryImages),
                     'paths' => $galleryImages
@@ -468,6 +575,7 @@ class ProductController extends Controller
                 'main_image' => $mainImagePath,
                 'hover_image' => $hoverImagePath,
                 'gallery_images' => $galleryImages,
+                'brand_id' => $request->brand_id ?? null,
                 'brand' => $validated['brand'] ?? null,
                 'manufacturer' => $validated['manufacturer'] ?? null,
                 'is_active' => $request->has('is_active'),
@@ -513,8 +621,38 @@ class ProductController extends Controller
                 }
                 $product->productColors()->sync($colorsData);
 
-                // Handle color-specific images
-                if ($request->hasFile('color_images')) {
+                // Handle color-specific images - check for pre-compressed images first
+                if ($request->filled('compressed_color_images')) {
+                    $compressedColorImages = $request->input('compressed_color_images');
+                    foreach ($compressedColorImages as $colorId => $tempPath) {
+                        // Check if this color is selected
+                        if (in_array($colorId, $request->colors)) {
+                            // Delete old image if exists
+                            $existingImage = ProductColorImage::where('product_id', $product->id)
+                                ->where('color_id', $colorId)
+                                ->first();
+
+                            if ($existingImage) {
+                                Storage::disk('public')->delete($existingImage->image);
+                                $existingImage->delete();
+                            }
+
+                            $newPath = str_replace('/temp', '', $tempPath);
+                            if (Storage::disk('public')->exists($tempPath)) {
+                                Storage::disk('public')->move($tempPath, $newPath);
+                                Log::info('Color image moved from temp (update)', ['color_id' => $colorId, 'from' => $tempPath, 'to' => $newPath]);
+
+                                ProductColorImage::create([
+                                    'product_id' => $product->id,
+                                    'color_id' => $colorId,
+                                    'image' => $newPath,
+                                    'is_primary' => isset($request->color_image_primary[$colorId]),
+                                    'sort_order' => 0
+                                ]);
+                            }
+                        }
+                    }
+                } elseif ($request->hasFile('color_images')) {
                     foreach ($request->file('color_images') as $colorId => $imageFile) {
                         // Check if this color is selected
                         if (in_array($colorId, $request->colors)) {
@@ -528,7 +666,8 @@ class ProductController extends Controller
                                 $existingImage->delete();
                             }
 
-                            $imagePath = $imageFile->store('products/colors', 'public');
+                            $imagePath = $this->imageService->compressAndStore($imageFile, 'products/colors');
+                            Log::info('Color image compressed and stored (update)', ['color_id' => $colorId, 'path' => $imagePath]);
 
                             ProductColorImage::create([
                                 'product_id' => $product->id,

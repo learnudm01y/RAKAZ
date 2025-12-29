@@ -76,6 +76,7 @@ Route::delete('/cart/{id}', [CartController::class, 'remove'])->name('cart.remov
 Route::delete('/cart', [CartController::class, 'clear'])->name('cart.clear');
 Route::get('/cart/count', [CartController::class, 'count'])->name('cart.count');
 Route::get('/api/cart', [CartController::class, 'apiIndex'])->name('cart.api');
+Route::get('/api/cart/count', [CartController::class, 'apiCount'])->name('cart.api.count');
 
 // Checkout Routes
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
@@ -231,6 +232,12 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::post('orders/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.status');
     Route::post('orders/{id}/payment', [AdminOrderController::class, 'updatePaymentStatus'])->name('orders.payment');
     Route::get('orders/{id}/print', [AdminOrderController::class, 'print'])->name('orders.print');
+
+    // Invoice PDF Routes
+    Route::get('orders/{id}/invoice/preview', [AdminOrderController::class, 'previewInvoice'])->name('orders.invoice.preview');
+    Route::get('orders/{id}/invoice/download', [AdminOrderController::class, 'downloadInvoice'])->name('orders.invoice.download');
+    Route::get('orders/{id}/invoice/stream', [AdminOrderController::class, 'streamInvoice'])->name('orders.invoice.stream');
+
     Route::delete('orders/{id}', [AdminOrderController::class, 'destroy'])->name('orders.destroy');
 
     // 👥 User Management - إدارة المستخدمين

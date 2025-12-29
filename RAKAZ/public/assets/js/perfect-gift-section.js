@@ -50,6 +50,10 @@
         // Handle gallery navigation - FORCE IT TO WORK
         // Use both event delegation AND direct listeners
         document.addEventListener('click', function(e) {
+            // IMPORTANT: Only handle clicks within .perfect-gift-section to avoid conflicts
+            const perfectGiftSection = e.target.closest('.perfect-gift-section');
+            if (!perfectGiftSection) return; // Ignore clicks outside perfect gift section
+
             console.log('🔥 DOCUMENT CLICK EVENT:', e.target);
             console.log('🔥 Target tagName:', e.target.tagName);
             console.log('🔥 Target className:', e.target.className);
@@ -411,4 +415,7 @@
     } else {
         initFeaturedSection();
     }
+
+    // Expose initialization function globally for lazy loading
+    window.initializePerfectGiftSlider = initFeaturedSection;
 })();

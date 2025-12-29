@@ -724,7 +724,7 @@
                 <!-- Brand & Title -->
                 <div class="product-header">
                     @if($product->brand)
-                    <h1 class="product-title">{!! $product->brand !!}</h1>
+                    <h1 class="product-title">{{ $product->brand->getName() }}</h1>
                     @endif
                     <h2 class="product-subtitle">{!! $product->getName() !!}</h2>
                 </div>

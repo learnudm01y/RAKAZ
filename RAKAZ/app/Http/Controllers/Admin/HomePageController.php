@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\HomePage;
 use App\Models\SectionTitle;
 use App\Models\DiscoverItem;
+use App\Services\ImageCompressionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 
 /**
  * Home Page Content Management Controller
@@ -39,6 +41,52 @@ use Illuminate\Support\Facades\Log;
  */
 class HomePageController extends Controller
 {
+    protected ImageCompressionService $imageService;
+
+    public function __construct(ImageCompressionService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
+
+    /**
+     * Helper method to handle image upload with compression
+     * Checks for pre-compressed image first, then falls back to direct compression
+     */
+    protected function handleImageUpload(Request $request, string $compressedKey, string $fileKey, string $directory): ?string
+    {
+        // Check if we have a pre-compressed image path from AJAX
+        if ($request->has($compressedKey) && !empty($request->input($compressedKey))) {
+            $tempPath = $request->input($compressedKey);
+            $tempFullPath = storage_path('app/public/' . $tempPath);
+
+            if (file_exists($tempFullPath)) {
+                // Move from temp to permanent directory
+                $filename = basename($tempPath);
+                $newPath = $directory . '/' . $filename;
+                $newFullPath = storage_path('app/public/' . $newPath);
+
+                // Ensure directory exists
+                $dirPath = dirname($newFullPath);
+                if (!is_dir($dirPath)) {
+                    mkdir($dirPath, 0755, true);
+                }
+
+                // Move file
+                rename($tempFullPath, $newFullPath);
+
+                return '/storage/' . $newPath;
+            }
+        }
+
+        // Fall back to direct file upload with compression
+        if ($request->hasFile($fileKey)) {
+            $path = $this->imageService->compressAndStore($request->file($fileKey), $directory);
+            return '/storage/' . $path;
+        }
+
+        return null;
+    }
+
     public function edit()
     {
         // CRITICAL ARCHITECTURE CHANGE: Using 'content_lang' instead of 'locale'
@@ -101,9 +149,10 @@ class HomePageController extends Controller
                     'alt' => $slide['alt'] ?? 'Hero Banner'
                 ];
 
-                if ($request->hasFile("hero_slide_image.{$index}")) {
-                    $path = $request->file("hero_slide_image.{$index}")->store('home-page/hero', 'public');
-                    $slideData['image'] = '/storage/' . $path;
+                // Check for pre-compressed image first, then regular file upload
+                $compressedPath = $this->handleImageUpload($request, "compressed_hero_slide_image.{$index}", "hero_slide_image.{$index}", 'home-page/hero');
+                if ($compressedPath) {
+                    $slideData['image'] = $compressedPath;
                 } else {
                     $slideData['image'] = $slide['image'] ?? '';
                 }
@@ -116,9 +165,9 @@ class HomePageController extends Controller
                     'alt' => $slide['alt'] ?? 'Hero Banner'
                 ];
 
-                if ($request->hasFile("hero_slide_tablet_image.{$index}")) {
-                    $path = $request->file("hero_slide_tablet_image.{$index}")->store('home-page/hero/tablet', 'public');
-                    $tabletSlideData['image'] = '/storage/' . $path;
+                $compressedTabletPath = $this->handleImageUpload($request, "compressed_hero_slide_tablet_image.{$index}", "hero_slide_tablet_image.{$index}", 'home-page/hero/tablet');
+                if ($compressedTabletPath) {
+                    $tabletSlideData['image'] = $compressedTabletPath;
                 } else {
                     $existingTablet = $homePage->hero_slides_tablet[$index] ?? null;
                     $tabletSlideData['image'] = $existingTablet['image'] ?? '';
@@ -132,9 +181,9 @@ class HomePageController extends Controller
                     'alt' => $slide['alt'] ?? 'Hero Banner'
                 ];
 
-                if ($request->hasFile("hero_slide_mobile_image.{$index}")) {
-                    $path = $request->file("hero_slide_mobile_image.{$index}")->store('home-page/hero/mobile', 'public');
-                    $mobileSlideData['image'] = '/storage/' . $path;
+                $compressedMobilePath = $this->handleImageUpload($request, "compressed_hero_slide_mobile_image.{$index}", "hero_slide_mobile_image.{$index}", 'home-page/hero/mobile');
+                if ($compressedMobilePath) {
+                    $mobileSlideData['image'] = $compressedMobilePath;
                 } else {
                     $existingMobile = $homePage->hero_slides_mobile[$index] ?? null;
                     $mobileSlideData['image'] = $existingMobile['image'] ?? '';
@@ -149,25 +198,25 @@ class HomePageController extends Controller
         }
 
         // Handle Cyber Sale Section
-        if ($request->hasFile('cyber_sale_image')) {
-            $path = $request->file('cyber_sale_image')->store('home-page/cyber-sale', 'public');
-            $data['cyber_sale_image'] = '/storage/' . $path;
+        $cyberSalePath = $this->handleImageUpload($request, 'compressed_cyber_sale_image', 'cyber_sale_image', 'home-page/cyber-sale');
+        if ($cyberSalePath) {
+            $data['cyber_sale_image'] = $cyberSalePath;
         } else {
             $data['cyber_sale_image'] = $request->input('cyber_sale_image_current');
         }
 
         // Handle Cyber Sale Tablet Image
-        if ($request->hasFile('cyber_sale_image_tablet')) {
-            $path = $request->file('cyber_sale_image_tablet')->store('home-page/cyber-sale/tablet', 'public');
-            $data['cyber_sale_image_tablet'] = '/storage/' . $path;
+        $cyberSaleTabletPath = $this->handleImageUpload($request, 'compressed_cyber_sale_image_tablet', 'cyber_sale_image_tablet', 'home-page/cyber-sale/tablet');
+        if ($cyberSaleTabletPath) {
+            $data['cyber_sale_image_tablet'] = $cyberSaleTabletPath;
         } else {
             $data['cyber_sale_image_tablet'] = $request->input('cyber_sale_image_tablet_current');
         }
 
         // Handle Cyber Sale Mobile Image
-        if ($request->hasFile('cyber_sale_image_mobile')) {
-            $path = $request->file('cyber_sale_image_mobile')->store('home-page/cyber-sale/mobile', 'public');
-            $data['cyber_sale_image_mobile'] = '/storage/' . $path;
+        $cyberSaleMobilePath = $this->handleImageUpload($request, 'compressed_cyber_sale_image_mobile', 'cyber_sale_image_mobile', 'home-page/cyber-sale/mobile');
+        if ($cyberSaleMobilePath) {
+            $data['cyber_sale_image_mobile'] = $cyberSaleMobilePath;
         } else {
             $data['cyber_sale_image_mobile'] = $request->input('cyber_sale_image_mobile_current');
         }
@@ -210,18 +259,12 @@ class HomePageController extends Controller
                     ]
                 ];
 
-                // Handle Single Image Upload (used for both languages)
-                if ($request->hasFile("gift_image.{$index}")) {
-                    try {
-                        $file = $request->file("gift_image.{$index}");
-                        $path = $file->store('home-page/gifts', 'public');
-                        $uploadedImage = '/storage/' . $path;
-                        $itemData['image']['ar'] = $uploadedImage;
-                        $itemData['image']['en'] = $uploadedImage;
-                        Log::info("Gift #{$index} image uploaded successfully: {$uploadedImage}");
-                    } catch (\Exception $e) {
-                        Log::error("Failed to upload Gift #{$index} image: " . $e->getMessage());
-                    }
+                // Handle Single Image Upload with compression (used for both languages)
+                $giftImagePath = $this->handleImageUpload($request, "compressed_gift_image.{$index}", "gift_image.{$index}", 'home-page/gifts');
+                if ($giftImagePath) {
+                    $itemData['image']['ar'] = $giftImagePath;
+                    $itemData['image']['en'] = $giftImagePath;
+                    Log::info("Gift #{$index} image uploaded successfully: {$giftImagePath}");
                 }
 
                 $giftsItems[] = $itemData;
@@ -239,27 +282,17 @@ class HomePageController extends Controller
         ];
 
         // Handle DG Banner Image Arabic
-        if ($request->hasFile('dg_banner_image_ar')) {
-            try {
-                $file = $request->file('dg_banner_image_ar');
-                $path = $file->store('home-page/dg-banner', 'public');
-                $dgBannerImage['ar'] = '/storage/' . $path;
-                Log::info("DG Banner (AR) image uploaded: " . $dgBannerImage['ar']);
-            } catch (\Exception $e) {
-                Log::error("Failed to upload DG Banner (AR) image: " . $e->getMessage());
-            }
+        $dgArPath = $this->handleImageUpload($request, 'compressed_dg_banner_image_ar', 'dg_banner_image_ar', 'home-page/dg-banner');
+        if ($dgArPath) {
+            $dgBannerImage['ar'] = $dgArPath;
+            Log::info("DG Banner (AR) image uploaded: " . $dgBannerImage['ar']);
         }
 
         // Handle DG Banner Image English
-        if ($request->hasFile('dg_banner_image_en')) {
-            try {
-                $file = $request->file('dg_banner_image_en');
-                $path = $file->store('home-page/dg-banner', 'public');
-                $dgBannerImage['en'] = '/storage/' . $path;
-                Log::info("DG Banner (EN) image uploaded: " . $dgBannerImage['en']);
-            } catch (\Exception $e) {
-                Log::error("Failed to upload DG Banner (EN) image: " . $e->getMessage());
-            }
+        $dgEnPath = $this->handleImageUpload($request, 'compressed_dg_banner_image_en', 'dg_banner_image_en', 'home-page/dg-banner');
+        if ($dgEnPath) {
+            $dgBannerImage['en'] = $dgEnPath;
+            Log::info("DG Banner (EN) image uploaded: " . $dgBannerImage['en']);
         }
 
         $data['dg_banner_image'] = $dgBannerImage;
@@ -271,14 +304,14 @@ class HomePageController extends Controller
             'en' => is_array($currentDgTabletImage) ? ($currentDgTabletImage['en'] ?? '') : '',
         ];
 
-        if ($request->hasFile('dg_banner_image_tablet_ar')) {
-            $path = $request->file('dg_banner_image_tablet_ar')->store('home-page/dg-banner/tablet', 'public');
-            $dgBannerTabletImage['ar'] = '/storage/' . $path;
+        $dgTabletArPath = $this->handleImageUpload($request, 'compressed_dg_banner_image_tablet_ar', 'dg_banner_image_tablet_ar', 'home-page/dg-banner/tablet');
+        if ($dgTabletArPath) {
+            $dgBannerTabletImage['ar'] = $dgTabletArPath;
         }
 
-        if ($request->hasFile('dg_banner_image_tablet_en')) {
-            $path = $request->file('dg_banner_image_tablet_en')->store('home-page/dg-banner/tablet', 'public');
-            $dgBannerTabletImage['en'] = '/storage/' . $path;
+        $dgTabletEnPath = $this->handleImageUpload($request, 'compressed_dg_banner_image_tablet_en', 'dg_banner_image_tablet_en', 'home-page/dg-banner/tablet');
+        if ($dgTabletEnPath) {
+            $dgBannerTabletImage['en'] = $dgTabletEnPath;
         }
 
         $data['dg_banner_image_tablet'] = $dgBannerTabletImage;
@@ -290,14 +323,14 @@ class HomePageController extends Controller
             'en' => is_array($currentDgMobileImage) ? ($currentDgMobileImage['en'] ?? '') : '',
         ];
 
-        if ($request->hasFile('dg_banner_image_mobile_ar')) {
-            $path = $request->file('dg_banner_image_mobile_ar')->store('home-page/dg-banner/mobile', 'public');
-            $dgBannerMobileImage['ar'] = '/storage/' . $path;
+        $dgMobileArPath = $this->handleImageUpload($request, 'compressed_dg_banner_image_mobile_ar', 'dg_banner_image_mobile_ar', 'home-page/dg-banner/mobile');
+        if ($dgMobileArPath) {
+            $dgBannerMobileImage['ar'] = $dgMobileArPath;
         }
 
-        if ($request->hasFile('dg_banner_image_mobile_en')) {
-            $path = $request->file('dg_banner_image_mobile_en')->store('home-page/dg-banner/mobile', 'public');
-            $dgBannerMobileImage['en'] = '/storage/' . $path;
+        $dgMobileEnPath = $this->handleImageUpload($request, 'compressed_dg_banner_image_mobile_en', 'dg_banner_image_mobile_en', 'home-page/dg-banner/mobile');
+        if ($dgMobileEnPath) {
+            $dgBannerMobileImage['en'] = $dgMobileEnPath;
         }
 
         $data['dg_banner_image_mobile'] = $dgBannerMobileImage;
@@ -313,27 +346,17 @@ class HomePageController extends Controller
         ];
 
         // Handle Gucci Spotlight Image Arabic
-        if ($request->hasFile('gucci_spotlight_image_ar')) {
-            try {
-                $file = $request->file('gucci_spotlight_image_ar');
-                $path = $file->store('home-page/gucci-spotlight', 'public');
-                $gucciSpotlightImage['ar'] = '/storage/' . $path;
-                Log::info("Gucci Spotlight (AR) image uploaded: " . $gucciSpotlightImage['ar']);
-            } catch (\Exception $e) {
-                Log::error("Failed to upload Gucci Spotlight (AR) image: " . $e->getMessage());
-            }
+        $gucciArPath = $this->handleImageUpload($request, 'compressed_gucci_spotlight_image_ar', 'gucci_spotlight_image_ar', 'home-page/gucci-spotlight');
+        if ($gucciArPath) {
+            $gucciSpotlightImage['ar'] = $gucciArPath;
+            Log::info("Gucci Spotlight (AR) image uploaded: " . $gucciSpotlightImage['ar']);
         }
 
         // Handle Gucci Spotlight Image English
-        if ($request->hasFile('gucci_spotlight_image_en')) {
-            try {
-                $file = $request->file('gucci_spotlight_image_en');
-                $path = $file->store('home-page/gucci-spotlight', 'public');
-                $gucciSpotlightImage['en'] = '/storage/' . $path;
-                Log::info("Gucci Spotlight (EN) image uploaded: " . $gucciSpotlightImage['en']);
-            } catch (\Exception $e) {
-                Log::error("Failed to upload Gucci Spotlight (EN) image: " . $e->getMessage());
-            }
+        $gucciEnPath = $this->handleImageUpload($request, 'compressed_gucci_spotlight_image_en', 'gucci_spotlight_image_en', 'home-page/gucci-spotlight');
+        if ($gucciEnPath) {
+            $gucciSpotlightImage['en'] = $gucciEnPath;
+            Log::info("Gucci Spotlight (EN) image uploaded: " . $gucciSpotlightImage['en']);
         }
 
         $data['gucci_spotlight_image'] = $gucciSpotlightImage;
@@ -345,14 +368,14 @@ class HomePageController extends Controller
             'en' => is_array($currentGucciTabletImage) ? ($currentGucciTabletImage['en'] ?? '') : '',
         ];
 
-        if ($request->hasFile('gucci_spotlight_image_tablet_ar')) {
-            $path = $request->file('gucci_spotlight_image_tablet_ar')->store('home-page/gucci-spotlight/tablet', 'public');
-            $gucciSpotlightTabletImage['ar'] = '/storage/' . $path;
+        $gucciTabletArPath = $this->handleImageUpload($request, 'compressed_gucci_spotlight_image_tablet_ar', 'gucci_spotlight_image_tablet_ar', 'home-page/gucci-spotlight/tablet');
+        if ($gucciTabletArPath) {
+            $gucciSpotlightTabletImage['ar'] = $gucciTabletArPath;
         }
 
-        if ($request->hasFile('gucci_spotlight_image_tablet_en')) {
-            $path = $request->file('gucci_spotlight_image_tablet_en')->store('home-page/gucci-spotlight/tablet', 'public');
-            $gucciSpotlightTabletImage['en'] = '/storage/' . $path;
+        $gucciTabletEnPath = $this->handleImageUpload($request, 'compressed_gucci_spotlight_image_tablet_en', 'gucci_spotlight_image_tablet_en', 'home-page/gucci-spotlight/tablet');
+        if ($gucciTabletEnPath) {
+            $gucciSpotlightTabletImage['en'] = $gucciTabletEnPath;
         }
 
         $data['gucci_spotlight_image_tablet'] = $gucciSpotlightTabletImage;
@@ -364,14 +387,14 @@ class HomePageController extends Controller
             'en' => is_array($currentGucciMobileImage) ? ($currentGucciMobileImage['en'] ?? '') : '',
         ];
 
-        if ($request->hasFile('gucci_spotlight_image_mobile_ar')) {
-            $path = $request->file('gucci_spotlight_image_mobile_ar')->store('home-page/gucci-spotlight/mobile', 'public');
-            $gucciSpotlightMobileImage['ar'] = '/storage/' . $path;
+        $gucciMobileArPath = $this->handleImageUpload($request, 'compressed_gucci_spotlight_image_mobile_ar', 'gucci_spotlight_image_mobile_ar', 'home-page/gucci-spotlight/mobile');
+        if ($gucciMobileArPath) {
+            $gucciSpotlightMobileImage['ar'] = $gucciMobileArPath;
         }
 
-        if ($request->hasFile('gucci_spotlight_image_mobile_en')) {
-            $path = $request->file('gucci_spotlight_image_mobile_en')->store('home-page/gucci-spotlight/mobile', 'public');
-            $gucciSpotlightMobileImage['en'] = '/storage/' . $path;
+        $gucciMobileEnPath = $this->handleImageUpload($request, 'compressed_gucci_spotlight_image_mobile_en', 'gucci_spotlight_image_mobile_en', 'home-page/gucci-spotlight/mobile');
+        if ($gucciMobileEnPath) {
+            $gucciSpotlightMobileImage['en'] = $gucciMobileEnPath;
         }
 
         $data['gucci_spotlight_image_mobile'] = $gucciSpotlightMobileImage;
@@ -380,25 +403,25 @@ class HomePageController extends Controller
         Log::info('Gucci Spotlight saved: ' . json_encode($gucciSpotlightImage));
 
         // Handle Featured Banner
-        if ($request->hasFile('featured_banner_image')) {
-            $path = $request->file('featured_banner_image')->store('home-page/featured', 'public');
-            $data['featured_banner_image'] = '/storage/' . $path;
+        $featuredPath = $this->handleImageUpload($request, 'compressed_featured_banner_image', 'featured_banner_image', 'home-page/featured');
+        if ($featuredPath) {
+            $data['featured_banner_image'] = $featuredPath;
         } else {
             $data['featured_banner_image'] = $request->input('featured_banner_image_current');
         }
 
         // Handle Featured Banner Tablet Image
-        if ($request->hasFile('featured_banner_image_tablet')) {
-            $path = $request->file('featured_banner_image_tablet')->store('home-page/featured/tablet', 'public');
-            $data['featured_banner_image_tablet'] = '/storage/' . $path;
+        $featuredTabletPath = $this->handleImageUpload($request, 'compressed_featured_banner_image_tablet', 'featured_banner_image_tablet', 'home-page/featured/tablet');
+        if ($featuredTabletPath) {
+            $data['featured_banner_image_tablet'] = $featuredTabletPath;
         } else {
             $data['featured_banner_image_tablet'] = $request->input('featured_banner_image_tablet_current');
         }
 
         // Handle Featured Banner Mobile Image
-        if ($request->hasFile('featured_banner_image_mobile')) {
-            $path = $request->file('featured_banner_image_mobile')->store('home-page/featured/mobile', 'public');
-            $data['featured_banner_image_mobile'] = '/storage/' . $path;
+        $featuredMobilePath = $this->handleImageUpload($request, 'compressed_featured_banner_image_mobile', 'featured_banner_image_mobile', 'home-page/featured/mobile');
+        if ($featuredMobilePath) {
+            $data['featured_banner_image_mobile'] = $featuredMobilePath;
         } else {
             $data['featured_banner_image_mobile'] = $request->input('featured_banner_image_mobile_current');
         }
@@ -426,9 +449,9 @@ class HomePageController extends Controller
         $data['must_have_section_active'] = $request->boolean('must_have_section_active');
 
         // Handle Spotlight Banner
-        if ($request->hasFile('spotlight_banner_image')) {
-            $path = $request->file('spotlight_banner_image')->store('home-page/spotlight', 'public');
-            $data['spotlight_banner_image'] = '/storage/' . $path;
+        $spotlightPath = $this->handleImageUpload($request, 'compressed_spotlight_banner_image', 'spotlight_banner_image', 'home-page/spotlight');
+        if ($spotlightPath) {
+            $data['spotlight_banner_image'] = $spotlightPath;
         } else {
             $data['spotlight_banner_image'] = $request->input('spotlight_banner_image_current');
         }
@@ -469,16 +492,11 @@ class HomePageController extends Controller
                     'active' => true,
                 ];
 
-                // Handle image upload
-                if ($request->hasFile("discover_image.{$index}")) {
-                    try {
-                        $file = $request->file("discover_image.{$index}");
-                        $path = $file->store('home-page/discover', 'public');
-                        $itemData['image'] = '/storage/' . $path;
-                        Log::info("Discover image uploaded", ['index' => $index, 'path' => $itemData['image']]);
-                    } catch (\Exception $e) {
-                        Log::error("Failed to upload discover image", ['index' => $index, 'error' => $e->getMessage()]);
-                    }
+                // Handle image upload with compression
+                $discoverImagePath = $this->handleImageUpload($request, "compressed_discover_image.{$index}", "discover_image.{$index}", 'home-page/discover');
+                if ($discoverImagePath) {
+                    $itemData['image'] = $discoverImagePath;
+                    Log::info("Discover image uploaded", ['index' => $index, 'path' => $itemData['image']]);
                 } else {
                     $itemData['image'] = $item['image'] ?? '';
                 }
@@ -520,17 +538,11 @@ class HomePageController extends Controller
         $data['membership_link'] = $request->input('membership_link', '#');
         $data['membership_section_active'] = $request->boolean('membership_section_active');
 
-        // Handle Membership Image upload
-        if ($request->hasFile('membership_image')) {
-            try {
-                $file = $request->file('membership_image');
-                $path = $file->store('home-page/membership', 'public');
-                $data['membership_image'] = '/storage/' . $path;
-                Log::info("Membership image uploaded: " . $data['membership_image']);
-            } catch (\Exception $e) {
-                Log::error("Failed to upload membership image: " . $e->getMessage());
-                $data['membership_image'] = $request->input('membership_image_current', '');
-            }
+        // Handle Membership Image upload with compression
+        $membershipPath = $this->handleImageUpload($request, 'compressed_membership_image', 'membership_image', 'home-page/membership');
+        if ($membershipPath) {
+            $data['membership_image'] = $membershipPath;
+            Log::info("Membership image uploaded: " . $data['membership_image']);
         } else {
             $data['membership_image'] = $request->input('membership_image_current', '');
         }
@@ -554,30 +566,20 @@ class HomePageController extends Controller
             $appImages = $homePage->app_image;
         }
 
-        // Handle Google Play Badge Image
-        if ($request->hasFile('google_play_image')) {
-            try {
-                $file = $request->file('google_play_image');
-                $path = $file->store('home-page/app/android', 'public');
-                $appImages['android'] = '/storage/' . $path;
-                Log::info("Google Play badge image uploaded: " . $appImages['android']);
-            } catch (\Exception $e) {
-                Log::error("Failed to upload Google Play badge: " . $e->getMessage());
-            }
+        // Handle Google Play Badge Image with compression
+        $androidPath = $this->handleImageUpload($request, 'compressed_google_play_image', 'google_play_image', 'home-page/app/android');
+        if ($androidPath) {
+            $appImages['android'] = $androidPath;
+            Log::info("Google Play badge image uploaded: " . $appImages['android']);
         } else {
             $appImages['android'] = $request->input('google_play_image_current', '');
         }
 
-        // Handle App Store Badge Image
-        if ($request->hasFile('app_store_image')) {
-            try {
-                $file = $request->file('app_store_image');
-                $path = $file->store('home-page/app/ios', 'public');
-                $appImages['ios'] = '/storage/' . $path;
-                Log::info("App Store badge image uploaded: " . $appImages['ios']);
-            } catch (\Exception $e) {
-                Log::error("Failed to upload App Store badge: " . $e->getMessage());
-            }
+        // Handle App Store Badge Image with compression
+        $iosPath = $this->handleImageUpload($request, 'compressed_app_store_image', 'app_store_image', 'home-page/app/ios');
+        if ($iosPath) {
+            $appImages['ios'] = $iosPath;
+            Log::info("App Store badge image uploaded: " . $appImages['ios']);
         } else {
             $appImages['ios'] = $request->input('app_store_image_current', '');
         }

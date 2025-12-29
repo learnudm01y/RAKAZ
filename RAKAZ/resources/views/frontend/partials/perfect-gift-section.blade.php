@@ -34,7 +34,7 @@
                         </a>
                         <div class="product-info">
                             @if($product->brand)
-                                <p class="product-brand">{{ $product->brand }}</p>
+                                <p class="product-brand">{{ $product->brand->getName() }}</p>
                             @endif
                             <h3 class="product-name">{{ $product->getName() }}</h3>
                             <p class="product-price">
@@ -53,9 +53,12 @@
                             @if($hasColors)
                                 <div class="featured-colors-wrapper">
                                     <div class="featured-color-dots">
-                                        @foreach($product->productColors as $color)
+                                        @foreach($product->productColors->take(3) as $color)
                                             <span class="featured-color-dot" style="background: {{ $color->hex_code }}; @if($color->hex_code == '#FFFFFF' || $color->hex_code == '#ffffff') border: 1px solid #ddd; @endif"></span>
                                         @endforeach
+                                        @if($product->productColors->count() > 3)
+                                            <span class="featured-color-more">+{{ $product->productColors->count() - 3 }}</span>
+                                        @endif
                                     </div>
                                 </div>
                             @endif
@@ -73,19 +76,19 @@
                                 @elseif($product->main_image)
                                     <img src="{{ asset('storage/' . $product->main_image) }}" alt="{{ $product->getName() }}" class="overlay-main-image overlay-image-secondary">
                                 @endif
-                                <button class="overlay-wishlist-btn" data-product-id="{{ $product->id }}" onclick="event.stopPropagation(); event.preventDefault();">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                                    </svg>
-                                </button>
                                 @if($product->is_new)
                                     <span class="overlay-badge new-season">{{ app()->getLocale() == 'ar' ? 'موسم جديد' : 'New Season' }}</span>
                                 @endif
                             </div>
                             </a>
+                            <button class="overlay-wishlist-btn" data-product-id="{{ $product->id }}" type="button" onclick="event.stopPropagation(); event.preventDefault(); window.toggleWishlist(this, '{{ $product->id }}');">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                </svg>
+                            </button>
                             <div class="overlay-info-section">
                                 @if($product->brand)
-                                    <p class="overlay-product-brand">{{ $product->brand }}</p>
+                                    <p class="overlay-product-brand">{{ $product->brand->getName() }}</p>
                                 @endif
                                 <h3 class="overlay-product-name">{{ $product->getName() }}</h3>
                                 <p class="overlay-product-price">
@@ -103,16 +106,12 @@
                                     $hasAnySizes = $hasRegularSizes || $hasShoeSizes;
                                 @endphp
 
-                                @php
-                                    $colorImages = $product->colorImages ?? collect();
-                                    $hasColorImages = $colorImages->count() > 0;
-                                @endphp
-                                @if($hasColorImages)
+                                @if($product->gallery_images && is_array($product->gallery_images) && count($product->gallery_images) > 0)
                                     <div class="overlay-gallery-section">
                                         @php
-                                            $totalColorImages = $colorImages->count();
+                                            $totalGalleryImages = 1 + count($product->gallery_images);
                                         @endphp
-                                        @if($totalColorImages > 3)
+                                        @if($totalGalleryImages > 3)
                                             <button class="overlay-gallery-nav prev-gallery" data-direction="prev">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                     <path d="M9 5l7 7-7 7"/>
@@ -120,13 +119,18 @@
                                             </button>
                                         @endif
                                         <div class="overlay-gallery-images">
-                                            @foreach($colorImages as $index => $colorImage)
-                                                <a href="{{ route('product.details', $product->getSlug()) }}?color={{ $colorImage->color_id }}" class="overlay-gallery-link" data-color-id="{{ $colorImage->color_id }}" data-image-index="{{ $index }}">
-                                                    <img src="{{ asset('storage/' . $colorImage->image) }}" alt="{{ $product->getName() }} - {{ $colorImage->color?->translated_name ?? '' }}" class="overlay-gallery-thumb" data-image-index="{{ $index }}">
-                                                </a>
+                                            @if($product->main_image)
+                                                <div class="overlay-gallery-link" data-image-src="{{ asset('storage/' . $product->main_image) }}" data-image-index="0">
+                                                    <img src="{{ asset('storage/' . $product->main_image) }}" alt="{{ $product->getName() }}" class="overlay-gallery-thumb" data-image-index="0">
+                                                </div>
+                                            @endif
+                                            @foreach($product->gallery_images as $index => $galleryImage)
+                                                <div class="overlay-gallery-link" data-image-src="{{ asset('storage/' . $galleryImage) }}" data-image-index="{{ $index + 1 }}">
+                                                    <img src="{{ asset('storage/' . $galleryImage) }}" alt="{{ $product->getName() }}" class="overlay-gallery-thumb" data-image-index="{{ $index + 1 }}">
+                                                </div>
                                             @endforeach
                                         </div>
-                                        @if($totalColorImages > 3)
+                                        @if($totalGalleryImages > 3)
                                             <button class="overlay-gallery-nav next-gallery" data-direction="next">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                                     <path d="M15 19l-7-7 7-7"/>

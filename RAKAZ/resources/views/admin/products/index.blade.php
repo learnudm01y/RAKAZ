@@ -208,7 +208,7 @@
                                                 <div class="product-name-en">{{ $product->getName('ar') }}</div>
                                             @endif
                                             @if($product->brand)
-                                                <div class="product-brand">{{ $product->brand }}</div>
+                                                <div class="product-brand">{{ $product->brand->getName() }}</div>
                                             @endif
                                         </div>
                                     </td>

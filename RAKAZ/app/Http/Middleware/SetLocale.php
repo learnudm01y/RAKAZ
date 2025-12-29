@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class SetLocale
@@ -42,7 +43,7 @@ class SetLocale
         $dashboardLocale = session('locale', 'ar');
 
         if ($urlLocale && $urlLocale !== $dashboardLocale && $request->is('admin/*')) {
-            \Log::info('Dashboard locale separation working correctly', [
+            Log::info('Dashboard locale separation working correctly', [
                 'dashboard_locale' => $dashboardLocale,
                 'content_locale_param' => $urlLocale,
                 'note' => 'These should be different - this is correct behavior'

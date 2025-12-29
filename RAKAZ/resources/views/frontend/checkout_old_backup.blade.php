@@ -405,7 +405,7 @@
         <div class="checkout-header">
             <div class="checkout-logo">
                 <a href="{{ route('home') }}">
-                    <img src="/assets/images/ركاز بني copy (1).png" alt="ركاز">
+                    <img src="/assets/images/rakazLogo.png" alt="ركاز">
                 </a>
             </div>
             <h1 class="checkout-title">إتمام الطلب</h1>

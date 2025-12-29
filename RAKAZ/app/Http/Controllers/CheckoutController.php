@@ -85,6 +85,32 @@ class CheckoutController extends Controller
 
         DB::beginTransaction();
         try {
+            // Check stock availability before creating order
+            foreach ($cartItems as $cartItem) {
+                $product = $cartItem->product;
+
+                // Check if product requires stock management
+                if ($product->manage_stock) {
+                    // Check if enough stock is available
+                    if ($product->stock_quantity < $cartItem->quantity) {
+                        throw new \Exception(
+                            app()->getLocale() == 'ar'
+                                ? "المنتج '{$product->getName()}' غير متوفر بالكمية المطلوبة. المتوفر: {$product->stock_quantity}"
+                                : "Product '{$product->getName()}' is not available in the requested quantity. Available: {$product->stock_quantity}"
+                        );
+                    }
+
+                    // Check if product is out of stock
+                    if ($product->stock_status === 'out_of_stock' || $product->stock_quantity <= 0) {
+                        throw new \Exception(
+                            app()->getLocale() == 'ar'
+                                ? "المنتج '{$product->getName()}' غير متوفر حالياً"
+                                : "Product '{$product->getName()}' is currently out of stock"
+                        );
+                    }
+                }
+            }
+
             // Create order
             $order = Order::create([
                 'order_number' => Order::generateOrderNumber(),
@@ -123,6 +149,13 @@ class CheckoutController extends Controller
                     'price' => $cartItem->price,
                     'subtotal' => $cartItem->subtotal,
                 ]);
+
+                // Decrease stock quantity for the product
+                $product = $cartItem->product;
+                $product->decreaseStock($cartItem->quantity);
+
+                // Increment sales count
+                $product->incrementSales($cartItem->quantity);
             }
 
             // Clear cart

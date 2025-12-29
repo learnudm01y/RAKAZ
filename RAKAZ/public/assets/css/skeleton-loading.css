@@ -301,6 +301,35 @@
     }
 }
 
+/* ============================================
+   Home Product Overlay Skeleton
+   ============================================ */
+.overlay-info-skeleton {
+    padding: 15px;
+    display: block;
+}
+
+.overlay-info-skeleton .skeleton-line {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+    border-radius: 4px;
+    height: 16px;
+    margin-bottom: 10px;
+}
+
+.overlay-info-skeleton .skeleton-line:nth-child(1) {
+    width: 80%;
+}
+
+.overlay-info-skeleton .skeleton-line:nth-child(2) {
+    width: 60%;
+}
+
+.overlay-info-skeleton .skeleton-line:nth-child(3) {
+    width: 70%;
+}
+
 /* Hide skeleton on print */
 @media print {
     .skeleton-loading {

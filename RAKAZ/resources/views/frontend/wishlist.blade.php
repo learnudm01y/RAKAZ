@@ -1389,7 +1389,7 @@
                         ? ($product->name[app()->getLocale()] ?? $product->name['ar'] ?? $product->name['en'] ?? (app()->getLocale() == 'ar' ? 'منتج' : 'Product'))
                         : $product->name;
 
-                    $productBrand = $product->brand ? (is_array($product->brand) ? ($product->brand[app()->getLocale()] ?? $product->brand['ar'] ?? '') : $product->brand) : '';
+                    $productBrand = $product->brand ? $product->brand->getName() : '';
 
                     $productCategory = $product->category ? (is_array($product->category->name) ? ($product->category->name[app()->getLocale()] ?? $product->category->name['ar'] ?? '') : $product->category->name) : '';
                 @endphp
@@ -2031,7 +2031,8 @@ function removeFromWishlist(wishlistId, skipConfirmation) {
 }
 
 function performDelete(wishlistId) {
-    fetch('{{ url("/wishlist") }}/' + wishlistId, {
+    var deleteUrl = '{{ url("/wishlist") }}';
+    fetch(deleteUrl + '/' + wishlistId, {
         method: 'DELETE',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -2185,114 +2186,114 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Using original images without Pica processing');
     return; // تعطيل كامل لمعالجة Pica
 
-    /* DISABLED CODE:
-    if (typeof pica === 'undefined') {
-        console.warn('⚠️ Pica.js not loaded - images will not be enhanced');
-        return;
-    }
+    //  DISABLED CODE:
+    // if (typeof pica === 'undefined') {
+    //     console.warn('⚠️ Pica.js not loaded - images will not be enhanced');
+    //     return;
+    // }
 
-    console.log('✅ Pica.js loaded - initializing image enhancement');
-    var picaInstance = pica();
+    // console.log('✅ Pica.js loaded - initializing image enhancement');
+    // var picaInstance = pica();
 
-    function processWishlistImage(img) {
-        if (img.dataset.picaProcessed || img.dataset.picaProcessing) return;
-        img.dataset.picaProcessing = 'true';
+    // function processWishlistImage(img) {
+    //     if (img.dataset.picaProcessed || img.dataset.picaProcessing) return;
+    //     img.dataset.picaProcessing = 'true';
 
-        if (!img.complete || img.naturalWidth === 0) {
-            img.addEventListener('load', function() {
-                processWishlistImage(img);
-            }, { once: true });
-            return;
-        }
+    //     if (!img.complete || img.naturalWidth === 0) {
+    //         img.addEventListener('load', function() {
+    //             processWishlistImage(img);
+    //         }, { once: true });
+    //         return;
+    //     }
 
-        console.log('🖼️ Processing image:', img.src.substring(0, 50) + '...');
-        enhanceImageWithPica(img);
-    }
+    //     console.log('🖼️ Processing image:', img.src.substring(0, 50) + '...');
+    //     enhanceImageWithPica(img);
+    // }
 
-    function enhanceImageWithPica(img) {
-        try {
-            var originalSrc = img.src;
-            var canvas = document.createElement('canvas');
-            var naturalWidth = img.naturalWidth;
-            var naturalHeight = img.naturalHeight;
+    // function enhanceImageWithPica(img) {
+    //     try {
+    //         var originalSrc = img.src;
+    //         var canvas = document.createElement('canvas');
+    //         var naturalWidth = img.naturalWidth;
+    //         var naturalHeight = img.naturalHeight;
 
-            canvas.width = naturalWidth;
-            canvas.height = naturalHeight;
+    //         canvas.width = naturalWidth;
+    //         canvas.height = naturalHeight;
 
-            picaInstance.resize(img, canvas, {
-                unsharpAmount: 80,
-                unsharpRadius: 0.5,
-                unsharpThreshold: 2,
-                quality: 3,
-                alpha: true,
-                filter: 'lanczos3'
-            })
-            .then(function() {
-                return picaInstance.toBlob(canvas, 'image/jpeg', 0.95);
-            })
-            .then(function(blob) {
-                var url = URL.createObjectURL(blob);
-                img.src = url;
-                img.dataset.picaProcessed = 'true';
-                delete img.dataset.picaProcessing;
-                console.log('✨ Image enhanced successfully');
+    //         picaInstance.resize(img, canvas, {
+    //             unsharpAmount: 80,
+    //             unsharpRadius: 0.5,
+    //             unsharpThreshold: 2,
+    //             quality: 3,
+    //             alpha: true,
+    //             filter: 'lanczos3'
+    //         })
+    //         .then(function() {
+    //             return picaInstance.toBlob(canvas, 'image/jpeg', 0.95);
+    //         })
+    //         .then(function(blob) {
+    //             var url = URL.createObjectURL(blob);
+    //             img.src = url;
+    //             img.dataset.picaProcessed = 'true';
+    //             delete img.dataset.picaProcessing;
+    //             console.log('✨ Image enhanced successfully');
 
-                img.addEventListener('load', function() {
-                    URL.revokeObjectURL(url);
-                }, { once: true });
-            })
-            .catch(function(err) {
-                console.error('❌ Pica error:', err);
-                img.src = originalSrc;
-                delete img.dataset.picaProcessing;
-            });
-        } catch (err) {
-            console.error('❌ Pica setup error:', err);
-            delete img.dataset.picaProcessing;
-        }
-    }
+    //             img.addEventListener('load', function() {
+    //                 URL.revokeObjectURL(url);
+    //             }, { once: true });
+    //         })
+    //         .catch(function(err) {
+    //             console.error('❌ Pica error:', err);
+    //             img.src = originalSrc;
+    //             delete img.dataset.picaProcessing;
+    //         });
+    //     } catch (err) {
+    //         console.error('❌ Pica setup error:', err);
+    //         delete img.dataset.picaProcessing;
+    //     }
+    // }
 
-    function processAllWishlistImages() {
-        var wishlistImages = document.querySelectorAll('.wishlist-product-image, .product-image-primary');
-        console.log('🔍 Found ' + wishlistImages.length + ' wishlist images to process');
-        wishlistImages.forEach(function(img) {
-            processWishlistImage(img);
-        });
-    }
+    // function processAllWishlistImages() {
+    //     var wishlistImages = document.querySelectorAll('.wishlist-product-image, .product-image-primary');
+    //     console.log('🔍 Found ' + wishlistImages.length + ' wishlist images to process');
+    //     wishlistImages.forEach(function(img) {
+    //         processWishlistImage(img);
+    //     });
+    // }
 
-    setTimeout(processAllWishlistImages, 100);
+    // setTimeout(processAllWishlistImages, 100);
 
-    var resizeTimer;
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function() {
-            document.querySelectorAll('.wishlist-product-image, .product-image-primary').forEach(function(img) {
-                delete img.dataset.picaProcessed;
-                delete img.dataset.picaProcessing;
-            });
-            processAllWishlistImages();
-        }, 250);
-    });
+    // var resizeTimer;
+    // window.addEventListener('resize', function() {
+    //     clearTimeout(resizeTimer);
+    //     resizeTimer = setTimeout(function() {
+    //         document.querySelectorAll('.wishlist-product-image, .product-image-primary').forEach(function(img) {
+    //             delete img.dataset.picaProcessed;
+    //             delete img.dataset.picaProcessing;
+    //         });
+    //         processAllWishlistImages();
+    //     }, 250);
+    // });
 
-    if (window.MutationObserver) {
-        var observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                mutation.addedNodes.forEach(function(node) {
-                    if (node.nodeType === 1) {
-                        var images = node.querySelectorAll ? node.querySelectorAll('.wishlist-product-image, .product-image-primary') : [];
-                        images.forEach(function(img) {
-                            processWishlistImage(img);
-                        });
-                    }
-                });
-            });
-        });
+    // if (window.MutationObserver) {
+    //     var observer = new MutationObserver(function(mutations) {
+    //         mutations.forEach(function(mutation) {
+    //             mutation.addedNodes.forEach(function(node) {
+    //                 if (node.nodeType === 1) {
+    //                     var images = node.querySelectorAll ? node.querySelectorAll('.wishlist-product-image, .product-image-primary') : [];
+    //                     images.forEach(function(img) {
+    //                         processWishlistImage(img);
+    //                     });
+    //                 }
+    //             });
+    //         });
+    //     });
 
-        var wishlistContainer = document.querySelector('.wishlist-grid');
-        if (wishlistContainer) {
-            observer.observe(wishlistContainer, { childList: true, subtree: true });
-        }
-    }
+    //     var wishlistContainer = document.querySelector('.wishlist-grid');
+    //     if (wishlistContainer) {
+    //         observer.observe(wishlistContainer, { childList: true, subtree: true });
+    //     }
+    // }
 });
 </script>
 @endpush

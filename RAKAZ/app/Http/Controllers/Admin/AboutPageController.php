@@ -5,11 +5,19 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\SiteSetting;
+use App\Services\ImageCompressionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class AboutPageController extends Controller
 {
+    protected ImageCompressionService $imageService;
+
+    public function __construct(ImageCompressionService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
+
     public function edit()
     {
         $page = Page::where('slug', 'about-us')->firstOrFail();
@@ -41,29 +49,49 @@ class AboutPageController extends Controller
                 'values_title_en' => 'nullable|string|max:255',
             ]);
 
-            // Handle image upload
-            if ($request->hasFile('story_image_file')) {
-                $image = $request->file('story_image_file');
-                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            // Handle image upload with compression
+            // Check for pre-compressed image first
+            if ($request->has('compressed_story_image') && !empty($request->input('compressed_story_image'))) {
+                $tempPath = $request->input('compressed_story_image');
+                $tempFullPath = storage_path('app/public/' . $tempPath);
 
-                // Create uploads directory if it doesn't exist
-                $uploadPath = public_path('assets/images/uploads');
-                if (!file_exists($uploadPath)) {
-                    mkdir($uploadPath, 0777, true);
+                if (file_exists($tempFullPath)) {
+                    // Move from temp to permanent directory
+                    $filename = basename($tempPath);
+                    $newPath = 'about/' . $filename;
+                    $newFullPath = storage_path('app/public/' . $newPath);
+
+                    // Ensure directory exists
+                    $dirPath = dirname($newFullPath);
+                    if (!is_dir($dirPath)) {
+                        mkdir($dirPath, 0755, true);
+                    }
+
+                    // Delete old image if exists
+                    if ($page->story_image && file_exists(public_path($page->story_image))) {
+                        @unlink(public_path($page->story_image));
+                    }
+
+                    // Move file
+                    rename($tempFullPath, $newFullPath);
+                    $validated['story_image'] = '/storage/' . $newPath;
+
+                    Log::info('Pre-compressed image moved successfully', [
+                        'path' => $validated['story_image']
+                    ]);
                 }
-
+            } elseif ($request->hasFile('story_image_file')) {
+                // Fall back to direct compression
                 // Delete old image if exists
                 if ($page->story_image && file_exists(public_path($page->story_image))) {
                     @unlink(public_path($page->story_image));
                 }
 
-                // Move the uploaded file
-                $image->move($uploadPath, $imageName);
-                $validated['story_image'] = '/assets/images/uploads/' . $imageName;
+                $path = $this->imageService->compressAndStore($request->file('story_image_file'), 'about');
+                $validated['story_image'] = '/storage/' . $path;
 
-                Log::info('Image uploaded successfully', [
-                    'path' => $validated['story_image'],
-                    'original_name' => $image->getClientOriginalName()
+                Log::info('Image compressed and uploaded successfully', [
+                    'path' => $validated['story_image']
                 ]);
             }
 

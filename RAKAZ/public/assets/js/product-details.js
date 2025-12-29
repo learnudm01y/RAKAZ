@@ -139,43 +139,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========================================
     // Add to Bag
     // ========================================
-    const addToBagBtn = document.querySelector('.btn-add-to-bag');
+    // NOTE: Add to cart functionality is handled in product-details.blade.php
+    // to avoid duplicate event listeners and SweetAlert notifications.
+    // DO NOT add event listener here to prevent duplicate notifications!
+
+    // Get size select element for other features (not for add to cart)
     const sizeSelect = document.getElementById('sizeSelect');
-
-    if (addToBagBtn) {
-        addToBagBtn.addEventListener('click', function() {
-            const selectedSize = sizeSelect ? sizeSelect.value : null;
-
-            if (!selectedSize) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: t('اختر المقاس', 'Select size'),
-                    text: t('الرجاء اختيار المقاس قبل الإضافة للسلة', 'Please select a size before adding to bag.'),
-                    confirmButtonText: t('حسناً', 'OK'),
-                    confirmButtonColor: '#b8824a'
-                });
-                return;
-            }
-
-            // Add visual feedback
-            this.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> ' + t('تمت الإضافة', 'Added');
-            this.style.background = '#4CAF50';
-
-            setTimeout(() => {
-                this.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> ' + t('إضافة إلى حقيبة التسوق', 'Add to bag');
-                this.style.background = '#b8824a';
-            }, 2000);
-
-            // Show success message
-            Swal.fire({
-                icon: 'success',
-                title: t('تمت الإضافة!', 'Added!'),
-                text: t('تم إضافة المنتج للسلة بنجاح', 'Added to bag successfully'),
-                timer: 1500,
-                showConfirmButton: false
-            });
-        });
-    }
 
     // ========================================
     // Product Tabs

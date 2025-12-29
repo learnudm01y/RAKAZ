@@ -342,6 +342,12 @@
                 </div>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="printInvoiceBtn">
+                    <i class="fas fa-print me-2"></i>{{ __('admin.orders.print_invoice') }}
+                </button>
+                <button type="button" class="btn btn-success" id="downloadInvoiceBtn">
+                    <i class="fas fa-download me-2"></i>{{ __('admin.orders.download_pdf') }}
+                </button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('admin.orders.close') }}</button>
             </div>
         </div>
@@ -526,6 +532,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             }
         });
+    });
+
+    // Invoice Preview & Download Functionality
+    let currentOrderId = null;
+
+    // Store order ID when modal opens
+    document.querySelectorAll('.view-order-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            currentOrderId = this.dataset.orderId;
+        });
+    });
+
+    // Print Invoice Directly
+    document.addEventListener('click', function(e) {
+        if (e.target && (e.target.id === 'printInvoiceBtn' || e.target.closest('#printInvoiceBtn'))) {
+            e.preventDefault();
+            if (currentOrderId) {
+                // Open invoice in new window and trigger print
+                var printWindow = window.open(`/admin/orders/${currentOrderId}/invoice/stream`, '_blank');
+                printWindow.onload = function() {
+                    printWindow.print();
+                };
+            }
+        }
+    });
+
+    // Download Invoice as PDF
+    document.addEventListener('click', function(e) {
+        if (e.target && (e.target.id === 'downloadInvoiceBtn' || e.target.closest('#downloadInvoiceBtn'))) {
+            e.preventDefault();
+            if (currentOrderId) {
+                window.location.href = `/admin/orders/${currentOrderId}/invoice/download`;
+            }
+        }
     });
 });
 </script>

@@ -382,4 +382,26 @@ class Product extends Model
             }
         }
     }
+
+    /**
+     * Override brand attribute to return relationship instead of text field
+     * This fixes the conflict between brand_id relationship and legacy brand column
+     */
+    public function getBrandAttribute($value)
+    {
+        // If brand relationship is already loaded, return it
+        if ($this->relationLoaded('brand')) {
+            return $this->getRelation('brand');
+        }
+
+        // If brand_id exists, lazy load the relationship
+        if ($this->brand_id) {
+            // Load the relationship if not already loaded
+            $this->load('brand');
+            return $this->getRelation('brand');
+        }
+
+        // No brand associated
+        return null;
+    }
 }

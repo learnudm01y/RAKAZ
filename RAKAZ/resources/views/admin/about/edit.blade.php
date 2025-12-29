@@ -1429,7 +1429,92 @@
         }
     });
 
-    // Image Upload Handler
+    // Image Compression System (WebP)
+    const AboutImageCompressor = {
+        pendingCount: 0,
+
+        async compress(fileInput) {
+            if (!fileInput.files || !fileInput.files[0]) return;
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('type', 'about_story');
+
+            // Show loading state
+            const wrapper = fileInput.closest('.image-upload-wrapper, .form-group');
+            const existingBadge = wrapper?.querySelector('.compression-badge');
+            if (existingBadge) existingBadge.remove();
+
+            const spinner = document.createElement('span');
+            spinner.className = 'compression-badge compressing';
+            spinner.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الضغط...';
+            spinner.style.cssText = 'display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 4px; font-size: 12px; margin-top: 5px; background: #fff3cd; color: #856404;';
+            if (wrapper) wrapper.appendChild(spinner);
+
+            this.pendingCount++;
+            this.updateSubmitButton();
+
+            try {
+                const response = await fetch('/api/admin/compress-image', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Remove spinner and add success badge
+                    spinner.style.background = '#d4edda';
+                    spinner.style.color = '#155724';
+                    spinner.innerHTML = `<i class="fas fa-check"></i> تم الضغط: ${result.size_kb} KB`;
+
+                    // Create hidden input with compressed path
+                    let hiddenInput = document.querySelector('input[name="compressed_story_image"]');
+                    if (!hiddenInput) {
+                        hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = 'compressed_story_image';
+                        fileInput.parentNode.appendChild(hiddenInput);
+                    }
+                    hiddenInput.value = result.path;
+
+                    console.log(`Image compressed: ${result.path} (${result.size_kb} KB)`);
+                } else {
+                    throw new Error(result.error || 'Compression failed');
+                }
+            } catch (error) {
+                console.error('Compression error:', error);
+                spinner.style.background = '#f8d7da';
+                spinner.style.color = '#721c24';
+                spinner.innerHTML = '<i class="fas fa-times"></i> فشل الضغط';
+            } finally {
+                this.pendingCount--;
+                this.updateSubmitButton();
+            }
+        },
+
+        updateSubmitButton() {
+            const submitBtn = document.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                if (this.pendingCount > 0) {
+                    submitBtn.disabled = true;
+                    submitBtn.dataset.originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري ضغط الصور...';
+                } else {
+                    submitBtn.disabled = false;
+                    if (submitBtn.dataset.originalText) {
+                        submitBtn.innerHTML = submitBtn.dataset.originalText;
+                    }
+                }
+            }
+        }
+    };
+
+    // Image Upload Handler with compression
     function handleImageUpload(input, previewId) {
         const preview = document.getElementById(previewId);
 
@@ -1459,6 +1544,9 @@
             };
 
             reader.readAsDataURL(file);
+
+            // Compress the image via AJAX
+            AboutImageCompressor.compress(input);
         }
     }
 

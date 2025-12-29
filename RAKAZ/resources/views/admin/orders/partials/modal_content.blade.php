@@ -1,3 +1,4 @@
+<!-- Modal Content (Regular View) -->
 <div class="row h-100">
     <!-- Customer Info (Right Side) -->
     <div class="col-lg-4 mb-3 mb-lg-0">

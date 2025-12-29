@@ -9,7 +9,7 @@
     right: 0;
     width: 100%;
     height: 100%;
-    z-index: 10000;
+    z-index: 9000; /* Below SweetAlert notifications */
     pointer-events: none;
 }
 
@@ -30,6 +30,7 @@
     pointer-events: none;
     transition: opacity 0.3s ease, visibility 0s linear 0.3s;
     backdrop-filter: none;
+    z-index: 9000; /* Below SweetAlert notifications (99999) */
 }
 
 .cart-sidebar.active .cart-sidebar-overlay {
@@ -53,6 +54,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    z-index: 9001; /* Above overlay but below SweetAlert (99999) */
 }
 
 .cart-sidebar.active .cart-sidebar-content {
@@ -445,5 +447,74 @@ body[dir="ltr"] .cart-item {
 
     .cart-sidebar-footer {
         padding: 15px 20px;
+    }
+}
+
+/* ===================================
+   FORCE SweetAlert Above Cart Sidebar
+   =================================== */
+.swal2-container {
+    z-index: 99999 !important; /* FORCE above everything including cart sidebar */
+}
+
+/* Ensure toast notifications are also above */
+.swal2-container.swal2-top-start,
+.swal2-container.swal2-top-end,
+.swal2-container.swal2-top {
+    z-index: 99999 !important;
+}
+
+/* ===================================
+   Cart Sidebar Skeleton Loading
+   =================================== */
+.cart-item-skeleton {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.skeleton-image {
+    width: 100px;
+    height: 130px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 8px;
+}
+
+.skeleton-text {
+    height: 14px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.skeleton-brand {
+    width: 60%;
+    height: 12px;
+}
+
+.skeleton-name {
+    width: 90%;
+    height: 16px;
+}
+
+.skeleton-size {
+    width: 50%;
+    height: 12px;
+}
+
+.skeleton-price {
+    width: 40%;
+    height: 14px;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
     }
 }

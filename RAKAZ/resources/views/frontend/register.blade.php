@@ -11,7 +11,7 @@
             <!-- Header -->
             <div class="auth-header">
                 <a href="{{ route('home') }}" class="auth-logo">
-                    <img src="/assets/images/ركاز بني copy (1).png" alt="ركاز">
+                    <img src="/assets/images/rakazLogo.png" alt="ركاز">
                 </a>
                 <div class="auth-nav">
                     <a href="{{ route('home') }}" class="close-btn">

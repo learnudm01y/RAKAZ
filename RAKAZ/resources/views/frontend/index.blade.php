@@ -1,43 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-    <!-- Hero Banner Slider -->
-    @if($homePage && $homePage->hero_slides && count($homePage->hero_slides) > 0)
-    <section class="hero-banner">
-        <div class="hero-slider">
-            @foreach($homePage->hero_slides as $index => $slide)
-            @php
-                $desktopImage = $slide['image'];
-                $tabletImage = isset($homePage->hero_slides_tablet[$index]['image']) && !empty($homePage->hero_slides_tablet[$index]['image'])
-                    ? $homePage->hero_slides_tablet[$index]['image']
-                    : $desktopImage;
-                $mobileImage = isset($homePage->hero_slides_mobile[$index]['image']) && !empty($homePage->hero_slides_mobile[$index]['image'])
-                    ? $homePage->hero_slides_mobile[$index]['image']
-                    : $desktopImage;
-            @endphp
-            <div class="hero-slide {{ $index === 0 ? 'active' : '' }}">
-                <a href="{{ $slide['link'] ?? '#' }}" class="hero-slide-link" rel="noopener">
-                    <picture>
-                        <source media="(max-width: 767px)" srcset="{{ $mobileImage }}">
-                        <source media="(max-width: 1024px)" srcset="{{ $tabletImage }}">
-                        <img src="{{ $desktopImage }}" alt="{{ $slide['alt'] ?? 'Hero Banner ' . ($index + 1) }}" class="hero-banner-image" loading="eager">
-                    </picture>
-                </a>
-            </div>
-            @endforeach
-        </div>
-        <div class="hero-dots">
-            @foreach($homePage->hero_slides as $index => $slide)
-            <span class="hero-dot {{ $index === 0 ? 'active' : '' }}" data-slide="{{ $index }}"></span>
-            @endforeach
-        </div>
-        <div class="hero-content">
-            <div class="hero-text">
-                <!-- <a href="#" class="hero-btn">تسوق التشكيلة</a> -->
-            </div>
-        </div>
-    </section>
-    @endif
+    <!-- Hero Banner Slider - Loaded via AJAX -->
+    <div id="hero-banner-wrapper">
+        @include('frontend.partials.hero-banner-skeleton')
+    </div>
 
     <!-- Cyber Sale Banner -->
     @if($homePage && $homePage->cyber_sale_active && $homePage->cyber_sale_image)
@@ -90,10 +57,9 @@
     @endif
 
     <!-- Featured Products Section -->
-    @include('frontend.partials.featured-section-skeleton')
-    <div id="featured-content">
-        {{-- Content will be loaded via AJAX --}}
-    </div>
+    @if($featuredSection && $featuredSection->products && $featuredSection->products->count() > 0)
+        @include('frontend.partials.featured-section-content')
+    @endif
 
     <!-- Gucci Spotlight -->
     @if($homePage && $homePage->gucci_spotlight_active && $homePage->gucci_spotlight_image)
@@ -130,56 +96,16 @@
         @endif
     @endif
 
-    <!-- Discover More -->
-    @if($homePage && $homePage->discover_section_active && isset($discoverItems) && count($discoverItems) > 0)
-        @php
-            $currentLocale = app()->getLocale();
-            $discoverTitle = $currentLocale === 'ar' ? 'اكتشف المزيد' : 'Discover More';
+    <!-- Discover Section - Loaded via AJAX after 0.5s -->
+    @include('frontend.partials.discover-section-skeleton')
+    <div id="discover-content" style="display: none;">
+        {{-- Content will be loaded via AJAX --}}
+    </div>
 
-            // Split items for grid layout: first 3 items in grid, remaining in row
-            $gridItems = $discoverItems->take(3);
-            $rowItems = $discoverItems->slice(3);
-        @endphp
-        <section class="discover-section">
-            <h2 class="section-title">{{ $discoverTitle }}</h2>
-
-            @if($gridItems->count() > 0)
-            <div class="discover-grid">
-                @foreach($gridItems as $item)
-                <div class="discover-card">
-                    <a href="{{ $item->link }}">
-                        <img src="{{ $item->image }}" alt="{{ $item->getTitle($currentLocale) }}" class="discover-image">
-                        <h3 class="discover-title">{{ $item->getTitle($currentLocale) }}</h3>
-                    </a>
-                </div>
-                @endforeach
-            </div>
-            @endif
-
-            @if($rowItems->count() > 0)
-            <div class="discover-row">
-                @foreach($rowItems as $index => $item)
-                <div class="discover-card-wide {{ $index === 0 ? 'fragrance' : 'watches' }}">
-                    <a href="{{ $item->link }}">
-                        <img src="{{ $item->image }}" alt="{{ $item->getTitle($currentLocale) }}" class="discover-wide-image">
-                        <h3 class="discover-title-wide">{{ $item->getTitle($currentLocale) }}</h3>
-                    </a>
-                </div>
-                @endforeach
-            </div>
-            @endif
-        </section>
-    @endif
-
-    <!-- Perfect Gift Section (from database) -->
+    <!-- Perfect Gift Section -->
     @if($perfectGiftSection && $perfectGiftSection->products && $perfectGiftSection->products->count() > 0)
         @include('frontend.partials.perfect-gift-section-content')
     @endif
-
-    <!-- Featured Section (Must Have Items) - Loaded via AJAX in featured-content div above -->
-    {{-- @if($featuredSection && $featuredSection->products && $featuredSection->products->count() > 0)
-        @include('frontend.partials.featured-section-content')
-    @endif --}}
 
     <!-- Membership & App Section -->
     @if($homePage && ($homePage->membership_section_active || $homePage->app_section_active))
@@ -278,10 +204,130 @@
 @endsection
 
 @push('scripts')
+    <!-- Home Product Overlay Lazy Loader -->
+    <script src="{{ asset('assets/js/home-product-overlay-loader.js') }}"></script>
+
     <script>
+        // Translation helper - GLOBAL
+        const isArabic = document.documentElement.getAttribute('dir') === 'rtl' || '{{ app()->getLocale() }}' === 'ar';
+        function t(ar, en) {
+            return isArabic ? ar : en;
+        }
+
+        console.log('🚀 Home page wishlist system initialized');
+
+        // Wishlist toggle function for home page - GLOBAL FUNCTION
+        async function toggleWishlist(button, productId) {
+            console.log('🔥 toggleWishlist called! Product ID:', productId);
+
+            @auth
+            // Show loading state
+            button.disabled = true;
+            button.style.opacity = '0.6';
+
+            try {
+                console.log('📤 Sending wishlist API request...');
+                const response = await fetch("{{ route('wishlist.toggle') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ product_id: productId })
+                });
+
+                console.log('📤 Wishlist API Response status:', response.status);
+                const data = await response.json();
+                console.log('📥 Wishlist API Response data:', data);
+
+                if (data.success) {
+                    // Toggle active class - check for both 'action' and 'isAdded' for compatibility
+                    const wasAdded = data.action === 'added' || data.isAdded === true;
+                    if (wasAdded) {
+                        button.classList.add('active');
+                        Swal.fire({
+                            title: t('تمت الإضافة!', 'Added!'),
+                            text: t('تم إضافة المنتج إلى قائمة المفضلة', 'Product added to wishlist'),
+                            icon: 'success',
+                            confirmButtonText: t('حسناً', 'OK'),
+                            confirmButtonColor: '#000',
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
+                    } else {
+                        button.classList.remove('active');
+                        Swal.fire({
+                            title: t('تمت الإزالة', 'Removed'),
+                            text: t('تم إزالة المنتج من قائمة المفضلة', 'Product removed from wishlist'),
+                            icon: 'info',
+                            confirmButtonText: t('حسناً', 'OK'),
+                            confirmButtonColor: '#000',
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
+                    }
+
+                    // Update wishlist count if exists
+                    const wishlistCount = document.querySelector('.wishlist-count');
+                    if (wishlistCount && data.wishlist_count !== undefined) {
+                        wishlistCount.textContent = data.wishlist_count;
+                    }
+
+                    // Update header wishlist badge
+                    const wishlistBadge = document.getElementById('wishlistBadge');
+                    if (wishlistBadge) {
+                        let currentCount = parseInt(wishlistBadge.textContent) || 0;
+                        if (wasAdded) {
+                            currentCount++;
+                        } else {
+                            currentCount = Math.max(0, currentCount - 1);
+                        }
+                        wishlistBadge.textContent = currentCount;
+                    }
+                } else {
+                    throw new Error(data.message || 'Failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: t('خطأ!', 'Error!'),
+                    text: t('حدث خطأ أثناء تحديث المفضلة', 'Error updating wishlist'),
+                    confirmButtonColor: '#d33'
+                });
+            } finally {
+                button.disabled = false;
+                button.style.opacity = '1';
+            }
+            @else
+            // Not logged in - redirect to login
+            Swal.fire({
+                title: t('تسجيل الدخول مطلوب', 'Login Required'),
+                text: t('يجب تسجيل الدخول لإضافة المنتجات للمفضلة', 'Please login to add products to wishlist'),
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: t('تسجيل الدخول', 'Login'),
+                cancelButtonText: t('إلغاء', 'Cancel'),
+                confirmButtonColor: '#000',
+                cancelButtonColor: '#666'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '{{ route("login") }}';
+                }
+            });
+            @endauth
+        }
+
+        // Make it available globally
+        window.toggleWishlist = toggleWishlist;
+
         // Wishlist functionality and Slider initialization
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Page loaded, initializing components...');
+
+            // Load Hero Banner immediately
+            loadHeroBanner();
 
             // Force reinitialize sliders after content is loaded
             setTimeout(function() {
@@ -306,25 +352,233 @@
                 console.log('Featured Next:', featuredNext);
             }, 500);
 
-            // Wishlist buttons
-            const wishlistButtons = document.querySelectorAll('.wishlist-btn');
-            wishlistButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
+            // Event delegation for wishlist buttons (both .wishlist-btn and .overlay-wishlist-btn)
+            document.addEventListener('click', function(e) {
+                const wishlistBtn = e.target.closest('.wishlist-btn, .overlay-wishlist-btn');
+                if (wishlistBtn) {
+                    console.log('💗 WISHLIST BUTTON CLICKED via delegation!', wishlistBtn);
+                    console.log('💗 Product ID:', wishlistBtn.dataset.productId);
+
                     e.preventDefault();
                     e.stopPropagation();
 
-                    Swal.fire({
-                        title: 'تمت الإضافة!',
-                        text: 'تم إضافة المنتج إلى قائمة المفضلة',
-                        icon: 'success',
-                        confirmButtonText: 'حسناً',
-                        confirmButtonColor: '#000',
-                        timer: 2000,
-                        timerProgressBar: true
-                    });
+                    const productId = wishlistBtn.dataset.productId;
+                    if (productId) {
+                        console.log('💗 Calling toggleWishlist for product:', productId);
+                        toggleWishlist(wishlistBtn, productId);
+                    } else {
+                        console.error('❌ Product ID not found on wishlist button');
+                    }
+                }
+            }, true); // Use capture phase for higher priority
+
+            // Load Discover Section after 0.5s
+            setTimeout(function() {
+                loadDiscoverSection();
+            }, 500);
+        });
+
+        // Load Discover Section via AJAX
+        function loadDiscoverSection() {
+            console.log('🔍 Loading discover section...');
+
+            fetch('/api/lazy-load/discover-section', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.html) {
+                    const discoverContent = document.getElementById('discover-content');
+                    const discoverSkeleton = document.querySelector('.discover-section.skeleton-loading');
+
+                    if (discoverContent && discoverSkeleton) {
+                        // Insert content
+                        discoverContent.innerHTML = data.html;
+                        discoverContent.style.display = 'block';
+
+                        // Remove skeleton
+                        discoverSkeleton.style.opacity = '0';
+                        setTimeout(() => {
+                            discoverSkeleton.remove();
+                        }, 300);
+
+                        console.log('✅ Discover section loaded');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error loading discover section:', error);
+            });
+        }
+
+        // Load Hero Banner via AJAX
+        function loadHeroBanner() {
+            console.log('🎬 Loading hero banner...');
+
+            fetch('/api/lazy-load/hero-banner', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('📦 Hero banner response received');
+
+                if (data.success && data.html) {
+                    const wrapper = document.getElementById('hero-banner-wrapper');
+
+                    if (wrapper) {
+                        console.log('✅ Replacing hero banner skeleton with content...');
+
+                        // Replace entire content
+                        wrapper.innerHTML = data.html;
+
+                        console.log('✅ Hero banner content replaced');
+
+                        // Initialize slider after a short delay to ensure DOM is ready
+                        setTimeout(() => {
+                            initHeroSlider();
+                        }, 100);
+                    } else {
+                        console.error('❌ Hero banner wrapper not found');
+                    }
+                } else {
+                    console.error('❌ Invalid hero banner response:', data);
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error loading hero banner:', error);
+            });
+        }
+
+        // Initialize Hero Slider
+        function initHeroSlider() {
+            const heroSlider = document.querySelector('.hero-slider');
+            const heroDots = document.querySelectorAll('.hero-dot');
+
+            if (!heroSlider || heroDots.length === 0) {
+                console.warn('⚠️ Hero slider elements not found');
+                return;
+            }
+
+            const slides = heroSlider.querySelectorAll('.hero-slide');
+            const totalSlides = slides.length;
+
+            if (totalSlides === 0) {
+                console.warn('⚠️ No slides found');
+                return;
+            }
+
+            console.log(`✅ Hero slider initialized: ${totalSlides} slides found`);
+
+            let currentSlide = 0;
+            const loadedSlides = new Set([0]); // First slide already loaded
+
+            // Load remaining slides progressively
+            loadHeroSlides(slides, loadedSlides);
+
+            // Update slide function
+            function updateSlide(index) {
+                // Load image if not loaded yet
+                if (!loadedSlides.has(index)) {
+                    loadSlideImage(slides[index], index, loadedSlides);
+                }
+
+                slides.forEach((slide, i) => {
+                    if (i === index) {
+                        slide.classList.add('active');
+                    } else {
+                        slide.classList.remove('active');
+                    }
+                });
+                heroDots.forEach((dot, i) => {
+                    if (i === index) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+            }
+
+            // Auto slide every 5 seconds
+            setInterval(() => {
+                currentSlide = (currentSlide + 1) % totalSlides;
+                updateSlide(currentSlide);
+            }, 5000);
+
+            // Dot click handlers
+            heroDots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    currentSlide = index;
+                    updateSlide(currentSlide);
                 });
             });
-        });
+
+            // Ensure first slide is active
+            updateSlide(0);
+        }
+
+        // Load hero slides progressively
+        function loadHeroSlides(slides, loadedSlides) {
+            console.log('🔄 Loading hero slides progressively...');
+
+            // Load slides one by one with delay
+            let delay = 1000; // Start after 1 second
+
+            slides.forEach((slide, index) => {
+                if (index === 0) return; // Skip first slide (already loaded)
+
+                setTimeout(() => {
+                    loadSlideImage(slide, index, loadedSlides);
+                }, delay);
+
+                delay += 500; // Add 500ms between each image load
+            });
+        }
+
+        // Load individual slide image
+        function loadSlideImage(slide, index, loadedSlides) {
+            const lazyPicture = slide.querySelector('.lazy-picture');
+
+            if (!lazyPicture || loadedSlides.has(index)) return;
+
+            const desktopSrc = lazyPicture.dataset.desktop;
+            const tabletSrc = lazyPicture.dataset.tablet;
+            const mobileSrc = lazyPicture.dataset.mobile;
+            const alt = lazyPicture.dataset.alt;
+
+            // Create actual picture element
+            const picture = document.createElement('picture');
+
+            const mobileSource = document.createElement('source');
+            mobileSource.media = '(max-width: 767px)';
+            mobileSource.srcset = mobileSrc;
+
+            const tabletSource = document.createElement('source');
+            tabletSource.media = '(max-width: 1024px)';
+            tabletSource.srcset = tabletSrc;
+
+            const img = document.createElement('img');
+            img.src = desktopSrc;
+            img.alt = alt;
+            img.className = 'hero-banner-image';
+
+            picture.appendChild(mobileSource);
+            picture.appendChild(tabletSource);
+            picture.appendChild(img);
+
+            // Replace placeholder with actual image
+            lazyPicture.replaceWith(picture);
+            loadedSlides.add(index);
+
+            console.log(`✅ Slide ${index} image loaded`);
+        }
     </script>
 
 @endpush

@@ -32,9 +32,11 @@ class CartSidebar {
         // Event Listeners
         this.toggleBtn?.addEventListener('click', (e) => {
             e.preventDefault();
-            this.loadCartFromServer().then(() => {
-                this.openCart();
-            });
+            // Open cart immediately with skeleton
+            this.openCart();
+            this.showSkeleton();
+            // Load data in background
+            this.loadCartFromServer();
         });
 
         this.closeBtn?.addEventListener('click', () => this.closeCart());
@@ -47,8 +49,57 @@ class CartSidebar {
             }
         });
 
-        // Load cart on init
-        this.loadCartFromServer();
+        // Load cart count only on init (lightweight)
+        this.loadCartCount();
+    }
+
+    showSkeleton() {
+        // Clear existing items
+        this.cartItemsContainer.querySelectorAll('.cart-item').forEach(item => item.remove());
+        this.cartEmpty.style.display = 'none';
+        this.cartFooter.classList.remove('show');
+
+        // Show 3 skeleton items
+        for (let i = 0; i < 3; i++) {
+            const skeleton = this.createSkeletonItem();
+            this.cartItemsContainer.appendChild(skeleton);
+        }
+    }
+
+    createSkeletonItem() {
+        const skeleton = document.createElement('div');
+        skeleton.className = 'cart-item cart-item-skeleton';
+        skeleton.innerHTML = `
+            <div class="skeleton-image"></div>
+            <div class="cart-item-details">
+                <div class="skeleton-text skeleton-brand"></div>
+                <div class="skeleton-text skeleton-name"></div>
+                <div class="skeleton-text skeleton-size"></div>
+                <div class="skeleton-text skeleton-price"></div>
+            </div>
+        `;
+        return skeleton;
+    }
+
+    async loadCartCount() {
+        try {
+            const response = await fetch('/api/cart/count', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (this.cartBadge) {
+                    this.cartBadge.textContent = data.count || 0;
+                }
+            }
+        } catch (error) {
+            console.error('Error loading cart count:', error);
+        }
     }
 
     async loadCartFromServer() {
@@ -64,11 +115,15 @@ class CartSidebar {
             if (response.ok) {
                 const data = await response.json();
                 this.cart = data.items || [];
+                // Remove skeleton and show real data
+                this.cartItemsContainer.querySelectorAll('.cart-item-skeleton').forEach(item => item.remove());
                 this.updateCartDisplay();
                 console.log('Cart loaded:', this.cart.length, 'items');
             }
         } catch (error) {
             console.error('Error loading cart:', error);
+            // Remove skeleton on error
+            this.cartItemsContainer.querySelectorAll('.cart-item-skeleton').forEach(item => item.remove());
         }
     }
 
@@ -215,7 +270,7 @@ class CartSidebar {
         cartItem.innerHTML = `
             <img src="${item.image}" alt="${item.name}" class="cart-item-image">
             <div class="cart-item-details">
-                <p class="cart-item-brand">${item.brand}</p>
+                <p class="product-brand">${item.brand}</p>
                 <h4 class="cart-item-name">${item.name}</h4>
                 <p class="cart-item-size">${__t('المقاس', 'Size')}: ${item.size}</p>
                 <p class="cart-item-price">${item.price}</p>
@@ -289,6 +344,10 @@ class CartSidebar {
     showNotification(title, message) {
         // Using SweetAlert2 for notifications
         if (typeof Swal !== 'undefined') {
+            // Position based on language direction
+            const isRTL = document.documentElement.dir === 'rtl' || document.body.dir === 'rtl';
+            const position = isRTL ? 'top-start' : 'top-end';
+
             Swal.fire({
                 title: title,
                 html: message,
@@ -298,7 +357,7 @@ class CartSidebar {
                 timer: 2000,
                 timerProgressBar: true,
                 toast: true,
-                position: 'top-end',
+                position: position,
                 showConfirmButton: false
             });
         }

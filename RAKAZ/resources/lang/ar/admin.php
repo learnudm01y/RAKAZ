@@ -100,6 +100,9 @@ return [
         'order_details' => 'تفاصيل الطلب',
         'loading' => 'جاري التحميل...',
         'close' => 'إغلاق',
+        'print_invoice' => 'طباعة الفاتورة',
+        'preview_invoice' => 'معاينة الفاتورة',
+        'download_pdf' => 'تحميل PDF',
 
         'table' => [
             'order_number' => 'رقم الطلب',

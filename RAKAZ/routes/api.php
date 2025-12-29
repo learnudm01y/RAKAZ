@@ -18,74 +18,72 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Lazy Load API Routes
+Route::get('/lazy-load/hero-banner', [LazyLoadController::class, 'getHeroBanner']);
+Route::get('/lazy-load/currency-dropdown', [LazyLoadController::class, 'getCurrencyDropdown']);
 Route::get('/lazy-load/featured-section', [LazyLoadController::class, 'getFeaturedSection']);
 Route::get('/lazy-load/perfect-gift-section', [LazyLoadController::class, 'getPerfectGiftSection']);
 Route::get('/lazy-load/footer', [LazyLoadController::class, 'getFooter']);
+Route::get('/lazy-load/discover-section', [LazyLoadController::class, 'getDiscoverSection']);
 Route::get('/lazy-load/related-products/{productId}', [LazyLoadController::class, 'getRelatedProducts']);
 Route::get('/lazy-load/brand-products/{productId}', [LazyLoadController::class, 'getBrandProducts']);
+Route::get('/lazy-load/shop-sidebar', [LazyLoadController::class, 'getShopSidebar']);
+Route::get('/lazy-load/product-hover/{productId}', [LazyLoadController::class, 'getProductHoverContent']);
+Route::get('/lazy-load/shop-pagination', [LazyLoadController::class, 'getShopPagination']);
+Route::get('/lazy-load/home-product-overlay/{productId}', [LazyLoadController::class, 'getHomeProductOverlay']);
 
 // Product API for Wishlist Modal
 Route::get('/products/{id}', function ($id) {
     try {
-        $product = \App\Models\Product::find($id);
+        $product = \App\Models\Product::with(['productSizes', 'productShoeSizes'])->find($id);
 
         if (!$product) {
             return response()->json(['error' => 'Product not found'], 404);
         }
 
-        // جلب الأحجام
-        $productSizes = collect([]);
+        // جلب الأحجام - productSizes returns Size models directly (many-to-many)
+        $sizes = [];
+        $productSizesData = [];
+
         if ($product->productSizes && $product->productSizes->count() > 0) {
-            $productSizes = $product->productSizes->map(function($ps) {
-                $sizeName = $ps->size_id; // القيمة الافتراضية
+            foreach ($product->productSizes as $size) {
+                // $size is a Size model object directly
+                $sizeId = $size->id;
+                $sizeName = $size->name; // e.g., "S", "M", "L"
 
-                // محاولة الحصول على اسم المقاس من جدول sizes
-                $size = \App\Models\Size::find($ps->size_id);
-                if ($size && $size->name) {
-                    $sizeName = $size->name;
-                }
-
-                return [
-                    'size_id' => $ps->size_id,
+                $sizes[] = $sizeName;
+                $productSizesData[] = [
+                    'size_id' => $sizeId,
                     'name' => $sizeName
                 ];
-            });
+            }
         }
 
-        // جلب أحجام الأحذية
-        $productShoeSizes = collect([]);
+        // جلب أحجام الأحذية - productShoeSizes returns ShoeSize models directly
+        $productShoeSizesData = [];
         if ($product->productShoeSizes && $product->productShoeSizes->count() > 0) {
-            $productShoeSizes = $product->productShoeSizes->map(function($ps) {
-                $shoeSize = $ps->shoe_size_id; // القيمة الافتراضية
+            foreach ($product->productShoeSizes as $shoeSize) {
+                // $shoeSize is a ShoeSize model object directly
+                $shoeSizeId = $shoeSize->id;
+                $shoeSizeValue = $shoeSize->size; // e.g., "40", "41", "42"
 
-                // محاولة الحصول على حجم الحذاء من جدول shoe_sizes
-                $shoeSizeModel = \App\Models\ShoeSize::find($ps->shoe_size_id);
-                if ($shoeSizeModel && $shoeSizeModel->size) {
-                    $shoeSize = $shoeSizeModel->size;
+                if (empty($sizes)) {
+                    $sizes[] = $shoeSizeValue;
                 }
-
-                return [
-                    'shoe_size_id' => $ps->shoe_size_id,
-                    'size' => $shoeSize
+                $productShoeSizesData[] = [
+                    'shoe_size_id' => $shoeSizeId,
+                    'size' => $shoeSizeValue
                 ];
-            });
+            }
         }
 
         // جلب الألوان
         $productColors = collect([]);
         if ($product->productColors && $product->productColors->count() > 0) {
-            $productColors = $product->productColors->map(function($pc) {
-                $colorName = $pc->color_id; // القيمة الافتراضية
-
-                // محاولة الحصول على اسم اللون من جدول colors
-                $color = \App\Models\Color::find($pc->color_id);
-                if ($color && $color->name) {
-                    $colorName = $color->name;
-                }
-
+            $productColors = $product->productColors->map(function($color) {
+                // $color is a Color model object directly
                 return [
-                    'color_id' => $pc->color_id,
-                    'name' => $colorName
+                    'color_id' => $color->id,
+                    'name' => $color->name
                 ];
             });
         }
@@ -101,14 +99,9 @@ Route::get('/products/{id}', function ($id) {
             }
         }
 
-        // استخراج أسماء المقاسات فقط
-        $sizes = [];
-        if ($product->sizes && is_array($product->sizes)) {
+        // If no sizes from relations, check legacy sizes field
+        if (empty($sizes) && $product->sizes && is_array($product->sizes)) {
             $sizes = $product->sizes;
-        } elseif ($productSizes->count() > 0) {
-            $sizes = $productSizes->pluck('name')->toArray();
-        } elseif ($productShoeSizes->count() > 0) {
-            $sizes = $productShoeSizes->pluck('size')->toArray();
         }
 
         // جلب صور الألوان
@@ -129,14 +122,32 @@ Route::get('/products/{id}', function ($id) {
             })->sortBy('sort_order')->values()->toArray();
         }
 
+        // Get brand name properly - brand can be a Brand model object or array
+        $brandName = '';
+        if ($product->brand_id && $product->brand) {
+            // Brand is a relationship (Brand model)
+            $brandModel = $product->brand;
+            if (is_object($brandModel) && method_exists($brandModel, 'getName')) {
+                $brandName = $brandModel->getName();
+            } elseif (is_object($brandModel) && isset($brandModel->name)) {
+                $brandName = is_array($brandModel->name)
+                    ? ($brandModel->name[app()->getLocale()] ?? $brandModel->name['ar'] ?? '')
+                    : $brandModel->name;
+            }
+        } elseif (is_array($product->getAttributes()['brand'] ?? null)) {
+            // Legacy: brand is stored as array in product table
+            $brandName = $product->getAttributes()['brand'][app()->getLocale()] ?? $product->getAttributes()['brand']['ar'] ?? '';
+        } elseif (is_string($product->getAttributes()['brand'] ?? null)) {
+            // Legacy: brand is stored as string in product table
+            $brandName = $product->getAttributes()['brand'];
+        }
+
         return response()->json([
             'id' => $product->id,
             'name' => is_array($product->name)
                 ? ($product->name[app()->getLocale()] ?? $product->name['ar'] ?? '')
                 : $product->name,
-            'brand' => is_array($product->brand)
-                ? ($product->brand[app()->getLocale()] ?? $product->brand['ar'] ?? '')
-                : $product->brand,
+            'brand' => $brandName,
             'price' => number_format($product->price, 0) . ' ' . (app()->getLocale() == 'ar' ? 'د.إ' : 'AED'),
             'sale_price' => $product->sale_price
                 ? number_format($product->sale_price, 0) . ' ' . (app()->getLocale() == 'ar' ? 'د.إ' : 'AED')
@@ -156,14 +167,14 @@ Route::get('/products/{id}', function ($id) {
                 : ($product->design_details ?? ''),
             'is_new' => $product->is_new ?? false,
             'is_featured' => $product->is_featured ?? false,
-            'productSizes' => $productSizes,
-            'productShoeSizes' => $productShoeSizes,
+            'productSizes' => $productSizesData,
+            'productShoeSizes' => $productShoeSizesData,
             'productColors' => $productColors,
             'colorImages' => $colorImages
         ]);
-    } catch (\Exception $e) {
-        \Log::error('Product API Error: ' . $e->getMessage());
-        \Log::error('Stack trace: ' . $e->getTraceAsString());
+    } catch (Exception $e) {
+        Log::error('Product API Error: ' . $e->getMessage());
+        Log::error('Stack trace: ' . $e->getTraceAsString());
         return response()->json([
             'error' => 'Internal server error',
             'message' => $e->getMessage()
@@ -213,3 +224,69 @@ Route::get('/health-check', function () {
         ], 500);
     }
 });
+
+// Image Compression API for Admin Products
+Route::post('/admin/compress-image', function (Request $request) {
+    try {
+        if (!$request->hasFile('image')) {
+            return response()->json(['error' => 'No image provided'], 400);
+        }
+
+        $file = $request->file('image');
+        $type = $request->input('type', 'main'); // main, hover, gallery, color
+
+        // Validate image
+        if (!$file->isValid() || !in_array($file->getClientMimeType(), ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'])) {
+            return response()->json(['error' => 'Invalid image file'], 400);
+        }
+
+        // Determine storage directory based on type
+        $directories = [
+            // Products
+            'main' => 'products/temp',
+            'hover' => 'products/temp',
+            'gallery' => 'products/gallery/temp',
+            'color' => 'products/colors/temp',
+            // Home Page
+            'hero' => 'home-page/hero/temp',
+            'hero_tablet' => 'home-page/hero/tablet/temp',
+            'hero_mobile' => 'home-page/hero/mobile/temp',
+            'cyber_sale' => 'home-page/cyber-sale/temp',
+            'cyber_sale_tablet' => 'home-page/cyber-sale/tablet/temp',
+            'cyber_sale_mobile' => 'home-page/cyber-sale/mobile/temp',
+            'gift' => 'home-page/gifts/temp',
+            'dg_banner' => 'home-page/dg-banner/temp',
+            'dg_banner_tablet' => 'home-page/dg-banner/tablet/temp',
+            'dg_banner_mobile' => 'home-page/dg-banner/mobile/temp',
+            'gucci_spotlight' => 'home-page/gucci-spotlight/temp',
+            'gucci_spotlight_tablet' => 'home-page/gucci-spotlight/tablet/temp',
+            'gucci_spotlight_mobile' => 'home-page/gucci-spotlight/mobile/temp',
+            // About Page
+            'about_story' => 'about/temp',
+        ];
+        $directory = $directories[$type] ?? 'uploads/temp';
+
+        // Use ImageCompressionService
+        $imageService = app(\App\Services\ImageCompressionService::class);
+        $path = $imageService->compressAndStore($file, $directory);
+
+        // Get file info
+        $fullPath = storage_path('app/public/' . $path);
+        $fileSize = file_exists($fullPath) ? filesize($fullPath) : 0;
+        $fileSizeKB = round($fileSize / 1024, 2);
+
+        return response()->json([
+            'success' => true,
+            'path' => $path,
+            'url' => asset('storage/' . $path),
+            'size_bytes' => $fileSize,
+            'size_kb' => $fileSizeKB,
+            'message' => 'Image compressed successfully'
+        ]);
+    } catch (Exception $e) {
+        Log::error('Image compression error: ' . $e->getMessage());
+        return response()->json([
+            'error' => 'Compression failed: ' . $e->getMessage()
+        ], 500);
+    }
+})->middleware('web');

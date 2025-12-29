@@ -18,7 +18,7 @@ class LazyLoadingManager {
                 name: 'perfect-gift',
                 skeletonId: 'perfect-gift-skeleton',
                 contentId: 'perfect-gift-content',
-                delay: 4000, // 4 seconds
+                delay: 2500, // 2.5 seconds
                 url: '/api/lazy-load/perfect-gift-section'
             },
             {

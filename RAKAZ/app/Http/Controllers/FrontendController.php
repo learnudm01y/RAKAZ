@@ -44,7 +44,7 @@ class FrontendController extends Controller
         $featuredSection = FeaturedSection::where('is_active', true)
             ->with(['products' => function($query) {
                 $query->where('is_active', true)
-                      ->with(['productSizes', 'productColors', 'productShoeSizes']);
+                      ->with(['brand', 'productSizes', 'productColors', 'productShoeSizes']);
             }])
             ->first();
 
@@ -52,7 +52,7 @@ class FrontendController extends Controller
         $perfectGiftSection = PerfectGiftSection::where('is_active', true)
             ->with(['products' => function($query) {
                 $query->where('is_active', true)
-                      ->with(['productSizes', 'productColors', 'productShoeSizes']);
+                      ->with(['brand', 'productSizes', 'productColors', 'productShoeSizes']);
             }])
             ->first();
 
@@ -75,7 +75,7 @@ class FrontendController extends Controller
     public function shop(Request $request)
     {
         $query = Product::where('is_active', true)
-            ->with(['category', 'brand', 'productSizes', 'productShoeSizes', 'productColors']);
+            ->with(['category', 'brand']); // Removed productSizes, productShoeSizes, productColors for lazy loading
 
         // Filter by categories
         if ($request->has('categories') && is_array($request->categories) && count($request->categories) > 0) {
@@ -167,18 +167,36 @@ class FrontendController extends Controller
             });
         }
 
-        $products = $query->paginate(10);
+        // For AJAX pagination requests (when clicking on page numbers)
+        if ($request->ajax() || $request->wantsJson()) {
+            $products = $query->paginate(10);
 
-        // Append filter parameters to pagination links
-        $products->appends($request->only([
-            'categories',
-            'sizes',
-            'shoe_sizes',
-            'colors',
-            'min_price',
-            'max_price'
-        ]));
+            // Append filter parameters to pagination links
+            $products->appends($request->only([
+                'categories',
+                'brands',
+                'sizes',
+                'shoe_sizes',
+                'colors',
+                'min_price',
+                'max_price'
+            ]));
 
+            $productsHtml = view('frontend.partials.shop-products-grid', compact('products'))->render();
+            $paginationHtml = view('frontend.partials.shop-pagination', compact('products'))->render();
+
+            return response()->json([
+                'success' => true,
+                'productsHtml' => $productsHtml,
+                'paginationHtml' => $paginationHtml,
+                'currentPage' => $products->currentPage(),
+                'lastPage' => $products->lastPage(),
+                'total' => $products->total()
+            ]);
+        }
+
+        // For initial page load: get only 10 products WITHOUT expensive count query
+        $products = $query->limit(10)->get();
         // Get filters data with product counts
         $sizes = Size::where('is_active', true)
             ->withCount(['products' => function($q) {
@@ -222,7 +240,7 @@ class FrontendController extends Controller
 
         $query = Product::where('category_id', $category->id)
             ->where('is_active', true)
-            ->with(['category', 'productSizes', 'productShoeSizes', 'productColors']);
+            ->with(['category', 'brand', 'productSizes', 'productShoeSizes', 'productColors']);
 
         // Filter by sizes (clothing)
         if ($request->has('sizes') && is_array($request->sizes) && count($request->sizes) > 0) {
@@ -356,7 +374,7 @@ class FrontendController extends Controller
         $product = Product::where('slug->' . $locale, $slug)
             ->orWhere('slug->ar', $slug)
             ->orWhere('slug->en', $slug)
-            ->with(['category', 'productColors', 'colorImages'])
+            ->with(['category', 'brand', 'productColors', 'colorImages'])
             ->firstOrFail();
 
         // Increment views count
@@ -558,7 +576,7 @@ class FrontendController extends Controller
                           ->orWhere('brand', 'LIKE', "%{$searchQuery}%")
                           ->orWhere('sku', 'LIKE', "%{$searchQuery}%");
                 })
-                ->with(['category', 'productSizes', 'productShoeSizes', 'productColors'])
+                ->with(['category', 'brand', 'productSizes', 'productShoeSizes', 'productColors'])
                 ->paginate(24);
 
             // Search in categories (by name in both languages)
@@ -704,7 +722,7 @@ class FrontendController extends Controller
             $html .= '</span>';
             $html .= '</span>';
             $html .= '<span class="category-label">';
-            $html .= '<span class="category-text">' . htmlspecialchars($brand->name) . '</span>';
+            $html .= '<span class="category-text">' . htmlspecialchars($brand->getName()) . '</span>';
             $html .= '<span class="category-count">(' . $productsCount . ')</span>';
             $html .= '</span>';
             $html .= '</label>';

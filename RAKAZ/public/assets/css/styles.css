@@ -1876,6 +1876,7 @@ body[dir="ltr"] .hero-text {
     display: flex;
     gap: 6px;
     justify-content: center;
+    align-items: center;
 }
 
 .featured-color-dot {
@@ -1883,6 +1884,13 @@ body[dir="ltr"] .hero-text {
     height: 12px;
     border-radius: 50%;
     flex-shrink: 0;
+}
+
+.featured-color-more {
+    font-size: 10px;
+    font-weight: 600;
+    color: #666;
+    margin-left: 2px;
 }
 
 /* Featured Product Overlay */
@@ -1913,6 +1921,8 @@ body[dir="ltr"] .hero-text {
     display: block;
     text-decoration: none;
     color: inherit;
+    position: relative;
+    z-index: 1;
 }
 
 .overlay-image-section {
@@ -1967,7 +1977,22 @@ body[dir="ltr"] .hero-text {
     border: none;
     cursor: pointer !important;
     pointer-events: all !important;
-    z-index: 100 !important;
+    z-index: 9999 !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.overlay-wishlist-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.overlay-wishlist-btn:active {
+    transform: scale(0.95);
+}
+
+.overlay-wishlist-btn.active svg {
+    fill: #e91e63;
+    stroke: #e91e63;
 }
 
 .overlay-wishlist-btn svg {
@@ -2707,12 +2732,6 @@ button.overlay-sizes-nav,
 /* Old footer-social - keep for backward compatibility but hide */
 .footer-social {
     display: none;
-}
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #333;
-    border-radius: 50%;
 }
 
 .social-icon svg {

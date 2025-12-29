@@ -71,7 +71,7 @@
                                 <div class="product-info">
                                     <h3 class="product-name">{{ $product->getName() }}</h3>
                                     @if($product->brand)
-                                        <p class="product-brand">{{ $product->brand }}</p>
+                                        <p class="product-brand">{{ $product->brand->getName() }}</p>
                                     @endif
                                     <div class="product-price">
                                         @if($product->hasDiscount())

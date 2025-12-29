@@ -6,6 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Mpdf\Mpdf;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 
 class OrderController extends Controller
 {
@@ -68,6 +73,8 @@ class OrderController extends Controller
             $order = Order::findOrFail($id);
             $oldStatus = $order->status;
             $order->status = $request->status;
+
+            // Stock restoration is handled automatically by OrderObserver
 
             // Update status timestamps
             switch ($request->status) {
@@ -184,6 +191,111 @@ class OrderController extends Controller
     {
         $order = Order::with('items.product')->findOrFail($id);
         return view('admin.orders.print', compact('order'));
+    }
+
+    /**
+     * Preview Invoice in Browser
+     */
+    public function previewInvoice($id)
+    {
+        $order = Order::with('items.product')->findOrFail($id);
+
+        // Generate QR Code
+        $renderer = new ImageRenderer(
+            new RendererStyle(140),
+            new SvgImageBackEnd()
+        );
+        $writer = new Writer($renderer);
+        $qrCode = $writer->writeString($order->order_number);
+
+        // Remove XML declaration from SVG
+        $qrCode = preg_replace('/<\?xml.*?\?>\s*/s', '', $qrCode);
+
+        return view('admin.orders.invoice-pdf', compact('order', 'qrCode'));
+    }
+
+    /**
+     * Download Invoice as PDF
+     */
+    public function downloadInvoice($id)
+    {
+        $order = Order::with('items.product')->findOrFail($id);
+
+        // Generate QR Code
+        $renderer = new ImageRenderer(
+            new RendererStyle(140),
+            new SvgImageBackEnd()
+        );
+        $writer = new Writer($renderer);
+        $qrCode = $writer->writeString($order->order_number);
+
+        // Remove XML declaration from SVG
+        $qrCode = preg_replace('/<\?xml.*?\?>\s*/s', '', $qrCode);
+
+        $html = view('admin.orders.invoice-pdf', compact('order', 'qrCode'))->render();
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'P',
+            'margin_left' => 10,
+            'margin_right' => 10,
+            'margin_top' => 10,
+            'margin_bottom' => 10,
+            'margin_header' => 5,
+            'margin_footer' => 5,
+            'default_font' => 'dejavusans',
+            'autoScriptToLang' => true,
+            'autoLangToFont' => true,
+        ]);
+
+        $mpdf->WriteHTML($html);
+
+        $filename = 'Invoice-' . $order->order_number . '.pdf';
+
+        return $mpdf->Output($filename, 'D');
+    }
+
+    /**
+     * Stream Invoice PDF (View in Browser)
+     */
+    public function streamInvoice($id)
+    {
+        $order = Order::with('items.product')->findOrFail($id);
+
+        // Generate QR Code
+        $renderer = new ImageRenderer(
+            new RendererStyle(140),
+            new SvgImageBackEnd()
+        );
+        $writer = new Writer($renderer);
+        $qrCode = $writer->writeString($order->order_number);
+
+        // Remove XML declaration from SVG
+        $qrCode = preg_replace('/<\?xml.*?\?>\s*/s', '', $qrCode);
+
+        $html = view('admin.orders.invoice-pdf', compact('order', 'qrCode'))->render();
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'P',
+            'margin_left' => 10,
+            'margin_right' => 10,
+            'margin_top' => 10,
+            'margin_bottom' => 10,
+            'margin_header' => 5,
+            'margin_footer' => 5,
+            'default_font' => 'dejavusans',
+            'autoScriptToLang' => true,
+            'autoLangToFont' => true,
+        ]);
+
+        $mpdf->WriteHTML($html);
+
+        $filename = 'Invoice-' . $order->order_number . '.pdf';
+
+        return $mpdf->Output($filename, 'I');
     }
 
     public function destroy($id)

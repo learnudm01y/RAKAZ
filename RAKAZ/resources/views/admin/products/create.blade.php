@@ -493,7 +493,7 @@
 
         <!-- Form Actions -->
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary btn-lg">
+            <button type="submit" class="btn btn-primary btn-lg" id="submit-product-btn">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
@@ -999,6 +999,105 @@ textarea.d-none {
 <script src="https://cdn.jsdelivr.net/npm/pica@9.0.1/dist/pica.min.js"></script>
 
 <script>
+// ============ Image Compression System ============
+const ImageCompressor = {
+    pendingCompressions: new Set(),
+    compressedImages: {
+        main: null,
+        hover: null,
+        gallery: [],
+        colors: {}
+    },
+
+    isCompressing: function() {
+        return this.pendingCompressions.size > 0;
+    },
+
+    addPending: function(id) {
+        this.pendingCompressions.add(id);
+        this.updateSubmitButton();
+    },
+
+    removePending: function(id) {
+        this.pendingCompressions.delete(id);
+        this.updateSubmitButton();
+    },
+
+    updateSubmitButton: function() {
+        const submitBtn = $('#submit-product-btn');
+        const isArabic = '{{ app()->getLocale() }}' === 'ar';
+
+        if (this.isCompressing()) {
+            submitBtn.prop('disabled', true);
+            submitBtn.html(`
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                ${isArabic ? 'جاري ضغط الصور...' : 'Compressing images...'}
+            `);
+        } else {
+            submitBtn.prop('disabled', false);
+            submitBtn.html(`
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                ${isArabic ? 'حفظ المنتج' : 'Save Product'}
+            `);
+        }
+    },
+
+    compress: async function(file, type, elementId, colorId = null) {
+        const uniqueId = `${type}_${elementId}_${Date.now()}`;
+        this.addPending(uniqueId);
+
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('type', type);
+        formData.append('_token', '{{ csrf_token() }}');
+
+        try {
+            const response = await fetch('/api/admin/compress-image', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Store compressed image path
+                if (type === 'main') {
+                    this.compressedImages.main = data.path;
+                } else if (type === 'hover') {
+                    this.compressedImages.hover = data.path;
+                } else if (type === 'gallery') {
+                    this.compressedImages.gallery.push({
+                        id: elementId,
+                        path: data.path
+                    });
+                } else if (type === 'color' && colorId) {
+                    this.compressedImages.colors[colorId] = data.path;
+                }
+
+                return {
+                    success: true,
+                    url: data.url,
+                    path: data.path,
+                    sizeKB: data.size_kb
+                };
+            } else {
+                throw new Error(data.error || 'Compression failed');
+            }
+        } catch (error) {
+            console.error('Compression error:', error);
+            return { success: false, error: error.message };
+        } finally {
+            this.removePending(uniqueId);
+        }
+    },
+
+    removeGalleryImage: function(imageId) {
+        this.compressedImages.gallery = this.compressedImages.gallery.filter(img => img.id !== imageId);
+    }
+};
+
 $(document).ready(function() {
     const isArabic = '{{ app()->getLocale() }}' === 'ar';
 
@@ -1027,28 +1126,93 @@ $(document).ready(function() {
     $('#product-form').on('submit', function(e) {
         let errors = [];
 
+        // Check if images are still being compressed
+        if (ImageCompressor.isCompressing()) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: isArabic ? 'جاري ضغط الصور' : 'Images Compressing',
+                text: isArabic ? 'يرجى الانتظار حتى تنتهي عملية ضغط جميع الصور' : 'Please wait until all images are compressed',
+                confirmButtonText: isArabic ? 'حسناً' : 'OK',
+                confirmButtonColor: '#667eea'
+            });
+            return false;
+        }
+
         // Check required fields
-        if (!$('input[name="name_ar"]').val()) {
-            errors.push(isArabic ? 'اسم المنتج بالعربي مطلوب' : 'Product name in Arabic is required');
+        const nameAr = $('input[name="name_ar"]').val()?.trim();
+        const nameEn = $('input[name="name_en"]').val()?.trim();
+        const categoryId = $('select[name="category_id"]').val();
+        const brandId = $('select[name="brand_id"]').val();
+        const price = $('input[name="price"]').val();
+        const isActive = $('input[name="is_active"]').is(':checked');
+
+        // Validate Product Name (Arabic)
+        if (!nameAr || nameAr.length === 0) {
+            errors.push(isArabic ? '⚠️ اسم المنتج بالعربي مطلوب' : '⚠️ Product name in Arabic is required');
         }
-        if (!$('input[name="name_en"]').val()) {
-            errors.push(isArabic ? 'اسم المنتج بالإنجليزي مطلوب' : 'Product name in English is required');
+
+        // Validate Product Name (English)
+        if (!nameEn || nameEn.length === 0) {
+            errors.push(isArabic ? '⚠️ اسم المنتج بالإنجليزي مطلوب' : '⚠️ Product name in English is required');
         }
-        if (!$('input[name="price"]').val()) {
-            errors.push(isArabic ? 'سعر المنتج مطلوب' : 'Product price is required');
+
+        // Validate Category
+        if (!categoryId || categoryId === '') {
+            errors.push(isArabic ? '⚠️ تصنيف المنتج مطلوب' : '⚠️ Product category is required');
+        }
+
+        // Validate Brand
+        if (!brandId || brandId === '') {
+            errors.push(isArabic ? '⚠️ العلامة التجارية مطلوبة' : '⚠️ Product brand is required');
+        }
+
+        // Validate Price
+        if (!price || parseFloat(price) <= 0) {
+            errors.push(isArabic ? '⚠️ سعر المنتج مطلوب ويجب أن يكون أكبر من صفر' : '⚠️ Product price is required and must be greater than zero');
+        }
+
+        // Validate Product Status
+        if (isActive === false && isActive !== true) {
+            errors.push(isArabic ? '⚠️ يجب تحديد حالة المنتج (نشط/غير نشط)' : '⚠️ Product status must be set (Active/Inactive)');
         }
 
         if (errors.length > 0) {
             e.preventDefault();
             Swal.fire({
-                icon: 'error',
-                title: isArabic ? 'يرجى ملء الحقول المطلوبة' : 'Please fill required fields',
-                html: '<ul style="text-align: ' + (isArabic ? 'right' : 'left') + '; list-style: none; padding: 0;">' +
-                      errors.map(error => '<li>• ' + error + '</li>').join('') +
-                      '</ul>',
-                confirmButtonText: isArabic ? 'حسناً' : 'OK',
-                confirmButtonColor: '#dc3545'
+                icon: 'warning',
+                title: isArabic ? '⚠️ يرجى ملء جميع الحقول المطلوبة' : '⚠️ Please fill all required fields',
+                html: '<div style="text-align: ' + (isArabic ? 'right' : 'left') + '; padding: 10px 20px;">' +
+                      '<p style="font-weight: bold; margin-bottom: 15px; font-size: 16px; color: #dc3545;">' +
+                      (isArabic ? 'الحقول التالية مطلوبة:' : 'The following fields are required:') +
+                      '</p>' +
+                      '<ul style="list-style: none; padding: 0; margin: 0;">' +
+                      errors.map(error => '<li style="padding: 8px 0; border-bottom: 1px solid #eee; font-size: 15px;">🔴 ' + error + '</li>').join('') +
+                      '</ul>' +
+                      '</div>',
+                confirmButtonText: isArabic ? 'فهمت، سأقوم بملء البيانات' : 'Got it, I will fill the data',
+                confirmButtonColor: '#dc3545',
+                customClass: {
+                    popup: 'swal-wide',
+                    title: 'swal-title-large',
+                    htmlContainer: 'swal-html-rtl'
+                },
+                width: '600px'
             });
+
+            // Scroll to first error field
+            if (!nameAr) {
+                $('input[name="name_ar"]').focus();
+            } else if (!nameEn) {
+                $('input[name="name_en"]').focus();
+            } else if (!categoryId) {
+                $('select[name="category_id"]').focus();
+            } else if (!brandId) {
+                $('select[name="brand_id"]').focus();
+            } else if (!price || parseFloat(price) <= 0) {
+                $('input[name="price"]').focus();
+            }
+
             return false;
         }
     });
@@ -1310,23 +1474,41 @@ $(document).ready(function() {
         $('#main_image').click();
     });
 
-    $('#main_image').on('change', function(e) {
+    $('#main_image').on('change', async function(e) {
         const file = e.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imgHtml = '<img src="' + e.target.result + '" alt="Main Image">';
-                $('#main-image-preview').html(imgHtml);
+            // Show loading state with spinner
+            $('#main-image-preview').html(`
+                <div class="image-compressing-overlay">
+                    <div class="compression-spinner"></div>
+                    <p class="mb-0">${isArabic ? 'جاري الضغط...' : 'Compressing...'}</p>
+                </div>
+            `);
 
-                // Enhance with Pica after image loads
-                const img = $('#main-image-preview img')[0];
-                if (img) {
-                    img.onload = function() {
-                        enhanceImageWithPica(this, 600);
-                    };
-                }
-            };
-            reader.readAsDataURL(file);
+            // Compress via AJAX
+            const result = await ImageCompressor.compress(file, 'main', 'main_image');
+
+            if (result.success) {
+                $('#main-image-preview').html(`
+                    <img src="${result.url}" alt="Main Image">
+                    <div class="compression-success-badge">
+                        <i class="fas fa-check-circle"></i> ${result.sizeKB} KB
+                    </div>
+                    <input type="hidden" name="compressed_main_image" value="${result.path}">
+                `);
+            } else {
+                // Fallback to original preview if compression fails
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#main-image-preview').html(`
+                        <img src="${e.target.result}" alt="Main Image">
+                        <div class="compression-failed-badge">
+                            <i class="fas fa-exclamation-triangle"></i> ${isArabic ? 'فشل الضغط' : 'Compression failed'}
+                        </div>
+                    `);
+                };
+                reader.readAsDataURL(file);
+            }
         }
     });
 
@@ -1335,23 +1517,41 @@ $(document).ready(function() {
         $('#hover_image').click();
     });
 
-    $('#hover_image').on('change', function(e) {
+    $('#hover_image').on('change', async function(e) {
         const file = e.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imgHtml = '<img src="' + e.target.result + '" alt="Hover Image">';
-                $('#hover-image-preview').html(imgHtml);
+            // Show loading state with spinner
+            $('#hover-image-preview').html(`
+                <div class="image-compressing-overlay">
+                    <div class="compression-spinner"></div>
+                    <p class="mb-0">${isArabic ? 'جاري الضغط...' : 'Compressing...'}</p>
+                </div>
+            `);
 
-                // Enhance with Pica after image loads
-                const img = $('#hover-image-preview img')[0];
-                if (img) {
-                    img.onload = function() {
-                        enhanceImageWithPica(this, 600);
-                    };
-                }
-            };
-            reader.readAsDataURL(file);
+            // Compress via AJAX
+            const result = await ImageCompressor.compress(file, 'hover', 'hover_image');
+
+            if (result.success) {
+                $('#hover-image-preview').html(`
+                    <img src="${result.url}" alt="Hover Image">
+                    <div class="compression-success-badge">
+                        <i class="fas fa-check-circle"></i> ${result.sizeKB} KB
+                    </div>
+                    <input type="hidden" name="compressed_hover_image" value="${result.path}">
+                `);
+            } else {
+                // Fallback to original preview if compression fails
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#hover-image-preview').html(`
+                        <img src="${e.target.result}" alt="Hover Image">
+                        <div class="compression-failed-badge">
+                            <i class="fas fa-exclamation-triangle"></i> ${isArabic ? 'فشل الضغط' : 'Compression failed'}
+                        </div>
+                    `);
+                };
+                reader.readAsDataURL(file);
+            }
         }
     });
 
@@ -1362,47 +1562,75 @@ $(document).ready(function() {
         $('#gallery_images').click();
     });
 
-    $('#gallery_images').on('change', function(e) {
+    $('#gallery_images').on('change', async function(e) {
         const files = Array.from(e.target.files);
-        let loadedCount = 0;
-        const totalFiles = files.filter(f => f.type.startsWith('image/')).length;
+        const imageFiles = files.filter(f => f.type.startsWith('image/'));
 
-        if (totalFiles === 0) return;
+        if (imageFiles.length === 0) return;
 
-        files.forEach((file, index) => {
-            if (file.type.startsWith('image/')) {
-                const imageId = Date.now() + index;
-                galleryFiles.push({ id: imageId, file: file });
+        for (let i = 0; i < imageFiles.length; i++) {
+            const file = imageFiles[i];
+            const imageId = Date.now() + i;
+            galleryFiles.push({ id: imageId, file: file, compressed: false });
 
+            // Show placeholder with spinner
+            const imageHtml = `
+                <div class="gallery-image-item compressing" data-id="${imageId}">
+                    <div class="image-compressing-overlay">
+                        <div class="compression-spinner"></div>
+                        <p class="mb-0">${isArabic ? 'جاري الضغط...' : 'Compressing...'}</p>
+                    </div>
+                    <button type="button" class="remove-image" onclick="removeGalleryImage(${imageId})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            $('#gallery-preview').append(imageHtml);
+
+            // Compress via AJAX
+            const result = await ImageCompressor.compress(file, 'gallery', imageId);
+
+            const $item = $(`.gallery-image-item[data-id="${imageId}"]`);
+
+            if (result.success) {
+                $item.removeClass('compressing');
+                $item.html(`
+                    <img src="${result.url}" alt="Gallery Image">
+                    <div class="compression-success-badge">
+                        <i class="fas fa-check-circle"></i> ${result.sizeKB} KB
+                    </div>
+                    <button type="button" class="remove-image" onclick="removeGalleryImage(${imageId})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <input type="hidden" name="compressed_gallery_images[]" value="${result.path}">
+                `);
+
+                // Update the file entry as compressed
+                const fileEntry = galleryFiles.find(f => f.id === imageId);
+                if (fileEntry) {
+                    fileEntry.compressed = true;
+                    fileEntry.path = result.path;
+                }
+            } else {
+                // Show error state but keep the image
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const imageHtml = `
-                        <div class="gallery-image-item" data-id="${imageId}">
-                            <img src="${e.target.result}" alt="Gallery Image">
-                            <button type="button" class="remove-image" onclick="removeGalleryImage(${imageId})">
-                                <i class="fas fa-times"></i>
-                            </button>
+                    $item.removeClass('compressing');
+                    $item.html(`
+                        <img src="${e.target.result}" alt="Gallery Image">
+                        <div class="compression-failed-badge">
+                            <i class="fas fa-exclamation-triangle"></i>
                         </div>
-                    `;
-                    $('#gallery-preview').append(imageHtml);
-
-                    // Enhance gallery image with Pica
-                    const galleryImg = $(`#gallery-preview .gallery-image-item[data-id="${imageId}"] img`)[0];
-                    if (galleryImg) {
-                        galleryImg.onload = function() {
-                            enhanceImageWithPica(this, 400);
-                        };
-                    }
-
-                    loadedCount++;
-                    if (loadedCount === totalFiles) {
-                        // Update input only after all files are loaded
-                        updateGalleryInput();
-                    }
+                        <button type="button" class="remove-image" onclick="removeGalleryImage(${imageId})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `);
                 };
                 reader.readAsDataURL(file);
             }
-        });
+        }
+
+        updateGalleryInput();
     });
 
     // Update gallery input with all files
@@ -1562,40 +1790,71 @@ function createColorImageCard(color) {
     `;
 }
 
-// Handle color image selection
-function handleColorImageSelect(input, colorId) {
+// Handle color image selection with compression
+async function handleColorImageSelect(input, colorId) {
     var file = input.files[0];
     if (!file) return;
 
     var card = $('[data-color-id="' + colorId + '"]');
     var previewContainer = $('#color_image_preview_' + colorId);
     var filenameDisplay = $('#color_image_filename_' + colorId);
+    const isArabic = '{{ app()->getLocale() }}' === 'ar';
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-        alert('{{ app()->getLocale() == "ar" ? "يرجى اختيار ملف صورة" : "Please select an image file" }}');
+        alert(isArabic ? 'يرجى اختيار ملف صورة' : 'Please select an image file');
         input.value = '';
         return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-        alert('{{ app()->getLocale() == "ar" ? "حجم الملف كبير جداً (الحد الأقصى 5 ميجابايت)" : "File size too large (max 5MB)" }}');
+    // Validate file size (max 10MB for upload, will be compressed)
+    if (file.size > 10 * 1024 * 1024) {
+        alert(isArabic ? 'حجم الملف كبير جداً (الحد الأقصى 10 ميجابايت)' : 'File size too large (max 10MB)');
         input.value = '';
         return;
     }
 
-    // Store file reference
-    colorImagesData[colorId] = file;
+    // Show loading state
+    previewContainer.html(`
+        <div class="image-compressing-overlay">
+            <div class="compression-spinner"></div>
+            <p class="mb-0">${isArabic ? 'جاري الضغط...' : 'Compressing...'}</p>
+        </div>
+    `);
+    card.addClass('has-image');
 
-    // Show preview
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        previewContainer.html('<img src="' + e.target.result + '" alt="Preview">');
-        card.addClass('has-image');
-        filenameDisplay.text(file.name);
-    };
-    reader.readAsDataURL(file);
+    // Compress via AJAX
+    const result = await ImageCompressor.compress(file, 'color', colorId, colorId);
+
+    if (result.success) {
+        previewContainer.html(`
+            <img src="${result.url}" alt="Preview">
+            <div class="compression-success-badge">
+                <i class="fas fa-check-circle"></i> ${result.sizeKB} KB
+            </div>
+            <input type="hidden" name="compressed_color_images[${colorId}]" value="${result.path}">
+        `);
+        filenameDisplay.text(file.name + ' (' + result.sizeKB + ' KB)');
+
+        // Store compressed path
+        colorImagesData[colorId] = { file: file, path: result.path, compressed: true };
+    } else {
+        // Fallback to original preview if compression fails
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            previewContainer.html(`
+                <img src="${e.target.result}" alt="Preview">
+                <div class="compression-failed-badge">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+            `);
+            filenameDisplay.text(file.name);
+        };
+        reader.readAsDataURL(file);
+
+        // Store original file reference
+        colorImagesData[colorId] = { file: file, compressed: false };
+    }
 }
 
 // Remove color image
@@ -1622,6 +1881,9 @@ function removeGalleryImage(imageId) {
     $(`[data-id="${imageId}"]`).remove();
     galleryFiles = galleryFiles.filter(f => f.id !== imageId);
 
+    // Also remove from ImageCompressor
+    ImageCompressor.removeGalleryImage(imageId);
+
     // Update the input files
     const dt = new DataTransfer();
     galleryFiles.forEach(item => {
@@ -1632,6 +1894,83 @@ function removeGalleryImage(imageId) {
 </script>
 
 <style>
+/* Image Compression Styles */
+.image-compressing-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 8px;
+}
+
+.compression-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e5e7eb;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.compression-success-badge {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    background: rgba(72, 187, 120, 0.95);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 5;
+}
+
+.compression-success-badge i {
+    font-size: 10px;
+}
+
+.compression-failed-badge {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    background: rgba(245, 101, 101, 0.95);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 5;
+}
+
+.gallery-image-item.compressing {
+    position: relative;
+    min-height: 120px;
+    background: #f9fafb;
+}
+
+.product-image-preview {
+    position: relative;
+}
+
 /* Variant Styles */
 .variant-checkbox-group {
     border: 1px solid #e5e7eb;

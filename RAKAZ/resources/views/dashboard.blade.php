@@ -2006,34 +2006,62 @@ function formatNumber(num) {
 
 // Load all statistics via AJAX
 function loadStatistics() {
+    console.log('🔄 Loading dashboard statistics...');
+
+    // Get CSRF token
+    var csrfToken = '';
+    var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    if (csrfMeta) {
+        csrfToken = csrfMeta.getAttribute('content');
+        console.log('🔑 CSRF Token found');
+    } else {
+        console.warn('⚠️ CSRF Token meta tag not found!');
+    }
+
     var xhr = new XMLHttpRequest();
     xhr.open('GET', '/admin/api/statistics/all', true);
     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     xhr.setRequestHeader('Accept', 'application/json');
+    if (csrfToken) {
+        xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
+    }
+    xhr.withCredentials = true;
 
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
+            console.log('📡 Response received - Status:', xhr.status);
             if (xhr.status === 200) {
                 try {
                     var response = JSON.parse(xhr.responseText);
+                    console.log('✅ Statistics loaded successfully:', response);
                     if (response.success) {
                         dashboardData = response.data;
                         updateDashboardUI(response.data);
                     } else {
-                        console.error('Failed to load statistics:', response.error);
+                        console.error('❌ Failed to load statistics:', response.error);
                         showErrorState();
                     }
                 } catch (e) {
-                    console.error('Error parsing response:', e);
+                    console.error('❌ Error parsing response:', e);
                     showErrorState();
                 }
             } else {
-                console.error('HTTP Error:', xhr.status);
+                console.error('❌ HTTP Error:', xhr.status, xhr.statusText);
+                console.log('📄 Response text:', xhr.responseText);
+                if (xhr.status === 401) {
+                    console.error('🔒 Unauthorized - Session may have expired');
+                }
                 showErrorState();
             }
         }
     };
 
+    xhr.onerror = function() {
+        console.error('❌ Network error occurred');
+        showErrorState();
+    };
+
+    console.log('📤 Sending request to /admin/api/statistics/all');
     xhr.send();
 }
 
@@ -2168,6 +2196,8 @@ function updateRecentOrders(orders) {
 
 // Show real content and hide skeletons
 function showRealContent() {
+    console.log('✨ Showing real content, hiding skeletons');
+
     // Visitor stats
     var visitorSkeleton = document.getElementById('visitor-stats-skeleton');
     var visitorReal = document.getElementById('visitor-stats-real');
@@ -2194,10 +2224,13 @@ function showRealContent() {
         activityReal.style.display = 'block';
         activityReal.classList.add('fade-in');
     }
+
+    console.log('✅ Real content displayed successfully');
 }
 
 // Show error state
 function showErrorState() {
+    console.warn('⚠️ Showing error state with empty data');
     // Still show real content but with zeros/empty
     updateVisitorStats({});
     updateMainStats({});
@@ -2206,15 +2239,30 @@ function showErrorState() {
 }
 
 // Initialize dashboard on page load
-document.addEventListener('DOMContentLoaded', function() {
+function initDashboard() {
+    console.log('🚀 Dashboard initialized');
+    console.log('📍 Document ready state:', document.readyState);
+    console.log('⏰ Waiting 2 seconds before loading data...');
+
     // Wait 2 seconds before loading data (as per requirement)
     setTimeout(function() {
+        console.log('⏳ Starting data load...');
         loadStatistics();
     }, 2000);
-});
+}
+
+// Run immediately if document already loaded, otherwise wait for DOMContentLoaded
+if (document.readyState === 'loading') {
+    console.log('⏳ Waiting for DOM to be ready...');
+    document.addEventListener('DOMContentLoaded', initDashboard);
+} else {
+    console.log('✅ DOM already ready, initializing now');
+    initDashboard();
+}
 
 // Refresh statistics every 5 minutes
 setInterval(function() {
+    console.log('🔄 Auto-refresh: Reloading statistics...');
     loadStatistics();
 }, 300000);
 </script>

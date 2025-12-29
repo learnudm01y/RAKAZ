@@ -76,6 +76,16 @@ class Category extends Model
     }
 
     /**
+     * Get only categories that have products.
+     */
+    public function scopeWithProducts($query)
+    {
+        return $query->whereHas('products', function ($q) {
+            $q->where('is_active', true);
+        });
+    }
+
+    /**
      * Get categories ordered by sort_order.
      */
     public function scopeOrdered($query)

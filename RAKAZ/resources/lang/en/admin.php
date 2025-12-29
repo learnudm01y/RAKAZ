@@ -100,7 +100,10 @@ return [
         'order_details' => 'Order Details',
         'loading' => 'Loading...',
         'close' => 'Close',
-        
+        'print_invoice' => 'Print Invoice',
+        'preview_invoice' => 'Preview Invoice',
+        'download_pdf' => 'Download PDF',
+
         'table' => [
             'order_number' => 'Order #',
             'customer' => 'Customer',

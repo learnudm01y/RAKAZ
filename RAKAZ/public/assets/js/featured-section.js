@@ -50,6 +50,10 @@
         // Handle gallery navigation - FORCE IT TO WORK
         // Use both event delegation AND direct listeners
         document.addEventListener('click', function(e) {
+            // IMPORTANT: Only handle clicks within .must-have-section to avoid conflicts
+            const featuredSection = e.target.closest('.must-have-section');
+            if (!featuredSection) return; // Ignore clicks outside featured section
+
             console.log('🔥 DOCUMENT CLICK EVENT:', e.target);
             console.log('🔥 Target tagName:', e.target.tagName);
             console.log('🔥 Target className:', e.target.className);
@@ -411,4 +415,7 @@
     } else {
         initFeaturedSection();
     }
+
+    // Expose initialization function globally for lazy loading
+    window.initializeFeaturedSlider = initFeaturedSection;
 })();

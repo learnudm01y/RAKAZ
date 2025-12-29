@@ -574,8 +574,8 @@
             margin: 8px 0;
         }
 
-        /* Hide hover content and gallery on mobile/tablet to improve performance */
-        @media (max-width: 1024px) {
+        /* Hide hover content and gallery only on very small mobile screens */
+        @media (max-width: 640px) {
             .product-hover-content {
                 display: none !important;
             }
@@ -1543,221 +1543,7 @@
                 </div>
 
                 <!-- Sidebar Filters -->
-                <aside class="shop-sidebar" id="shopSidebar">
-                    <div class="sidebar-header">
-                        <h2>
-                            <span class="ar-text">الفلاتر</span>
-                            <span class="en-text">Filters</span>
-                        </h2>
-                        <button class="sidebar-close" id="sidebarClose">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <!-- قياس الملابس (Clothing Size) -->
-                    <div class="filter-section">
-                        <h3 class="filter-title">
-                            <span class="ar-text">قياس الملابس</span>
-                            <span class="en-text">Clothing size</span>
-                        </h3>
-                        <div class="size-grid">
-                            @foreach($sizes as $size)
-                            <label class="size-checkbox">
-                                <input type="checkbox" name="size" value="{{ $size->name }}">
-                                <span class="size-label">
-                                    <span class="size-value">{{ $size->name }}</span>
-                                    <span class="size-count">({{ $size->products_count ?? 0 }})</span>
-                                </span>
-                            </label>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <!-- التصنيفات الرئيسية (Main Categories) -->
-                    <div class="filter-section">
-                        <h3 class="filter-title">
-                            <span class="ar-text">التصنيفات</span>
-                            <span class="en-text">Categories</span>
-                        </h3>
-                        <div class="categories-list-wrapper">
-                            @php
-                                $mainCategories = \App\Models\Category::where('is_active', true)
-                                    ->whereNull('parent_id')
-                                    ->whereHas('products', function($query) {
-                                        $query->where('is_active', true);
-                                    })
-                                    ->orderBy('sort_order')
-                                    ->get();
-                                $totalCategories = $mainCategories->count();
-                                $maxDisplay = 10;
-                                $displayedCategories = $mainCategories->take($maxDisplay);
-                                $hasMore = $totalCategories > $maxDisplay;
-                            @endphp
-                            <div class="categories-checkbox-list" id="categoriesCheckboxList">
-                                @foreach($displayedCategories as $category)
-                                    <label class="category-checkbox-item">
-                                        <span class="custom-checkbox">
-                                            <input type="checkbox" name="category" value="{{ $category->id }}" data-slug="{{ $category->getSlug() }}">
-                                            <span class="checkbox-mark">
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                                </svg>
-                                            </span>
-                                        </span>
-                                        <span class="category-label">
-                                            <span class="category-text">{{ $category->getName() }}</span>
-                                            <span class="category-count">({{ $category->products()->where('is_active', true)->count() }})</span>
-                                        </span>
-                                    </label>
-                                @endforeach
-                            </div>
-                            @if($hasMore)
-                                <button class="show-more-categories" id="showMoreCategories" data-loaded="{{ $maxDisplay }}" data-total="{{ $totalCategories }}">
-                                    <span class="ar-text">عرض المزيد</span>
-                                    <span class="en-text">SHOW MORE</span>
-                                </button>
-                            @endif
-                        </div>
-                    </div>
-
-                    <!-- العلامات التجارية (Brands) -->
-                    <div class="filter-section">
-                        <h3 class="filter-title">
-                            <span class="ar-text">العلامات التجارية</span>
-                            <span class="en-text">Brands</span>
-                        </h3>
-                        <div class="brands-list-wrapper">
-                            @php
-                                $brands = \App\Models\Brand::where('is_active', true)
-                                    ->whereHas('products', function($query) {
-                                        $query->where('is_active', true);
-                                    })
-                                    ->orderBy('name_ar')
-                                    ->get();
-                                $totalBrands = $brands->count();
-                                $maxDisplayBrands = 10;
-                                $displayedBrands = $brands->take($maxDisplayBrands);
-                                $hasMoreBrands = $totalBrands > $maxDisplayBrands;
-                            @endphp
-                            <div class="brands-checkbox-list" id="brandsCheckboxList">
-                                @foreach($displayedBrands as $brand)
-                                    <label class="category-checkbox-item">
-                                        <span class="custom-checkbox">
-                                            <input type="checkbox" name="brand" value="{{ $brand->id }}" data-slug="{{ $brand->slug }}">
-                                            <span class="checkbox-mark">
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                                </svg>
-                                            </span>
-                                        </span>
-                                        <span class="category-label">
-                                            <span class="category-text">{{ $brand->getName() }}</span>
-                                            <span class="category-count">({{ $brand->products()->where('is_active', true)->count() }})</span>
-                                        </span>
-                                    </label>
-                                @endforeach
-                            </div>
-                            @if($hasMoreBrands)
-                                <button class="show-more-categories" id="showMoreBrands" data-loaded="{{ $maxDisplayBrands }}" data-total="{{ $totalBrands }}">
-                                    <span class="ar-text">عرض المزيد</span>
-                                    <span class="en-text">SHOW MORE</span>
-                                </button>
-                            @endif
-                        </div>
-                    </div>
-
-                    <!-- مقاس الحذاء (Shoe Size) -->
-                    <div class="filter-section">
-                        <h3 class="filter-title">
-                            <span class="ar-text">مقاس الحذاء</span>
-                            <span class="en-text">Shoe size</span>
-                        </h3>
-                        <div class="shoe-size-selector">
-                            <select class="shoe-size-dropdown custom-select">
-                                <option value="">EU</option>
-                                @foreach($shoeSizes as $shoeSize)
-                                <option value="{{ $shoeSize->size }}">{{ $shoeSize->size }} ({{ $shoeSize->products_count ?? 0 }})</option>
-                                @endforeach
-                            </select>
-                            <div class="shoe-size-scroll">
-                                @foreach($shoeSizes as $shoeSize)
-                                <label class="shoe-size-checkbox">
-                                    <input type="checkbox" name="shoe-size" value="{{ $shoeSize->size }}">
-                                    <span class="shoe-label">
-                                        <span class="shoe-count">({{ $shoeSize->products_count ?? 0 }})</span>
-                                        <span class="shoe-value">{{ $shoeSize->size }}</span>
-                                    </span>
-                                </label>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- اللون (Color) -->
-                    <div class="filter-section">
-                        <h3 class="filter-title">
-                            <span class="ar-text">اللون</span>
-                            <span class="en-text">Color</span>
-                        </h3>
-                        <div class="color-scroll">
-                            @foreach($colors as $color)
-                            <label class="color-checkbox">
-                                <input type="checkbox" name="color" value="{{ strtolower(app()->getLocale() == 'ar' ? ($color->name['ar'] ?? '') : ($color->name['en'] ?? $color->name['ar'] ?? '')) }}">
-                                <span class="color-label">
-                                    <span class="color-circle" style="background-color: {{ $color->hex_code }};@if($color->hex_code == '#FFFFFF') border: 1px solid #ddd;@endif"></span>
-                                    <span class="color-name">{{ app()->getLocale() == 'ar' ? ($color->name['ar'] ?? '') : ($color->name['en'] ?? $color->name['ar'] ?? '') }}</span>
-                                    <span class="color-count">({{ $color->products_count ?? 0 }})</span>
-                                </span>
-                            </label>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <!-- السعر (Price) -->
-                    <div class="filter-section">
-                        <h3 class="filter-title">
-                            <span class="ar-text">السعر</span>
-                            <span class="en-text">Price</span>
-                        </h3>
-                        <div class="price-range-wrapper">
-                            <div class="price-display">
-                                <div class="price-box">
-                                    <label>
-                                        <span class="ar-text">السعر الأدنى</span>
-                                        <span class="en-text">Min price</span>
-                                    </label>
-                                    <div class="price-input-wrapper">
-                                        <input type="number" id="minPrice" value="{{ request('min_price', $minPrice) }}" min="{{ $minPrice }}"
-                                            max="{{ $maxPrice }}">
-                                        <span class="currency">AED</span>
-                                    </div>
-                                </div>
-                                <div class="price-box">
-                                    <label>
-                                        <span class="ar-text">السعر الأعلى</span>
-                                        <span class="en-text">Max price</span>
-                                    </label>
-                                    <div class="price-input-wrapper">
-                                        <input type="number" id="maxPrice" value="{{ request('max_price', $maxPrice) }}" min="{{ $minPrice }}"
-                                            max="{{ $maxPrice }}">
-                                        <span class="currency">AED</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- استخدام (Apply Button) -->
-                    <div class="filter-section">
-                        <button class="apply-filters-btn">
-                            <span class="ar-text">استخدام</span>
-                            <span class="en-text">Apply</span>
-                        </button>
-                    </div>
-                </aside>
+                @include('frontend.partials.shop-sidebar-skeleton')
 
                 <!-- Products Grid -->
                 <section class="shop-content">
@@ -1771,11 +1557,8 @@
                                 @endif
                             </h1>
                             <p class="results-count">
-                                {{ $products->total() }}
-                                {{ app()->getLocale() == 'ar' ? 'منتج' : 'Product' }}{{ $products->total() != 1 ? (app()->getLocale() == 'ar' ? '' : 's') : '' }}
-                                @if($products->total() > 0)
-                                    ({{ app()->getLocale() == 'ar' ? 'صفحة' : 'Page' }} {{ $products->currentPage() }} {{ app()->getLocale() == 'ar' ? 'من' : 'of' }} {{ $products->lastPage() }})
-                                @endif
+                                <span id="product-count">{{ $products->count() }}</span>
+                                {{ app()->getLocale() == 'ar' ? 'منتج' : 'Product' }}<span id="product-plural">{{ $products->count() != 1 ? (app()->getLocale() == 'ar' ? '' : 's') : '' }}</span><span id="page-info"></span>
                             </p>
                         </div>
                         <div class="shop-controls">
@@ -1824,221 +1607,20 @@
                     </div>
 
                     <div class="products-grid" data-view="grid-3">
-                        @forelse($products as $product)
-                        <div class="product-card">
-                            <div class="product-image-wrapper" style="position: relative;">
-                                <a href="{{ route('product.details', $product->getSlug()) }}" style="display: block;">
-                                    <img src="{{ $product->main_image ? asset('storage/' . $product->main_image) : asset('assets/images/placeholder.jpg') }}"
-                                        alt="{{ $product->getName() }}" class="product-image-primary">
-                                    @if($product->hover_image)
-                                    <img src="{{ asset('storage/' . $product->hover_image) }}"
-                                        alt="{{ $product->getName() }}" class="product-image-secondary">
-                                    @else
-                                    <img src="{{ $product->main_image ? asset('storage/' . $product->main_image) : asset('assets/images/placeholder.jpg') }}"
-                                        alt="{{ $product->getName() }}" class="product-image-secondary">
-                                    @endif
-                                </a>
-                                <button class="wishlist-btn {{ auth()->check() && \App\Models\Wishlist::isInWishlist(auth()->id(), $product->id) ? 'active' : '' }}" data-product-id="{{ $product->id }}" onclick="event.stopPropagation();">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path
-                                            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
-                                        </path>
-                                    </svg>
-                                </button>
-                                @if($product->sale_price && $product->sale_price < $product->price)
-                                    @php
-                                        $discountPercent = round((($product->price - $product->sale_price) / $product->price) * 100);
-                                    @endphp
-                                    <div class="discount-badge-wrapper">
-                                        <img src="{{ asset('assets/images/discount.png') }}" alt="Discount" class="discount-badge-image">
-                                        <div class="discount-badge-text">
-                                            <span class="discount-text-ar">تخفيض</span>
-                                            <span class="discount-text-en">DISCOUNT</span>
-                                            <span class="discount-percent">%{{ $discountPercent }}</span>
-                                        </div>
-                                    </div>
-                                @elseif($product->is_new)
-                                    <span class="badge new-season">{{ app()->getLocale() == 'ar' ? 'موسم جديد' : 'New Season' }}</span>
-                                @elseif($product->is_on_sale)
-                                    <span class="badge discount">{{ app()->getLocale() == 'ar' ? 'عرض خاص' : 'On Sale' }}</span>
-                                @endif
-
-                                <!-- Hover Content: Colors, Gallery, Sizes - Hidden on Mobile/Tablet -->
-                                @php
-                                    $isMobile = request()->header('User-Agent') && (stripos(request()->header('User-Agent'), 'mobile') !== false || stripos(request()->header('User-Agent'), 'tablet') !== false || stripos(request()->header('User-Agent'), 'android') !== false || stripos(request()->header('User-Agent'), 'iphone') !== false || stripos(request()->header('User-Agent'), 'ipad') !== false);
-                                @endphp
-                                @if(!$isMobile)
-                                <div class="product-hover-content">
-                                    <!-- Colors Display - Always show -->
-                                    <div class="product-colors-display">
-                                        @php
-                                            // Get colors from relationship or JSON field
-                                            $productColors = [];
-                                            if($product->productColors && $product->productColors->count() > 0) {
-                                                $productColors = $product->productColors;
-                                            } elseif($product->colors && is_array($product->colors) && count($product->colors) > 0) {
-                                                $productColors = collect($product->colors);
-                                            }
-                                        @endphp
-
-                                        @if($productColors && count($productColors) > 0)
-                                            @foreach($productColors->take(6) as $color)
-                                            @php
-                                                if(is_object($color)) {
-                                                    $hexCode = $color->hex_code ?? '#cccccc';
-                                                    $colorName = is_array($color->name)
-                                                        ? (app()->getLocale() == 'ar' ? ($color->name['ar'] ?? $color->name['en'] ?? '') : ($color->name['en'] ?? $color->name['ar'] ?? ''))
-                                                        : ($color->name ?? '');
-                                                } else {
-                                                    $hexCode = is_array($color) ? ($color['hex'] ?? $color['hex_code'] ?? '#cccccc') : '#cccccc';
-                                                    $colorName = is_array($color)
-                                                        ? (app()->getLocale() == 'ar' ? ($color['name_ar'] ?? $color['name_en'] ?? $color['name'] ?? '') : ($color['name_en'] ?? $color['name_ar'] ?? $color['name'] ?? ''))
-                                                        : '';
-                                                }
-                                            @endphp
-                                            <div class="product-color-circle"
-                                                 style="background-color: {{ $hexCode }}"
-                                                 title="{{ $colorName }}">
-                                            </div>
-                                            @endforeach
-                                        @else
-                                            {{-- Placeholder when no colors available --}}
-                                            <div style="height: 24px;"></div>
-                                        @endif
-                                    </div>
-
-                                    <!-- Sizes Display -->
-                                    <div class="product-sizes-display">
-                                        @if($product->sizes && is_array($product->sizes) && count($product->sizes) > 0)
-                                        <button class="sizes-scroll-btn prev-size" data-product-id="{{ $product->id }}">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M15 19l-7-7 7-7" />
-                                            </svg>
-                                        </button>
-                                        <div class="product-sizes-wrapper" data-product-id="{{ $product->id }}">
-                                            @foreach($product->sizes as $size)
-                                            <div class="product-size-item" data-size="{{ is_array($size) ? ($size['value'] ?? $size['ar'] ?? $size['en']) : $size }}">
-                                                {{ is_array($size) ? (app()->getLocale() == 'ar' ? ($size['ar'] ?? $size['en']) : ($size['en'] ?? $size['ar'])) : $size }}
-                                            </div>
-                                            @endforeach
-                                        </div>
-                                        <button class="sizes-scroll-btn next-size" data-product-id="{{ $product->id }}">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </button>
-                                        @else
-                                        {{-- Placeholder when no sizes --}}
-                                        <div style="height: 30px;"></div>
-                                        @endif
-                                    </div>
-                                </div>
-                                @endif
-                            </div>
-
-                            <div class="product-info">
-                                <!-- Gallery Section - Inside product-info, replacing brand on hover - Hidden on Mobile/Tablet -->
-                                @if(!$isMobile)
-                                @if($product->gallery_images && is_array($product->gallery_images) && count($product->gallery_images) > 0)
-                                <div class="product-gallery-section">
-                                    <div class="product-gallery-wrapper">
-                                        <button class="gallery-nav-btn gallery-prev" data-product-id="{{ $product->id }}" type="button">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                                <polyline points="9 18 15 12 9 6"></polyline>
-                                            </svg>
-                                        </button>
-                                        <div class="product-gallery-container" data-product-id="{{ $product->id }}">
-                                            @foreach($product->colorImages as $colorImage)
-                                            <a href="{{ route('product.details', $product->getSlug()) }}?color={{ $colorImage->color_id }}" data-product-id="{{ $product->id }}" data-color-id="{{ $colorImage->color_id }}">
-                                                <img src="{{ asset('storage/' . $colorImage->image) }}"
-                                                     alt="{{ $product->getName() }} - {{ $colorImage->color?->translated_name ?? '' }}"
-                                                     class="product-gallery-item"
-                                                     data-product-id="{{ $product->id }}"
-                                                     data-color-id="{{ $colorImage->color_id }}">
-                                            </a>
-                                            @endforeach
-                                        </div>
-                                        <button class="gallery-nav-btn gallery-next" data-product-id="{{ $product->id }}" type="button">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                                <polyline points="15 18 9 12 15 6"></polyline>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                                @endif
-                                @endif
-
-                                @if($product->brand)
-                                <p class="product-brand">{{ is_object($product->brand) ? $product->brand->getName() : $product->brand }}</p>
-                                @endif
-                                <h3 class="product-name">{{ $product->getName() }}</h3>
-                                @if($product->sale_price && $product->sale_price < $product->price)
-                                <p class="product-price">
-                                    <span style="color: #999; text-decoration: line-through; font-size: 14px; margin-inline-end: 8px;">{{ number_format($product->price, 0) }}</span>
-                                    {{ number_format($product->sale_price, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}
-                                </p>
-                                @else
-                                <p class="product-price">{{ number_format($product->price, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</p>
-                                @endif
-
-                                <button class="add-to-cart-btn" data-product-id="{{ $product->id }}">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                                        <line x1="3" y1="6" x2="21" y2="6"></line>
-                                        <path d="M16 10a4 4 0 0 1-8 0"></path>
-                                    </svg>
-                                    {{ app()->getLocale() == 'ar' ? 'اختيار المنتج' : 'Select Product' }}
-                                </button>
-                            </div>
-                        </div>
-                        @empty
-                        <div class="col-span-full text-center py-12">
-                            <p class="text-gray-500 text-lg">{{ app()->getLocale() == 'ar' ? 'لا توجد منتجات متاحة حالياً' : 'No products available at the moment' }}</p>
-                        </div>
-                        @endforelse
+                        @include('frontend.partials.shop-products-grid')
                     </div>
 
-                    <!-- Pagination -->
-                    @if($products->hasPages())
-                    <div class="pagination">
-                        @if($products->onFirstPage())
-                        <button class="pagination-btn" disabled>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </button>
-                        @else
-                        <a href="{{ $products->appends(request()->query())->previousPageUrl() }}" class="pagination-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </a>
-                        @endif
-
-                        @foreach($products->appends(request()->query())->getUrlRange(1, $products->lastPage()) as $page => $url)
-                        <a href="{{ $url }}" class="pagination-btn {{ $page == $products->currentPage() ? 'active' : '' }}">{{ $page }}</a>
-                        @endforeach
-
-                        @if($products->hasMorePages())
-                        <a href="{{ $products->appends(request()->query())->nextPageUrl() }}" class="pagination-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M9 5l7 7-7 7" />
-                            </svg>
-                        </a>
-                        @else
-                        <button class="pagination-btn" disabled>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M9 5l7 7-7 7" />
-                            </svg>
-                        </button>
-                        @endif
-                    </div>
-                    @endif
+                    <!-- Pagination - Show skeleton on first load, will be replaced via AJAX after 1.5s -->
+                    @include('frontend.partials.shop-pagination-skeleton')
                 </section>
             </div>
         </main>
 @endsection
 @push('scripts')
+        <script>
+            // Define global variable before loading other scripts
+            window.isArabic = '{{ app()->getLocale() }}' === 'ar';
+        </script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="https://cdn.jsdelivr.net/npm/pica@9.0.1/dist/pica.min.js"></script>
         <script>
@@ -3773,7 +3355,112 @@
                     });
                 });
 
-                // Gallery Navigation - Fixed
+                // ========================================
+                // Gallery Navigation - SUPER POWERFUL RTL/LTR Support
+                // ========================================
+                function isRTL() {
+                    return document.documentElement.dir === 'rtl' ||
+                           document.body.dir === 'rtl' ||
+                           getComputedStyle(document.body).direction === 'rtl';
+                }
+
+                function normalizeScrollLeft(container) {
+                    // Different browsers handle RTL scrollLeft differently
+                    if (!isRTL()) return container.scrollLeft;
+
+                    // For RTL, normalize to positive values
+                    const scrollLeft = container.scrollLeft;
+                    if (scrollLeft < 0) {
+                        // Chrome/Edge RTL: negative values
+                        return Math.abs(scrollLeft);
+                    } else if (scrollLeft > 0) {
+                        // Firefox RTL: positive values, starts from max
+                        return container.scrollWidth - container.clientWidth - scrollLeft;
+                    }
+                    return 0;
+                }
+
+                function scrollGallery(container, amount, direction) {
+                    const rtl = isRTL();
+
+                    console.log('🎯 SCROLL DEBUG:', {
+                        direction,
+                        amount,
+                        isRTL: rtl,
+                        currentScrollLeft: container.scrollLeft,
+                        scrollWidth: container.scrollWidth,
+                        clientWidth: container.clientWidth,
+                        normalizedScroll: normalizeScrollLeft(container)
+                    });
+
+                    if (direction === 'next') {
+                        if (rtl) {
+                            // RTL: scroll to the left (negative or decrease)
+                            container.scrollBy({
+                                left: -amount,
+                                behavior: 'smooth'
+                            });
+                        } else {
+                            // LTR: scroll to the right (positive)
+                            container.scrollBy({
+                                left: amount,
+                                behavior: 'smooth'
+                            });
+                        }
+                    } else {
+                        if (rtl) {
+                            // RTL: scroll to the right (positive or increase)
+                            container.scrollBy({
+                                left: amount,
+                                behavior: 'smooth'
+                            });
+                        } else {
+                            // LTR: scroll to the left (negative)
+                            container.scrollBy({
+                                left: -amount,
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+
+                    setTimeout(() => {
+                        console.log('✅ After scroll:', {
+                            scrollLeft: container.scrollLeft,
+                            normalized: normalizeScrollLeft(container)
+                        });
+                    }, 100);
+                }
+
+                function updateGalleryButtons() {
+                    document.querySelectorAll('.product-gallery-container').forEach(container => {
+                        const productId = container.getAttribute('data-product-id');
+                        const prevBtn = document.querySelector(`.gallery-prev[data-product-id="${productId}"]`);
+                        const nextBtn = document.querySelector(`.gallery-next[data-product-id="${productId}"]`);
+
+                        if (!prevBtn || !nextBtn) return;
+
+                        const normalized = normalizeScrollLeft(container);
+                        const maxScroll = container.scrollWidth - container.clientWidth;
+
+                        const isAtStart = normalized <= 5;
+                        const isAtEnd = normalized >= (maxScroll - 5);
+
+                        prevBtn.disabled = isAtStart;
+                        nextBtn.disabled = isAtEnd;
+
+                        console.log('🔘 Button Update:', {
+                            productId,
+                            normalized,
+                            maxScroll,
+                            isAtStart,
+                            isAtEnd,
+                            prevDisabled: prevBtn.disabled,
+                            nextDisabled: nextBtn.disabled
+                        });
+                    });
+                }
+
+                // POWERFUL Click Handler with RTL Support
                 document.querySelectorAll('.gallery-prev, .gallery-next').forEach(btn => {
                     btn.addEventListener('click', function(e) {
                         e.preventDefault();
@@ -3783,29 +3470,54 @@
                         const container = document.querySelector(`.product-gallery-container[data-product-id="${productId}"]`);
 
                         if (!container) {
-                            console.log('Container not found for product:', productId);
+                            console.error('❌ Container not found for product:', productId);
                             return;
                         }
 
-                        const firstItem = container.querySelector('.product-gallery-item');
-                        if (!firstItem) {
-                            console.log('No gallery items found');
+                        const items = container.querySelectorAll('.product-gallery-item');
+                        if (!items || items.length === 0) {
+                            console.error('❌ No gallery items found');
                             return;
                         }
 
-                        const itemWidth = firstItem.offsetWidth + 2; // width + gap
-                        const scrollAmount = itemWidth; // scroll 1 item at a time
+                        const itemWidth = items[0].offsetWidth;
+                        const gap = 6;
+                        const scrollAmount = itemWidth + gap;
 
-                        console.log('Scrolling:', this.classList.contains('gallery-prev') ? 'prev' : 'next', 'Amount:', scrollAmount);
+                        const isPrev = this.classList.contains('gallery-prev');
+                        const isNext = this.classList.contains('gallery-next');
 
-                        // prev goes left (decrease scrollLeft), next goes right (increase scrollLeft)
-                        if (this.classList.contains('gallery-prev')) {
-                            container.scrollLeft -= scrollAmount;
-                        } else {
-                            container.scrollLeft += scrollAmount;
+                        console.log('🖱️ CLICK:', {
+                            button: isPrev ? 'PREV' : 'NEXT',
+                            productId,
+                            itemsCount: items.length,
+                            itemWidth,
+                            scrollAmount,
+                            isRTL: isRTL()
+                        });
+
+                        if (isPrev) {
+                            scrollGallery(container, scrollAmount, 'prev');
+                        } else if (isNext) {
+                            scrollGallery(container, scrollAmount, 'next');
                         }
+
+                        setTimeout(() => updateGalleryButtons(), 400);
+                    }, true); // Use capture phase
+                });
+
+                // Update buttons on scroll
+                document.querySelectorAll('.product-gallery-container').forEach(container => {
+                    container.addEventListener('scroll', function() {
+                        updateGalleryButtons();
                     });
                 });
+
+                // Initial update
+                setTimeout(() => {
+                    console.log('🚀 Gallery initialized - RTL:', isRTL());
+                    updateGalleryButtons();
+                }, 200);
 
                 // Color circle click to filter/highlight
                 document.querySelectorAll('.product-color-circle').forEach(colorCircle => {
@@ -3824,5 +3536,17 @@
                 });
             });
         </script>
+
+        <!-- Shop Sidebar Lazy Loading -->
+        <script src="{{ asset('assets/js/shop-sidebar-loader.js') }}"></script>
+
+        <!-- Product Hover Lazy Loading (must load before pagination) -->
+        <script src="{{ asset('assets/js/product-hover-loader.js') }}"></script>
+
+        <!-- Pagination Lazy Loading (initial load with 1.5s delay) -->
+        <script src="{{ asset('assets/js/shop-pagination-loader.js') }}"></script>
+
+        <!-- Shop AJAX Pagination (load after product-hover-loader) -->
+        <script src="{{ asset('assets/js/shop-pagination.js') }}"></script>
 
 @endpush

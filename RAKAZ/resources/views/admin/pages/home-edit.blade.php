@@ -3087,5 +3087,158 @@ Swal.fire({
     confirmButtonColor: '#f56565'
 });
 @endif
+
+// ====================================
+// Image Compression System (WebP)
+// ====================================
+const HomeImageCompressor = {
+    pendingCount: 0,
+
+    async compress(fileInput, type, customName = null) {
+        if (!fileInput.files || !fileInput.files[0]) return;
+
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('type', type);
+
+        // Get input name for creating hidden field
+        const inputName = customName || fileInput.name;
+        const compressedFieldName = 'compressed_' + inputName.replace(/\[/g, '.').replace(/\]/g, '');
+
+        // Show loading state
+        const wrapper = fileInput.closest('.form-group, .file-input-custom');
+        const existingBadge = wrapper?.querySelector('.compression-badge');
+        if (existingBadge) existingBadge.remove();
+
+        const spinner = document.createElement('span');
+        spinner.className = 'compression-badge compressing';
+        spinner.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الضغط...';
+        if (wrapper) wrapper.appendChild(spinner);
+
+        this.pendingCount++;
+        this.updateSubmitButton();
+
+        try {
+            const response = await fetch('/api/admin/compress-image', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Remove spinner and add success badge
+                spinner.remove();
+                const successBadge = document.createElement('span');
+                successBadge.className = 'compression-badge success';
+                successBadge.innerHTML = `<i class="fas fa-check"></i> ${result.size_kb} KB`;
+                if (wrapper) wrapper.appendChild(successBadge);
+
+                // Create hidden input with compressed path
+                let hiddenInput = document.querySelector(`input[name="${compressedFieldName}"]`);
+                if (!hiddenInput) {
+                    hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = compressedFieldName;
+                    fileInput.parentNode.appendChild(hiddenInput);
+                }
+                hiddenInput.value = result.path;
+
+                console.log(`Image compressed: ${result.path} (${result.size_kb} KB)`);
+            } else {
+                throw new Error(result.error || 'Compression failed');
+            }
+        } catch (error) {
+            console.error('Compression error:', error);
+            spinner.className = 'compression-badge failed';
+            spinner.innerHTML = '<i class="fas fa-times"></i> فشل الضغط';
+        } finally {
+            this.pendingCount--;
+            this.updateSubmitButton();
+        }
+    },
+
+    updateSubmitButton() {
+        const submitBtn = document.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            if (this.pendingCount > 0) {
+                submitBtn.disabled = true;
+                submitBtn.dataset.originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري ضغط الصور...';
+            } else {
+                submitBtn.disabled = false;
+                if (submitBtn.dataset.originalText) {
+                    submitBtn.innerHTML = submitBtn.dataset.originalText;
+                }
+            }
+        }
+    }
+};
+
+// Add compression styles
+const compressionStyles = document.createElement('style');
+compressionStyles.textContent = `
+    .compression-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        margin-right: 10px;
+        margin-top: 5px;
+    }
+    .compression-badge.compressing {
+        background: #fff3cd;
+        color: #856404;
+    }
+    .compression-badge.success {
+        background: #d4edda;
+        color: #155724;
+    }
+    .compression-badge.failed {
+        background: #f8d7da;
+        color: #721c24;
+    }
+`;
+document.head.appendChild(compressionStyles);
+
+// Override previewImage function to add compression
+const originalPreviewImage = window.previewImage;
+window.previewImage = function(input) {
+    // Call original preview function if it exists
+    if (typeof originalPreviewImage === 'function') {
+        originalPreviewImage(input);
+    }
+
+    // Determine type based on input name
+    let type = 'hero'; // default
+    const name = input.name || '';
+
+    if (name.includes('cyber_sale_image_tablet')) type = 'cyber_sale_tablet';
+    else if (name.includes('cyber_sale_image_mobile')) type = 'cyber_sale_mobile';
+    else if (name.includes('cyber_sale_image')) type = 'cyber_sale';
+    else if (name.includes('hero_slide_tablet_image')) type = 'hero_tablet';
+    else if (name.includes('hero_slide_mobile_image')) type = 'hero_mobile';
+    else if (name.includes('hero_slide_image')) type = 'hero';
+    else if (name.includes('gift_image')) type = 'gift';
+    else if (name.includes('dg_banner_image_tablet')) type = 'dg_banner_tablet';
+    else if (name.includes('dg_banner_image_mobile')) type = 'dg_banner_mobile';
+    else if (name.includes('dg_banner_image')) type = 'dg_banner';
+    else if (name.includes('gucci_spotlight_image_tablet')) type = 'gucci_spotlight_tablet';
+    else if (name.includes('gucci_spotlight_image_mobile')) type = 'gucci_spotlight_mobile';
+    else if (name.includes('gucci_spotlight_image')) type = 'gucci_spotlight';
+    else if (name.includes('discover_image')) type = 'hero'; // use hero for discover
+    else if (name.includes('membership_image')) type = 'hero'; // use hero for membership
+    else if (name.includes('spotlight_banner')) type = 'hero';
+    else if (name.includes('featured_banner')) type = 'hero';
+
+    // Compress the image
+    HomeImageCompressor.compress(input, type, name);
+};
 </script>
 @endpush

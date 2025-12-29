@@ -54,6 +54,13 @@
     <script src="/assets/js/script-mobile.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- CRITICAL: Force SweetAlert above cart sidebar -->
+    <style>
+        .swal2-container {
+            z-index: 99999 !important;
+        }
+    </style>
+
     @stack('styles')
 </head>
 
@@ -122,42 +129,16 @@
                             stroke-width="2">
                             <polyline points="6 9 12 15 18 9"></polyline>
                         </svg>
-                        <div class="currency-dropdown">
-                            <a href="#" class="currency-option" data-currency="UAE"
-                                data-flag="https://flagcdn.com/ae.svg">
-                                <img src="https://flagcdn.com/ae.svg" alt="UAE" class="flag-icon">
-                                <span>UAE</span>
-                            </a>
-                            <a href="#" class="currency-option" data-currency="Saudi Arabia"
-                                data-flag="https://flagcdn.com/sa.svg">
-                                <img src="https://flagcdn.com/sa.svg" alt="Saudi Arabia" class="flag-icon">
-                                <span class="ar-text">المملكة العربية السعودية</span>
-                                <span class="en-text">Saudi Arabia</span>
-                            </a>
-                            <a href="#" class="currency-option" data-currency="Oman"
-                                data-flag="https://flagcdn.com/om.svg">
-                                <img src="https://flagcdn.com/om.svg" alt="Oman" class="flag-icon">
-                                <span class="ar-text">عُمان</span>
-                                <span class="en-text">Oman</span>
-                            </a>
-                            <a href="#" class="currency-option" data-currency="Kuwait"
-                                data-flag="https://flagcdn.com/kw.svg">
-                                <img src="https://flagcdn.com/kw.svg" alt="Kuwait" class="flag-icon">
-                                <span class="ar-text">الكويت</span>
-                                <span class="en-text">Kuwait</span>
-                            </a>
-                            <a href="#" class="currency-option" data-currency="Bahrain"
-                                data-flag="https://flagcdn.com/bh.svg">
-                                <img src="https://flagcdn.com/bh.svg" alt="Bahrain" class="flag-icon">
-                                <span class="ar-text">البحرين</span>
-                                <span class="en-text">Bahrain</span>
-                            </a>
-                            <a href="#" class="currency-option" data-currency="Qatar"
-                                data-flag="https://flagcdn.com/qa.svg">
-                                <img src="https://flagcdn.com/qa.svg" alt="Qatar" class="flag-icon">
-                                <span class="ar-text">قطر</span>
-                                <span class="en-text">Qatar</span>
-                            </a>
+                        <div class="currency-dropdown" id="currency-dropdown">
+                            {{-- Content will be loaded via AJAX on first open --}}
+                            <div class="currency-dropdown-skeleton">
+                                @for($i = 0; $i < 6; $i++)
+                                <div class="skeleton-currency-item" style="display: flex; align-items: center; padding: 10px; gap: 10px;">
+                                    <div class="skeleton" style="width: 20px; height: 15px; border-radius: 2px;"></div>
+                                    <div class="skeleton" style="width: 120px; height: 14px;"></div>
+                                </div>
+                                @endfor
+                            </div>
                         </div>
                     </div>
                     <span class="divider">|</span>
@@ -190,7 +171,7 @@
                         </svg>
                         <span class="ar-text">المفضلة</span>
                         <span class="en-text">Wishlist</span>
-                        <span class="badge">{{ auth()->check() ? \App\Models\Wishlist::where('user_id', auth()->id())->count() : 0 }}</span>
+                        <span class="badge" id="wishlistBadge">{{ auth()->check() ? \App\Models\Wishlist::where('user_id', auth()->id())->count() : 0 }}</span>
                     </a>
                     <div class="header-link account-dropdown-wrapper">
                         <a href="#" class="header-link account-link">
@@ -303,7 +284,7 @@
                         <span class="badge" id="cartBadge">0</span>
                     </a>
                     <a href="{{ route('home') }}" class="logo mobile-logo-between">
-                        <img src="/assets/images/ركاز بني copy (1).png" alt="Logo" class="logo-image">
+                        <img src="/assets/images/rakazLogo.png" alt="Logo" class="logo-image">
                     </a>
                     <a href="#" class="header-link header-search-btn">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -331,7 +312,7 @@
             <!-- Logo -->
             <div class="logo-container">
                 <a href="{{ route('home') }}" class="logo">
-                    <img src="/assets/images/ركاز بني copy (1).png" alt="Logo" class="logo-image">
+                    <img src="/assets/images/rakazLogo.png" alt="Logo" class="logo-image">
 
                 </a>
             </div>
@@ -340,7 +321,66 @@
             <nav class="main-nav">
                 @if(isset($menus))
                     @foreach($menus as $menu)
-                        @if($menu->activeColumns->count() > 0)
+                        @php
+                            // بناء بيانات القائمة وفلترتها أولاً
+                            $allMenuData = $menu->activeColumns->map(function ($column) {
+                                $items = $column->items
+                                    ->filter(function ($item) {
+                                        // التحقق من أن العنصر نشط وله تصنيف ويحتوي التصنيف على منتجات
+                                        return $item->is_active &&
+                                               $item->category &&
+                                               $item->category->products_count > 0;
+                                    })
+                                    ->map(function ($item) {
+                                        $children = [];
+                                        if ($item->category && $item->category->children) {
+                                            // فلترة التصنيفات الفرعية التي تحتوي على منتجات فقط
+                                            $children = $item->category->children
+                                                ->where('is_active', true)
+                                                ->filter(function ($childCategory) {
+                                                    return $childCategory->products_count > 0;
+                                                })
+                                                ->sortBy('sort_order')
+                                                ->map(function ($childCategory) {
+                                                    return [
+                                                        'name_ar' => $childCategory->name['ar'] ?? '',
+                                                        'name_en' => $childCategory->name['en'] ?? '',
+                                                        'link' => route('category.show', $childCategory->slug[app()->getLocale()] ?? $childCategory->slug['ar']),
+                                                    ];
+                                                })
+                                                ->values()
+                                                ->all();
+                                        }
+
+                                        return [
+                                            'name_ar' => $item->getName('ar'),
+                                            'name_en' => $item->getName('en'),
+                                            'link' => $item->getLink(),
+                                            'children' => $children,
+                                        ];
+                                    })
+                                    ->values()
+                                    ->all();
+
+                                return [
+                                    'title_ar' => $column->getTitle('ar'),
+                                    'title_en' => $column->getTitle('en'),
+                                    'items' => $items,
+                                ];
+                            })
+                            // فلترة الأعمدة التي تحتوي على عناصر (تصنيفات بها منتجات)
+                            ->filter(function ($column) {
+                                return count($column['items']) > 0;
+                            })
+                            ->values()
+                            ->all();
+
+                            // التحقق من وجود بيانات فعلية لعرضها
+                            $hasMenuData = count($allMenuData) > 0;
+                        @endphp
+
+                        @if($hasMenuData)
+                            {{-- عرض القائمة المنسدلة فقط إذا كان هناك بيانات --}}
                             <div class="nav-item dropdown">
                                 <a href="{{ $menu->link ?? '#' }}" class="nav-link dropdown-trigger">
                                     <span class="ar-text">{{ $menu->getName('ar') }}</span>
@@ -353,45 +393,6 @@
                                 <div class="dropdown-menu mega-menu" data-defer="1" data-menu-id="{{ $menu->id }}">
                                     <div class="dropdown-wrapper">
                                         @php
-                                            // تجميع جميع البيانات وحفظها في DB
-                                            $allMenuData = $menu->activeColumns->map(function ($column) {
-                                                $items = $column->items
-                                                    ->filter(function ($item) {
-                                                        return $item->is_active && $item->category;
-                                                    })
-                                                    ->map(function ($item) {
-                                                        $children = [];
-                                                        if ($item->category && $item->category->children) {
-                                                            $children = $item->category->children
-                                                                ->where('is_active', true)
-                                                                ->sortBy('sort_order')
-                                                                ->map(function ($childCategory) {
-                                                                    return [
-                                                                        'name_ar' => $childCategory->name['ar'] ?? '',
-                                                                        'name_en' => $childCategory->name['en'] ?? '',
-                                                                        'link' => route('category.show', $childCategory->slug[app()->getLocale()] ?? $childCategory->slug['ar']),
-                                                                    ];
-                                                                })
-                                                                ->values()
-                                                                ->all();
-                                                        }
-
-                                                        return [
-                                                            'name_ar' => $item->getName('ar'),
-                                                            'name_en' => $item->getName('en'),
-                                                            'link' => $item->getLink(),
-                                                            'children' => $children,
-                                                        ];
-                                                    })
-                                                    ->values()
-                                                    ->all();
-
-                                                return [
-                                                    'title_ar' => $column->getTitle('ar'),
-                                                    'title_en' => $column->getTitle('en'),
-                                                    'items' => $items,
-                                                ];
-                                            })->values()->all();
 
                                             // حفظ جميع البيانات في DB للـ AJAX
                                             $menu->menu_data = json_encode($allMenuData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -493,8 +494,9 @@
                                     </div>
                                 </div>
                             </div>
-                        @else
-                            <a href="{{ $menu->link ?? '#' }}" class="nav-link"
+                        @elseif($menu->link)
+                            {{-- عرض القائمة كرابط بسيط إذا كانت لا تحتوي على تصنيفات مع منتجات ولكن لها رابط --}}
+                            <a href="{{ $menu->link }}" class="nav-link"
                                @if($menu->image) data-menu-image="{{ Storage::url($menu->image) }}" @endif>
                                 <span class="ar-text">{{ $menu->getName('ar') }}</span>
                                 <span class="en-text">{{ $menu->getName('en') }}</span>
@@ -783,6 +785,114 @@
 
             // Execute every 500ms for extra safety
             setInterval(forceHideEnglishText, 500);
+        })();
+
+        // Currency Dropdown Lazy Loading
+        (function() {
+            let currencyDropdownLoaded = false;
+            let isLoading = false;
+            const currencySelector = document.querySelector('.currency-selector');
+
+            if (!currencySelector) return;
+
+            // Load on hover (mouseenter)
+            currencySelector.addEventListener('mouseenter', function(e) {
+                if (!currencyDropdownLoaded && !isLoading) {
+                    loadCurrencyDropdown();
+                }
+            });
+
+            // Also load on click as backup
+            currencySelector.addEventListener('click', function(e) {
+                if (!currencyDropdownLoaded && !isLoading) {
+                    loadCurrencyDropdown();
+                }
+            });
+
+            function loadCurrencyDropdown() {
+                console.log('💱 Loading currency dropdown via AJAX...');
+                isLoading = true;
+
+                const startTime = performance.now();
+
+                fetch('/api/lazy-load/currency-dropdown', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const endTime = performance.now();
+                    const loadTime = (endTime - startTime).toFixed(2);
+
+                    console.log(`📊 Currency dropdown loaded in ${loadTime}ms`);
+
+                    if (data.success && data.html) {
+                        const dropdown = document.getElementById('currency-dropdown');
+                        const skeleton = dropdown ? dropdown.querySelector('.currency-dropdown-skeleton') : null;
+
+                        if (dropdown) {
+                            // Remove skeleton
+                            if (skeleton) {
+                                skeleton.remove();
+                            }
+
+                            // Insert content
+                            dropdown.innerHTML = data.html;
+
+                            currencyDropdownLoaded = true;
+                            console.log('✅ Currency dropdown content inserted successfully');
+
+                            // Reinitialize currency option handlers
+                            initCurrencyOptions();
+                        } else {
+                            console.error('❌ Currency dropdown element not found');
+                        }
+                    } else {
+                        console.error('❌ Invalid response from server:', data);
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error loading currency dropdown:', error);
+                    isLoading = false;
+                });
+            }
+
+            function initCurrencyOptions() {
+                const currencyOptions = document.querySelectorAll('.currency-option');
+                console.log(`🔧 Initializing ${currencyOptions.length} currency options`);
+
+                currencyOptions.forEach(option => {
+                    option.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const currency = this.getAttribute('data-currency');
+                        const flag = this.getAttribute('data-flag');
+
+                        console.log(`💱 Currency selected: ${currency}`);
+
+                        const selectedCurrency = document.getElementById('selected-currency');
+                        const selectedFlag = document.getElementById('selected-currency-flag');
+
+                        if (selectedCurrency) selectedCurrency.textContent = currency;
+                        if (selectedFlag) selectedFlag.src = flag;
+
+                        // Close dropdown
+                        const dropdown = document.querySelector('.currency-dropdown');
+                        if (dropdown) {
+                            dropdown.classList.remove('active');
+                        }
+                    });
+                });
+
+                console.log('✅ Currency options initialized');
+            }
         })();
     </script>
 
