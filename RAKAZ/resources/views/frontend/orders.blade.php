@@ -531,6 +531,173 @@
             background: #333;
         }
 
+        /* Mobile Previous Orders Cards */
+        .mobile-previous-orders {
+            display: none;
+        }
+
+        .previous-order-card {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .previous-order-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .previous-order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .previous-order-number {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .previous-order-date {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .previous-order-products {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .previous-order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .previous-order-total {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .previous-order-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .previous-order-actions .btn-table {
+            padding: 6px 14px;
+            font-size: 12px;
+        }
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 30px 20px;
+            flex-wrap: wrap;
+        }
+
+        .pagination-info {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .pagination-btn {
+            padding: 10px 20px;
+            background: #fff;
+            color: #1a1a1a;
+            border: 1.5px solid #1a1a1a;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .pagination-btn:disabled {
+            background: #f5f5f5;
+            color: #999;
+            border-color: #e5e5e5;
+            cursor: not-allowed;
+        }
+
+        .pagination-btn.active {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .pagination-numbers {
+            display: flex;
+            gap: 5px;
+        }
+
+        .page-number {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            color: #1a1a1a;
+            border: 1.5px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .page-number:hover:not(.active) {
+            border-color: #1a1a1a;
+        }
+
+        .page-number.active {
+            background: #1a1a1a;
+            color: #fff;
+            border-color: #1a1a1a;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e5e5e5;
+            border-top-color: #1a1a1a;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         /* Responsive */
         @media (max-width: 1200px) {
             .orders-grid {
@@ -575,6 +742,10 @@
             /* Hide table on mobile, show cards instead */
             .orders-table {
                 display: none;
+            }
+
+            .mobile-previous-orders {
+                display: block;
             }
         }
 
@@ -795,12 +966,14 @@
 
     <!-- Previous Orders Tab -->
     <div id="previous-orders" class="tab-content">
-        @php
-            $previousOrders = $orders->whereIn('status', ['delivered', 'cancelled']);
-        @endphp
+        <!-- Loading Spinner -->
+        <div id="previous-orders-loading" class="loading-spinner" style="display: none;">
+            <div class="spinner"></div>
+        </div>
 
-        @if($previousOrders->count() > 0)
-            <table class="orders-table">
+        <!-- Desktop Table View -->
+        <div id="previous-orders-table-container">
+            <table class="orders-table" id="previous-orders-table">
                 <thead>
                     <tr>
                         <th>رقم الطلب</th>
@@ -811,56 +984,49 @@
                         <th>الإجراءات</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach($previousOrders as $order)
-                        <tr>
-                            <td><strong>#{{ $order->order_number }}</strong></td>
-                            <td>{{ $order->created_at->locale('ar')->translatedFormat('d F Y') }}</td>
-                            <td>
-                                @php
-                                    $productNames = $order->items->pluck('product_name')->take(2)->toArray();
-                                    $moreCount = $order->items->count() - 2;
-                                @endphp
-                                {{ implode(' + ', $productNames) }}
-                                @if($moreCount > 0)
-                                    + {{ $moreCount }} أخرى
-                                @endif
-                            </td>
-                            <td>{{ number_format($order->total, 0) }} د.إ</td>
-                            <td>
-                                <span class="status-badge-table {{ $order->status }}">
-                                    {{ $order->getStatusLabelAttribute() }}
-                                </span>
-                            </td>
-                            <td>
-                                <div class="table-actions">
-                                    <button class="btn-table btn-reorder" onclick="reorder('{{ $order->id }}')">
-                                        إعادة الطلب
-                                    </button>
-                                    <button class="btn-table btn-view" onclick="showOrderDetails('{{ $order->id }}')">
-                                        عرض
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
+                <tbody id="previous-orders-tbody">
+                    <!-- Data loaded via AJAX -->
                 </tbody>
             </table>
-        @else
-            <div class="empty-orders">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <h3>لا توجد طلبات سابقة</h3>
-                <p>ليس لديك أي طلبات مكتملة حتى الآن</p>
-                <a href="{{ route('shop') }}" class="btn-shop">تسوق الآن</a>
-            </div>
-        @endif
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="mobile-previous-orders" id="previous-orders-mobile">
+            <!-- Data loaded via AJAX -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container" id="previous-orders-pagination" style="display: none;">
+            <div class="pagination-info" id="pagination-info"></div>
+            <button class="pagination-btn" id="prev-page-btn" onclick="loadPreviousOrders(currentPage - 1)">
+                السابق
+            </button>
+            <div class="pagination-numbers" id="pagination-numbers"></div>
+            <button class="pagination-btn" id="next-page-btn" onclick="loadPreviousOrders(currentPage + 1)">
+                التالي
+            </button>
+        </div>
+
+        <!-- Empty State -->
+        <div id="previous-orders-empty" class="empty-orders" style="display: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h3>لا توجد طلبات سابقة</h3>
+            <p>ليس لديك أي طلبات مكتملة حتى الآن</p>
+            <a href="{{ route('shop') }}" class="btn-shop">تسوق الآن</a>
+        </div>
     </div>
 </div>
 
 @push('scripts')
 <script>
+    // Pagination State
+    let currentPage = 1;
+    let lastPage = 1;
+    let totalOrders = 0;
+    let previousOrdersLoaded = false;
+
     // Tab Switching
     function switchTab(tab) {
         // Remove active class from all tabs and contents
@@ -874,6 +1040,11 @@
         } else {
             document.querySelector('.tab-button:last-child').classList.add('active');
             document.getElementById('previous-orders').classList.add('active');
+
+            // Load previous orders if not loaded yet
+            if (!previousOrdersLoaded) {
+                loadPreviousOrders(1);
+            }
         }
     }
 
@@ -960,6 +1131,194 @@
                 window.location.href = '/order/' + orderId + '/reorder';
             }
         });
+    }
+
+    // Load Previous Orders via AJAX
+    function loadPreviousOrders(page) {
+        if (page < 1 || page > lastPage && lastPage > 0) return;
+
+        currentPage = page;
+
+        // Show loading
+        document.getElementById('previous-orders-loading').style.display = 'flex';
+        document.getElementById('previous-orders-table-container').style.display = 'none';
+        document.getElementById('previous-orders-mobile').innerHTML = '';
+        document.getElementById('previous-orders-pagination').style.display = 'none';
+        document.getElementById('previous-orders-empty').style.display = 'none';
+
+        fetch(`/orders?type=previous&page=${page}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            previousOrdersLoaded = true;
+            document.getElementById('previous-orders-loading').style.display = 'none';
+
+            if (data.success && data.data.length > 0) {
+                lastPage = data.last_page;
+                totalOrders = data.total;
+
+                renderPreviousOrders(data.data);
+                renderPagination(data);
+
+                document.getElementById('previous-orders-table-container').style.display = 'block';
+                document.getElementById('previous-orders-pagination').style.display = 'flex';
+            } else {
+                document.getElementById('previous-orders-empty').style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading previous orders:', error);
+            document.getElementById('previous-orders-loading').style.display = 'none';
+            document.getElementById('previous-orders-empty').style.display = 'block';
+        });
+    }
+
+    // Render Previous Orders (Table & Mobile Cards)
+    function renderPreviousOrders(orders) {
+        const tbody = document.getElementById('previous-orders-tbody');
+        const mobileContainer = document.getElementById('previous-orders-mobile');
+
+        let tableHtml = '';
+        let mobileHtml = '';
+
+        const statusLabels = {
+            'pending': 'قيد الانتظار',
+            'confirmed': 'مؤكد',
+            'processing': 'قيد المعالجة',
+            'shipped': 'تم الشحن',
+            'delivered': 'تم التوصيل',
+            'cancelled': 'ملغي'
+        };
+
+        orders.forEach(order => {
+            const statusLabel = statusLabels[order.status] || order.status;
+            const formattedDate = new Date(order.created_at).toLocaleDateString('ar-EG', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            // Get product names
+            let productNames = '';
+            let moreCount = 0;
+            if (order.items && order.items.length > 0) {
+                const names = order.items.slice(0, 2).map(item => item.product_name);
+                productNames = names.join(' + ');
+                moreCount = order.items.length - 2;
+                if (moreCount > 0) {
+                    productNames += ` + ${moreCount} أخرى`;
+                }
+            }
+
+            // Table row
+            tableHtml += `
+                <tr>
+                    <td><strong>#${order.order_number}</strong></td>
+                    <td>${formattedDate}</td>
+                    <td>${productNames}</td>
+                    <td>${Number(order.total).toLocaleString()} د.إ</td>
+                    <td>
+                        <span class="status-badge-table ${order.status}">
+                            ${statusLabel}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-table btn-reorder" onclick="reorder('${order.id}')">
+                                إعادة الطلب
+                            </button>
+                            <button class="btn-table btn-view" onclick="showOrderDetails('${order.id}')">
+                                عرض
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+            // Mobile card
+            mobileHtml += `
+                <div class="previous-order-card">
+                    <div class="previous-order-header">
+                        <div>
+                            <div class="previous-order-number">#${order.order_number}</div>
+                            <div class="previous-order-date">${formattedDate}</div>
+                        </div>
+                        <span class="status-badge-table ${order.status}">
+                            ${statusLabel}
+                        </span>
+                    </div>
+                    <div class="previous-order-products">${productNames}</div>
+                    <div class="previous-order-footer">
+                        <div class="previous-order-total">${Number(order.total).toLocaleString()} د.إ</div>
+                        <div class="previous-order-actions">
+                            <button class="btn-table btn-reorder" onclick="reorder('${order.id}')">
+                                إعادة الطلب
+                            </button>
+                            <button class="btn-table btn-view" onclick="showOrderDetails('${order.id}')">
+                                عرض
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        tbody.innerHTML = tableHtml;
+        mobileContainer.innerHTML = mobileHtml;
+    }
+
+    // Render Pagination
+    function renderPagination(data) {
+        const paginationInfo = document.getElementById('pagination-info');
+        const paginationNumbers = document.getElementById('pagination-numbers');
+        const prevBtn = document.getElementById('prev-page-btn');
+        const nextBtn = document.getElementById('next-page-btn');
+
+        // Update info
+        const start = (data.current_page - 1) * data.per_page + 1;
+        const end = Math.min(data.current_page * data.per_page, data.total);
+        paginationInfo.textContent = `عرض ${start} - ${end} من ${data.total} طلب`;
+
+        // Update prev/next buttons
+        prevBtn.disabled = data.current_page <= 1;
+        nextBtn.disabled = data.current_page >= data.last_page;
+
+        // Render page numbers
+        let numbersHtml = '';
+        const maxVisible = 5;
+        let startPage = Math.max(1, data.current_page - Math.floor(maxVisible / 2));
+        let endPage = Math.min(data.last_page, startPage + maxVisible - 1);
+
+        if (endPage - startPage + 1 < maxVisible) {
+            startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+
+        if (startPage > 1) {
+            numbersHtml += `<button class="page-number" onclick="loadPreviousOrders(1)">1</button>`;
+            if (startPage > 2) {
+                numbersHtml += `<span style="padding: 0 5px;">...</span>`;
+            }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const activeClass = i === data.current_page ? 'active' : '';
+            numbersHtml += `<button class="page-number ${activeClass}" onclick="loadPreviousOrders(${i})">${i}</button>`;
+        }
+
+        if (endPage < data.last_page) {
+            if (endPage < data.last_page - 1) {
+                numbersHtml += `<span style="padding: 0 5px;">...</span>`;
+            }
+            numbersHtml += `<button class="page-number" onclick="loadPreviousOrders(${data.last_page})">${data.last_page}</button>`;
+        }
+
+        paginationNumbers.innerHTML = numbersHtml;
     }
 
     // Animate progress bars on load

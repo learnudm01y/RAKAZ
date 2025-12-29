@@ -515,12 +515,34 @@ class FrontendController extends Controller
         return view('frontend.wishlist', compact('wishlistItems'));
     }
 
-    public function orders()
+    public function orders(Request $request)
     {
         $orders = \App\Models\Order::where('user_id', auth()->id())
             ->with(['items.product'])
             ->orderBy('created_at', 'desc')
             ->get();
+
+        // Check if it's an AJAX request for previous orders with pagination
+        if ($request->ajax() && $request->has('type') && $request->type === 'previous') {
+            $page = $request->get('page', 1);
+            $perPage = 10;
+
+            $previousOrders = \App\Models\Order::where('user_id', auth()->id())
+                ->whereIn('status', ['delivered', 'cancelled'])
+                ->with(['items'])
+                ->orderBy('created_at', 'desc')
+                ->paginate($perPage, ['*'], 'page', $page);
+
+            return response()->json([
+                'success' => true,
+                'data' => $previousOrders->items(),
+                'current_page' => $previousOrders->currentPage(),
+                'last_page' => $previousOrders->lastPage(),
+                'total' => $previousOrders->total(),
+                'per_page' => $previousOrders->perPage(),
+                'has_more' => $previousOrders->hasMorePages(),
+            ]);
+        }
 
         return view('frontend.orders', compact('orders'));
     }
