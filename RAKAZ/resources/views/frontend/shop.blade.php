@@ -2103,6 +2103,41 @@
                     }
                 });
 
+                // Product Card Click - Navigate to product details page
+                function initializeProductCardClick() {
+                    document.querySelectorAll('.product-card').forEach(card => {
+                        // Skip if already initialized
+                        if (card.hasAttribute('data-click-initialized')) return;
+                        card.setAttribute('data-click-initialized', 'true');
+
+                        card.addEventListener('click', function(e) {
+                            // Don't navigate if clicking on buttons, links, or interactive elements
+                            const clickedElement = e.target;
+                            const isButton = clickedElement.closest('button');
+                            const isLink = clickedElement.closest('a');
+                            const isInput = clickedElement.closest('input');
+                            const isSizeOption = clickedElement.closest('.size-option');
+                            const isColorOption = clickedElement.closest('.color-option');
+
+                            if (isButton || isLink || isInput || isSizeOption || isColorOption) {
+                                return; // Let the default behavior happen
+                            }
+
+                            // Navigate to product details page
+                            const productUrl = this.dataset.productUrl;
+                            if (productUrl) {
+                                window.location.href = productUrl;
+                            }
+                        });
+                    });
+                }
+
+                // Initialize on load
+                initializeProductCardClick();
+
+                // Make it globally accessible for pagination
+                window.initializeProductCardClick = initializeProductCardClick;
+
                 // Wishlist functionality - Using event delegation
                 console.log('💗 Initializing wishlist system...');
 

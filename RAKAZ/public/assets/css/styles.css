@@ -1526,6 +1526,28 @@ body[dir="ltr"] .hero-text {
     overflow: visible;
 }
 
+/* Prevent image download/right-click on product sections */
+.must-have-section img,
+.perfect-gift-section img,
+.must-have-section .product-card,
+.perfect-gift-section .product-card {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    pointer-events: auto;
+}
+
+.must-have-section img,
+.perfect-gift-section img {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+}
+
 .section-header {
     display: flex;
     justify-content: space-between;

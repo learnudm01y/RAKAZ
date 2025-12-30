@@ -83,8 +83,14 @@ Route::get('/lazy-load/shop-pagination', [LazyLoadController::class, 'getShopPag
 Route::get('/lazy-load/home-product-overlay/{productId}', [LazyLoadController::class, 'getHomeProductOverlay']);
 
 // Product API for Wishlist Modal
-Route::get('/products/{id}', function ($id) {
+Route::get('/products/{id}', function ($id, \Illuminate\Http\Request $request) {
     try {
+        // Set locale from request parameter
+        $locale = $request->get('locale', 'ar');
+        if (in_array($locale, ['ar', 'en'])) {
+            app()->setLocale($locale);
+        }
+
         $product = \App\Models\Product::with(['productSizes', 'productShoeSizes'])->find($id);
 
         if (!$product) {

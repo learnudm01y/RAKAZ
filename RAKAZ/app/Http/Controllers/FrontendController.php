@@ -529,13 +529,29 @@ class FrontendController extends Controller
 
             $previousOrders = \App\Models\Order::where('user_id', auth()->id())
                 ->whereIn('status', ['delivered', 'cancelled'])
-                ->with(['items'])
+                ->with(['items.product'])
                 ->orderBy('created_at', 'desc')
                 ->paginate($perPage, ['*'], 'page', $page);
 
+            // Transform items to include product names in both languages
+            $transformedOrders = collect($previousOrders->items())->map(function ($order) {
+                $order->items = $order->items->map(function ($item) {
+                    $item->product_name_ar = $item->product_name;
+                    $item->product_name_en = $item->product_name;
+
+                    if ($item->product) {
+                        $item->product_name_ar = $item->product->name['ar'] ?? $item->product_name;
+                        $item->product_name_en = $item->product->name['en'] ?? $item->product->name['ar'] ?? $item->product_name;
+                    }
+
+                    return $item;
+                });
+                return $order;
+            });
+
             return response()->json([
                 'success' => true,
-                'data' => $previousOrders->items(),
+                'data' => $transformedOrders,
                 'current_page' => $previousOrders->currentPage(),
                 'last_page' => $previousOrders->lastPage(),
                 'total' => $previousOrders->total(),

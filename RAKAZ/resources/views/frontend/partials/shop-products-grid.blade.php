@@ -1,5 +1,5 @@
 @forelse($products as $product)
-<div class="product-card">
+<div class="product-card" data-product-url="{{ route('product.details', $product->getSlug()) }}" style="cursor: pointer;">
     <div class="product-image-wrapper" style="position: relative;">
         <a href="{{ route('product.details', $product->getSlug()) }}" style="display: block;" class="product-main-link" data-product-id="{{ $product->id }}">
             <img src="{{ $product->main_image ? asset('storage/' . $product->main_image) : asset('assets/images/placeholder.jpg') }}"

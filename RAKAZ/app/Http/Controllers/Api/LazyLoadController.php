@@ -79,8 +79,14 @@ class LazyLoadController extends Controller
     /**
      * Get Related Products (You May Also Like)
      */
-    public function getRelatedProducts($productId)
+    public function getRelatedProducts(Request $request, $productId)
     {
+        // Set locale from request
+        $locale = $request->get('locale', $request->header('Accept-Language', 'ar'));
+        if (in_array($locale, ['ar', 'en'])) {
+            app()->setLocale($locale);
+        }
+
         $product = \App\Models\Product::find($productId);
 
         if (!$product) {
@@ -113,8 +119,14 @@ class LazyLoadController extends Controller
     /**
      * Get Brand Products (Top Rated from Brand)
      */
-    public function getBrandProducts($productId)
+    public function getBrandProducts(Request $request, $productId)
     {
+        // Set locale from request
+        $locale = $request->get('locale', $request->header('Accept-Language', 'ar'));
+        if (in_array($locale, ['ar', 'en'])) {
+            app()->setLocale($locale);
+        }
+
         $product = \App\Models\Product::find($productId);
 
         if (!$product) {
@@ -373,8 +385,14 @@ class LazyLoadController extends Controller
     /**
      * Get Home Product Overlay Content (for featured & perfect gift sections)
      */
-    public function getHomeProductOverlay($productId)
+    public function getHomeProductOverlay(Request $request, $productId)
     {
+        // Set locale from request
+        $locale = $request->get('locale', $request->header('Accept-Language', 'ar'));
+        if (in_array($locale, ['ar', 'en'])) {
+            app()->setLocale($locale);
+        }
+
         $product = \App\Models\Product::with(['productColors', 'productSizes', 'productShoeSizes', 'brand'])
             ->find($productId);
 

@@ -509,7 +509,11 @@
 
                 if (!section) return;
 
-                fetch('/api/lazy-load/related-products/' + productId)
+                // Get current locale
+                var isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+                var locale = isRtl ? 'ar' : 'en';
+
+                fetch('/api/lazy-load/related-products/' + productId + '?locale=' + locale)
                     .then(function(response) { return response.json(); })
                     .then(function(data) {
                         if (data.success && data.html) {
@@ -531,7 +535,11 @@
 
                 if (!section) return;
 
-                fetch('/api/lazy-load/brand-products/' + productId)
+                // Get current locale
+                var isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+                var locale = isRtl ? 'ar' : 'en';
+
+                fetch('/api/lazy-load/brand-products/' + productId + '?locale=' + locale)
                     .then(function(response) { return response.json(); })
                     .then(function(data) {
                         if (data.success && data.html) {
@@ -604,7 +612,11 @@
             var section = document.getElementById('related-products-section');
             if (!section) return;
 
-            fetch('/api/lazy-load/related-products/' + productId)
+            // Get current locale
+            var isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+            var locale = isRtl ? 'ar' : 'en';
+
+            fetch('/api/lazy-load/related-products/' + productId + '?locale=' + locale)
                 .then(function(response) { return response.json(); })
                 .then(function(data) {
                     if (data.success && data.html) {
@@ -633,7 +645,11 @@
             var section = document.getElementById('brand-products-section');
             if (!section) return;
 
-            fetch('/api/lazy-load/brand-products/' + productId)
+            // Get current locale
+            var isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+            var locale = isRtl ? 'ar' : 'en';
+
+            fetch('/api/lazy-load/brand-products/' + productId + '?locale=' + locale)
                 .then(function(response) { return response.json(); })
                 .then(function(data) {
                     if (data.success && data.html) {
@@ -745,13 +761,13 @@
                         <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" class="payment-icon">
                     </div>
                     <div class="payment-option">
-                        <span class="payment-text">تمرا</span>
+                        <span class="payment-text">{{ app()->getLocale() == 'ar' ? 'تمرا' : 'Tamara' }}</span>
                     </div>
                     <div class="payment-option">
                         <span class="payment-text">tabby</span>
                     </div>
                     <div class="payment-option">
-                        <span class="payment-text">تتوفر أقساط بدون فوائد</span>
+                        <span class="payment-text">{{ app()->getLocale() == 'ar' ? 'تتوفر أقساط بدون فوائد' : 'Interest-free installments available' }}</span>
                     </div>
                 </div>
 
@@ -763,7 +779,7 @@
                         <circle cx="5.5" cy="18.5" r="2.5"></circle>
                         <circle cx="18.5" cy="18.5" r="2.5"></circle>
                     </svg>
-                    <span>احصل على 738 نقطة أمز (ن) <a href="#" class="info-link">اعرف المزيد</a></span>
+                    <span>{{ app()->getLocale() == 'ar' ? 'احصل على 738 نقطة أمز (ن)' : 'Earn 738 Amz points' }} <a href="#" class="info-link">{{ app()->getLocale() == 'ar' ? 'اعرف المزيد' : 'Learn more' }}</a></span>
                 </div>
 
                 <div class="price-match-info">
@@ -771,7 +787,7 @@
                         <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                         <polyline points="17 6 23 6 23 12"></polyline>
                     </svg>
-                    <span>نحن نقدم لك <strong>خدمة السعر المثالي</strong></span>
+                    <span>{{ app()->getLocale() == 'ar' ? 'نحن نقدم لك' : 'We offer you' }} <strong>{{ app()->getLocale() == 'ar' ? 'خدمة السعر المثالي' : 'Best Price Guarantee' }}</strong></span>
                 </div>
 
                 <!-- Color & Size Selection -->

@@ -13,6 +13,13 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: 40px 20px;
+        }
+
+        [dir="ltr"] .orders-page {
+            direction: ltr;
+        }
+
+        [dir="rtl"] .orders-page {
             direction: rtl;
         }
 
@@ -109,6 +116,11 @@
             align-items: center;
             gap: 6px;
             align-self: flex-start;
+        }
+
+        /* LTR mode - badge on the right */
+        [dir="ltr"] .order-badge {
+            align-self: flex-end;
         }
 
         .order-badge svg {
@@ -396,8 +408,16 @@
 
         .orders-table th {
             padding: 18px 20px;
-            text-align: right;
             font-weight: 600;
+        }
+
+        [dir="rtl"] .orders-table th {
+            text-align: right;
+        }
+
+        [dir="ltr"] .orders-table th {
+            text-align: left;
+        }
             font-size: 14px;
             color: #1a1a1a;
             border-bottom: 2px solid #e5e5e5;
@@ -405,10 +425,17 @@
 
         .orders-table td {
             padding: 20px;
-            text-align: right;
             font-size: 14px;
             color: #666;
             border-bottom: 1px solid #f0f0f0;
+        }
+
+        [dir="rtl"] .orders-table td {
+            text-align: right;
+        }
+
+        [dir="ltr"] .orders-table td {
+            text-align: left;
         }
 
         .orders-table tbody tr:hover {
@@ -818,6 +845,11 @@
                 z-index: 2;
             }
 
+            [dir="ltr"] .order-header > div:last-child {
+                left: auto;
+                right: 0;
+            }
+
             .order-badge {
                 margin-left: 0 !important;
             }
@@ -828,20 +860,22 @@
 <div class="orders-page">
     @php
         $ordersCount = $orders ? $orders->count() : 0;
+        $isArabic = app()->getLocale() == 'ar';
         $ordersSubtitle = $ordersCount > 0
-            ? ('لديك ' . $ordersCount . ' ' . ($ordersCount === 1 ? 'طلب' : 'طلبات'))
-            : 'لا توجد طلبات حتى الآن';
+            ? ($isArabic ? ('لديك ' . $ordersCount . ' ' . ($ordersCount === 1 ? 'طلب' : 'طلبات')) : ('You have ' . $ordersCount . ' ' . ($ordersCount === 1 ? 'order' : 'orders')))
+            : ($isArabic ? 'لا توجد طلبات حتى الآن' : 'No orders yet');
+        $ordersTitle = $isArabic ? ('طلباتي (' . $ordersCount . ')') : ('My Orders (' . $ordersCount . ')');
     @endphp
 
     <x-account-nav-header
-        :title="'طلباتي (' . $ordersCount . ')'"
+        :title="$ordersTitle"
         :subtitle="$ordersSubtitle"
     />
 
     <!-- Tabs Navigation -->
     <div class="orders-tabs">
-        <button class="tab-button active" onclick="switchTab('current')">الطلبات الحية</button>
-        <button class="tab-button" onclick="switchTab('previous')">الطلبات السابقة</button>
+        <button class="tab-button active" onclick="switchTab('current')">{{ app()->getLocale() == 'ar' ? 'الطلبات الحية' : 'Current Orders' }}</button>
+        <button class="tab-button" onclick="switchTab('previous')">{{ app()->getLocale() == 'ar' ? 'الطلبات السابقة' : 'Previous Orders' }}</button>
     </div>
 
     <!-- Current Orders Tab -->
@@ -857,13 +891,14 @@
                     <!-- Order Header -->
                     @php
                         // توحيد عرض الحالات مع لوحة الإدارة
+                        $isAr = app()->getLocale() == 'ar';
                         $statusMap = [
-                            'pending' => ['label' => 'قيد الانتظار', 'class' => 'pending'],
-                            'confirmed' => ['label' => 'قيد التحضير', 'class' => 'processing'],
-                            'processing' => ['label' => 'قيد المعالجة', 'class' => 'processing'],
-                            'shipped' => ['label' => 'تم الشحن', 'class' => 'shipped'],
-                            'delivered' => ['label' => 'تم التوصيل', 'class' => 'delivered'],
-                            'cancelled' => ['label' => 'ملغي', 'class' => 'cancelled'],
+                            'pending' => ['label' => $isAr ? 'قيد الانتظار' : 'Pending', 'class' => 'pending'],
+                            'confirmed' => ['label' => $isAr ? 'قيد التحضير' : 'Confirmed', 'class' => 'processing'],
+                            'processing' => ['label' => $isAr ? 'قيد المعالجة' : 'Processing', 'class' => 'processing'],
+                            'shipped' => ['label' => $isAr ? 'تم الشحن' : 'Shipped', 'class' => 'shipped'],
+                            'delivered' => ['label' => $isAr ? 'تم التوصيل' : 'Delivered', 'class' => 'delivered'],
+                            'cancelled' => ['label' => $isAr ? 'ملغي' : 'Cancelled', 'class' => 'cancelled'],
                         ];
                         $statusInfo = $statusMap[$order->status] ?? ['label' => $order->status, 'class' => 'processing'];
 
@@ -879,8 +914,8 @@
                     @endphp
                     <div class="order-header">
                         <div class="order-info">
-                            <h3>طلب #{{ $order->order_number }}</h3>
-                            <p class="order-date">{{ $order->created_at->locale('ar')->translatedFormat('d F Y') }}</p>
+                            <h3>{{ app()->getLocale() == 'ar' ? 'طلب' : 'Order' }} #{{ $order->order_number }}</h3>
+                            <p class="order-date">{{ $order->created_at->locale(app()->getLocale())->translatedFormat('d F Y') }}</p>
                         </div>
                         <div class="order-badge-wrapper">
                             <span class="order-badge {{ $statusInfo['class'] }}">
@@ -897,12 +932,13 @@
                         <div class="timeline-wrapper">
                             @php
                                 // تحديد الخطوات المكتملة والنشطة بناءً على حالة الطلب
+                                $isArLang = app()->getLocale() == 'ar';
                                 $steps = [
-                                    ['key' => 'pending', 'label' => 'قيد الانتظار', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
-                                    ['key' => 'confirmed', 'label' => 'قيد التحضير', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
-                                    ['key' => 'processing', 'label' => 'قيد المعالجة', 'icon' => 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'],
-                                    ['key' => 'shipped', 'label' => 'تم الشحن', 'icon' => 'M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4'],
-                                    ['key' => 'delivered', 'label' => 'تم التوصيل', 'icon' => 'M5 13l4 4L19 7']
+                                    ['key' => 'pending', 'label' => $isArLang ? 'قيد الانتظار' : 'Pending', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
+                                    ['key' => 'confirmed', 'label' => $isArLang ? 'قيد التحضير' : 'Confirmed', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
+                                    ['key' => 'processing', 'label' => $isArLang ? 'قيد المعالجة' : 'Processing', 'icon' => 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'],
+                                    ['key' => 'shipped', 'label' => $isArLang ? 'تم الشحن' : 'Shipped', 'icon' => 'M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4'],
+                                    ['key' => 'delivered', 'label' => $isArLang ? 'تم التوصيل' : 'Delivered', 'icon' => 'M5 13l4 4L19 7']
                                 ];
 
                                 // ترتيب الحالات
@@ -946,23 +982,32 @@
                                     @endif
 
                                     <div class="item-info">
-                                        <div class="item-name">{{ $item->product_name }}</div>
+                                        @php
+                                            $productName = $item->product_name;
+                                            // Try to get English name if product exists and we're in English mode
+                                            if (app()->getLocale() == 'en' && $item->product) {
+                                                $productName = $item->product->name['en'] ?? $item->product->name['ar'] ?? $item->product_name;
+                                            } elseif (app()->getLocale() == 'ar' && $item->product) {
+                                                $productName = $item->product->name['ar'] ?? $item->product_name;
+                                            }
+                                        @endphp
+                                        <div class="item-name">{{ $productName }}</div>
                                         <div class="item-meta">
-                                            <span>الكمية: {{ $item->quantity }}</span>
+                                            <span>{{ app()->getLocale() == 'ar' ? 'الكمية' : 'Qty' }}: {{ $item->quantity }}</span>
                                             @if($item->size)
-                                                <span>| المقاس: {{ $item->size }}</span>
+                                                <span>| {{ app()->getLocale() == 'ar' ? 'المقاس' : 'Size' }}: {{ $item->size }}</span>
                                             @endif
                                             @if($item->color)
-                                                <span>| اللون: {{ $item->color }}</span>
+                                                <span>| {{ app()->getLocale() == 'ar' ? 'اللون' : 'Color' }}: {{ $item->color }}</span>
                                             @endif
                                             @if($item->shoe_size)
-                                                <span>| المقاس: {{ $item->shoe_size }}</span>
+                                                <span>| {{ app()->getLocale() == 'ar' ? 'المقاس' : 'Size' }}: {{ $item->shoe_size }}</span>
                                             @endif
                                         </div>
                                     </div>
                                 </div>
                                 <div class="item-price">
-                                    {{ number_format($item->subtotal, 0) }} د.إ
+                                    {{ number_format($item->subtotal, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}
                                 </div>
                             </div>
                         @endforeach
@@ -972,17 +1017,17 @@
                     <div class="order-footer">
                         <div class="order-actions">
                             <button class="btn-order btn-details" onclick="showOrderDetails('{{ $order->id }}')">
-                                التفاصيل
+                                {{ app()->getLocale() == 'ar' ? 'التفاصيل' : 'Details' }}
                             </button>
                             @if(in_array($order->status, ['pending', 'confirmed']))
                                 <button class="btn-order btn-cancel" onclick="cancelOrder('{{ $order->id }}')">
-                                    إلغاء الطلب
+                                    {{ app()->getLocale() == 'ar' ? 'إلغاء الطلب' : 'Cancel Order' }}
                                 </button>
                             @endif
                         </div>
                         <div class="order-total">
-                            <div class="total-label">المجموع:</div>
-                            <div class="total-amount">{{ number_format($order->total, 0) }} د.إ</div>
+                            <div class="total-label">{{ app()->getLocale() == 'ar' ? 'المجموع:' : 'Total:' }}</div>
+                            <div class="total-amount">{{ number_format($order->total, 0) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</div>
                         </div>
                     </div>
                 </div>
@@ -993,9 +1038,9 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                <h3>لا توجد طلبات حالية</h3>
-                <p>جميع طلباتك قد تم تسليمها أو إلغاؤها</p>
-                <a href="{{ route('shop') }}" class="btn-shop">تسوق الآن</a>
+                <h3>{{ app()->getLocale() == 'ar' ? 'لا توجد طلبات حالية' : 'No Current Orders' }}</h3>
+                <p>{{ app()->getLocale() == 'ar' ? 'جميع طلباتك قد تم تسليمها أو إلغاؤها' : 'All your orders have been delivered or cancelled' }}</p>
+                <a href="{{ route('shop') }}" class="btn-shop">{{ app()->getLocale() == 'ar' ? 'تسوق الآن' : 'Shop Now' }}</a>
             </div>
         @endif
     </div>
@@ -1012,12 +1057,12 @@
             <table class="orders-table" id="previous-orders-table">
                 <thead>
                     <tr>
-                        <th>رقم الطلب</th>
-                        <th>التاريخ</th>
-                        <th>المنتجات</th>
-                        <th>المبلغ</th>
-                        <th>الحالة</th>
-                        <th>الإجراءات</th>
+                        <th>{{ app()->getLocale() == 'ar' ? 'رقم الطلب' : 'Order #' }}</th>
+                        <th>{{ app()->getLocale() == 'ar' ? 'التاريخ' : 'Date' }}</th>
+                        <th>{{ app()->getLocale() == 'ar' ? 'المنتجات' : 'Products' }}</th>
+                        <th>{{ app()->getLocale() == 'ar' ? 'المبلغ' : 'Amount' }}</th>
+                        <th>{{ app()->getLocale() == 'ar' ? 'الحالة' : 'Status' }}</th>
+                        <th>{{ app()->getLocale() == 'ar' ? 'الإجراءات' : 'Actions' }}</th>
                     </tr>
                 </thead>
                 <tbody id="previous-orders-tbody">
@@ -1035,11 +1080,11 @@
         <div class="pagination-container" id="previous-orders-pagination" style="display: none;">
             <div class="pagination-info" id="pagination-info"></div>
             <button class="pagination-btn" id="prev-page-btn" onclick="loadPreviousOrders(currentPage - 1)">
-                السابق
+                {{ app()->getLocale() == 'ar' ? 'السابق' : 'Previous' }}
             </button>
             <div class="pagination-numbers" id="pagination-numbers"></div>
             <button class="pagination-btn" id="next-page-btn" onclick="loadPreviousOrders(currentPage + 1)">
-                التالي
+                {{ app()->getLocale() == 'ar' ? 'التالي' : 'Next' }}
             </button>
         </div>
 
@@ -1048,9 +1093,9 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <h3>لا توجد طلبات سابقة</h3>
-            <p>ليس لديك أي طلبات مكتملة حتى الآن</p>
-            <a href="{{ route('shop') }}" class="btn-shop">تسوق الآن</a>
+            <h3>{{ app()->getLocale() == 'ar' ? 'لا توجد طلبات سابقة' : 'No Previous Orders' }}</h3>
+            <p>{{ app()->getLocale() == 'ar' ? 'ليس لديك أي طلبات مكتملة حتى الآن' : 'You have no completed orders yet' }}</p>
+            <a href="{{ route('shop') }}" class="btn-shop">{{ app()->getLocale() == 'ar' ? 'تسوق الآن' : 'Shop Now' }}</a>
         </div>
     </div>
 </div>
@@ -1219,36 +1264,56 @@
     function renderPreviousOrders(orders) {
         const tbody = document.getElementById('previous-orders-tbody');
         const mobileContainer = document.getElementById('previous-orders-mobile');
+        const isArabic = document.documentElement.getAttribute('dir') === 'rtl';
 
         let tableHtml = '';
         let mobileHtml = '';
 
-        const statusLabels = {
+        const statusLabels = isArabic ? {
             'pending': 'قيد الانتظار',
             'confirmed': 'مؤكد',
             'processing': 'قيد المعالجة',
             'shipped': 'تم الشحن',
             'delivered': 'تم التوصيل',
             'cancelled': 'ملغي'
+        } : {
+            'pending': 'Pending',
+            'confirmed': 'Confirmed',
+            'processing': 'Processing',
+            'shipped': 'Shipped',
+            'delivered': 'Delivered',
+            'cancelled': 'Cancelled'
         };
+
+        const currency = isArabic ? 'د.إ' : 'AED';
+        const reorderText = isArabic ? 'إعادة الطلب' : 'Reorder';
+        const viewText = isArabic ? 'عرض' : 'View';
+        const moreText = isArabic ? 'أخرى' : 'more';
 
         orders.forEach(order => {
             const statusLabel = statusLabels[order.status] || order.status;
-            const formattedDate = new Date(order.created_at).toLocaleDateString('ar-EG', {
+            const formattedDate = new Date(order.created_at).toLocaleDateString(isArabic ? 'ar-EG' : 'en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
             });
 
-            // Get product names
+            // Get product names - use correct language
             let productNames = '';
             let moreCount = 0;
             if (order.items && order.items.length > 0) {
-                const names = order.items.slice(0, 2).map(item => item.product_name);
+                const names = order.items.slice(0, 2).map(item => {
+                    // Use language-specific product name if available
+                    if (isArabic) {
+                        return item.product_name_ar || item.product_name;
+                    } else {
+                        return item.product_name_en || item.product_name;
+                    }
+                });
                 productNames = names.join(' + ');
                 moreCount = order.items.length - 2;
                 if (moreCount > 0) {
-                    productNames += ` + ${moreCount} أخرى`;
+                    productNames += ` + ${moreCount} ${moreText}`;
                 }
             }
 
@@ -1258,7 +1323,7 @@
                     <td><strong>#${order.order_number}</strong></td>
                     <td>${formattedDate}</td>
                     <td>${productNames}</td>
-                    <td>${Number(order.total).toLocaleString()} د.إ</td>
+                    <td>${Number(order.total).toLocaleString()} ${currency}</td>
                     <td>
                         <span class="status-badge-table ${order.status}">
                             ${statusLabel}
@@ -1267,10 +1332,10 @@
                     <td>
                         <div class="table-actions">
                             <button class="btn-table btn-reorder" onclick="reorder('${order.id}')">
-                                إعادة الطلب
+                                ${reorderText}
                             </button>
                             <button class="btn-table btn-view" onclick="showOrderDetails('${order.id}')">
-                                عرض
+                                ${viewText}
                             </button>
                         </div>
                     </td>
@@ -1291,13 +1356,13 @@
                     </div>
                     <div class="previous-order-products">${productNames}</div>
                     <div class="previous-order-footer">
-                        <div class="previous-order-total">${Number(order.total).toLocaleString()} د.إ</div>
+                        <div class="previous-order-total">${Number(order.total).toLocaleString()} ${currency}</div>
                         <div class="previous-order-actions">
                             <button class="btn-table btn-reorder" onclick="reorder('${order.id}')">
-                                إعادة الطلب
+                                ${reorderText}
                             </button>
                             <button class="btn-table btn-view" onclick="showOrderDetails('${order.id}')">
-                                عرض
+                                ${viewText}
                             </button>
                         </div>
                     </div>
@@ -1315,11 +1380,17 @@
         const paginationNumbers = document.getElementById('pagination-numbers');
         const prevBtn = document.getElementById('prev-page-btn');
         const nextBtn = document.getElementById('next-page-btn');
+        const isArabic = document.documentElement.getAttribute('dir') === 'rtl';
 
         // Update info
         const start = (data.current_page - 1) * data.per_page + 1;
         const end = Math.min(data.current_page * data.per_page, data.total);
-        paginationInfo.textContent = `عرض ${start} - ${end} من ${data.total} طلب`;
+
+        if (isArabic) {
+            paginationInfo.textContent = `عرض ${start} - ${end} من ${data.total} طلب`;
+        } else {
+            paginationInfo.textContent = `Showing ${start} - ${end} of ${data.total} orders`;
+        }
 
         // Update prev/next buttons
         prevBtn.disabled = data.current_page <= 1;

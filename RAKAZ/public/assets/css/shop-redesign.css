@@ -1489,6 +1489,10 @@ html, body {
         font-size: 5px;
     }
 
+    .discount-text {
+        font-size: 6px;
+    }
+
     .discount-percent {
         font-size: 11px;
     }
@@ -1519,6 +1523,10 @@ html, body {
     }
 
     .discount-text-en {
+        font-size: 5px;
+    }
+
+    .discount-text {
         font-size: 5px;
     }
 
@@ -1553,6 +1561,10 @@ html, body {
 
     .discount-text-en {
         font-size: 4px;
+    }
+
+    .discount-text {
+        font-size: 5px;
     }
 
     .discount-percent {

@@ -405,7 +405,7 @@
             transform: translate(-50%, -50%);
             width: 90%;
             max-width: 1200px;
-            max-height: 90vh;
+            max-height: 81vh;
             background: white;
             border-radius: 12px;
             overflow-y: auto;
@@ -1350,7 +1350,7 @@
 
             .product-modal-content {
                 width: 95% !important;
-                max-height: 95vh !important;
+                max-height: 85vh !important;
             }
         }
     </style>
@@ -1696,7 +1696,10 @@ function openWishlistProductModal(productId, wishlistItemId) {
     currentWishlistProductId = productId;
     currentWishlistItemId = wishlistItemId;
 
-    fetch('/api/products/' + productId)
+    // Determine locale based on page direction
+    var locale = __isArabic ? 'ar' : 'en';
+
+    fetch('/api/products/' + productId + '?locale=' + locale)
         .then(function(response) { return response.json(); })
         .then(function(product) {
             if (!product || product.error) {

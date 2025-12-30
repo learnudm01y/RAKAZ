@@ -125,7 +125,11 @@ class HomeProductOverlayLoader {
         try {
             console.log(`📡 Fetching home overlay for product ${productId}...`);
 
-            const response = await fetch(`/api/lazy-load/home-product-overlay/${productId}`, {
+            // Get current locale
+            const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+            const locale = isRtl ? 'ar' : 'en';
+
+            const response = await fetch(`/api/lazy-load/home-product-overlay/${productId}?locale=${locale}`, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
