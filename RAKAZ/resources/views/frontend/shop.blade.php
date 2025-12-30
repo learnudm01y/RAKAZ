@@ -944,7 +944,7 @@
 
             .modal-sale-badge {
                 font-size: 9px !important;
-                padding: 8px 5px !important; /* padding للوضع الطولي */
+                padding: 13px 5px !important;
                 display: inline-block !important;
                 white-space: nowrap !important;
                 background: #dc2626 !important;
@@ -952,6 +952,7 @@
                 border-radius: 0 0 8px 8px !important; /* فقط من الأسفل */
                 font-weight: 600 !important;
                 letter-spacing: 0.3px !important;
+                margin-left: 7px;
             }
             .modal-product-gallery {
                 position: relative !important;
@@ -2843,6 +2844,12 @@
                     if (product.sizes && product.sizes.length > 0) {
                         console.log('✅ Displaying ' + product.sizes.length + ' sizes');
 
+                        // Show size selection section
+                        const modalProductOptions = modalSizeSelect.closest('.modal-product-options');
+                        if (modalProductOptions) {
+                            modalProductOptions.style.display = 'block';
+                        }
+
                         // Update sizes count
                         document.getElementById('modalSizesCount').textContent = '(' + product.sizes.length + ')';
 
@@ -2881,6 +2888,12 @@
                     } else {
                         console.warn('⚠️ No sizes available for this product');
                         modalAvailableSizes.style.display = 'none';
+
+                        // Hide size selection section completely when no sizes
+                        const modalProductOptions = modalSizeSelect.closest('.modal-product-options');
+                        if (modalProductOptions) {
+                            modalProductOptions.style.display = 'none';
+                        }
                     }
 
                     // Setup image navigation

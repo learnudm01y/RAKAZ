@@ -293,6 +293,91 @@
             background: #333;
         }
 
+        /* Wishlist Pagination Styles */
+        .wishlist-pagination {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-top: 50px;
+            padding: 30px 0;
+            border-top: 1px solid #eee;
+        }
+
+        .pagination-info {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .pagination-btn {
+            display: inline-block;
+            padding: 10px 25px;
+            background: #1a1a1a;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .pagination-btn:hover {
+            background: #333;
+        }
+
+        .pagination-btn.disabled {
+            background: #ccc;
+            color: #888;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .pagination-numbers {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .page-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: #f5f5f5;
+            color: #1a1a1a;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid #ddd;
+        }
+
+        .page-number:hover {
+            background: #e0e0e0;
+        }
+
+        .page-number.active {
+            background: #1a1a1a;
+            color: #ffffff;
+            border-color: #1a1a1a;
+        }
+
+        /* LTR mode for pagination */
+        body[dir="ltr"] .pagination-btn {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body[dir="ltr"] .pagination-info {
+            font-family: 'Poppins', sans-serif;
+        }
+
         /* Tablet Styles */
         @media (max-width: 1024px) {
             .wishlist-container {
@@ -369,6 +454,41 @@
             .wishlist-item-image img {
                 filter: none !important;
                 image-rendering: auto !important;
+            }
+
+            /* Pagination Mobile Styles */
+            .wishlist-pagination {
+                margin-top: 30px;
+                padding: 20px 0;
+                gap: 15px;
+            }
+
+            .pagination-info {
+                font-size: 12px;
+                text-align: center;
+            }
+
+            .pagination-controls {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .pagination-btn {
+                padding: 8px 15px;
+                font-size: 12px;
+            }
+
+            .pagination-numbers {
+                gap: 5px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .page-number {
+                width: 35px;
+                height: 35px;
+                font-size: 13px;
             }
         }
 
@@ -448,11 +568,12 @@
             position: relative;
         }
 
-        /* Sale Badge - Positioned on far left/right */
+        /* Sale Badge - Positioned on far left/right - Only show in RTL */
         .modal-sale-badge-container {
             position: absolute;
             top: 20px;
             z-index: 100;
+            display: none; /* Hidden by default, shown via JS only in RTL */
         }
 
         [dir="rtl"] .modal-sale-badge-container {
@@ -460,7 +581,7 @@
         }
 
         [dir="ltr"] .modal-sale-badge-container {
-            right: 20px;
+            display: none !important; /* Hide in LTR - use inline badge instead */
         }
 
         .modal-sale-badge {
@@ -635,10 +756,27 @@
             gap: 20px;
         }
 
+        .modal-product-meta-top {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
         .modal-product-meta-top .modal-season-badge {
             display: inline-block;
             padding: 6px 12px;
             background: #1a1a1a;
+            color: white;
+            font-size: 12px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .modal-product-meta-top .modal-sale-badge-inline {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #dc2626;
             color: white;
             font-size: 12px;
             border-radius: 4px;
@@ -1009,16 +1147,9 @@
                 margin-right: 0 !important;
             }
 
-            /* Sale Badge - Vertical Top Left - NO SPACING */
+            /* Sale Badge Container - Hidden in mobile, use inline badges instead */
             .modal-sale-badge-container {
-                position: absolute !important;
-                top: 0 !important; /* بدون أي تباعد */
-                left: 0 !important; /* ملاصق للحافة */
-                z-index: 50 !important;
-                width: auto !important;
-                max-width: none !important;
-                writing-mode: vertical-rl !important; /* طولي */
-                text-orientation: mixed !important;
+                display: none !important;
             }
 
             .modal-sale-badge {
@@ -1113,14 +1244,16 @@
                 box-sizing: border-box !important;
             }
 
-            /* Season Badge - Vertical Next to Sale Badge - NO SPACING */
+            /* Season & Sale Badges - Vertical Top Left - NO SPACING */
             .modal-product-meta-top {
                 position: absolute !important;
                 top: 0 !important; /* بدون أي تباعد */
-                left: 30px !important; /* بجانب sale badge */
+                left: 0 !important; /* ملاصق للحافة */
                 z-index: 50 !important;
                 writing-mode: vertical-rl !important; /* طولي */
                 text-orientation: mixed !important;
+                flex-direction: column !important;
+                gap: 0 !important;
             }
 
             .modal-product-meta-top .modal-season-badge {
@@ -1132,6 +1265,18 @@
                 border-radius: 0 0 8px 8px !important; /* فقط من الأسفل */
                 font-weight: 500 !important;
                 white-space: nowrap !important;
+            }
+
+            .modal-product-meta-top .modal-sale-badge-inline {
+                font-size: 9px !important;
+                padding: 16px 5px !important;
+                display: inline-block !important;
+                background: #dc2626 !important;
+                color: white !important;
+                border-radius: 0 0 8px 8px !important;
+                font-weight: 500 !important;
+                white-space: nowrap !important;
+                margin-left: 10px;
             }
 
             .modal-product-title {
@@ -1358,15 +1503,11 @@
 
     <!-- Wishlist Content -->
     <div class="wishlist-container">
-        @php
-            $wishlistCount = $wishlistItems ? count($wishlistItems) : 0;
-        @endphp
-
         <x-account-nav-header
-            :title="(app()->getLocale() == 'ar' ? 'قائمة أمنياتي' : 'My wishlist') . ' (' . $wishlistCount . ')'"
+            :title="(app()->getLocale() == 'ar' ? 'قائمة أمنياتي' : 'My wishlist') . ' (' . $totalWishlistCount . ')'"
             :subtitle="app()->getLocale() == 'ar'
-                ? ('لديك ' . $wishlistCount . ' ' . ($wishlistCount === 1 ? 'منتج' : 'منتجات') . ' في قائمة الأمنيات')
-                : ('You have ' . $wishlistCount . ' ' . ($wishlistCount === 1 ? 'item' : 'items') . ' in your wishlist')"
+                ? ('لديك ' . $totalWishlistCount . ' ' . ($totalWishlistCount === 1 ? 'منتج' : 'منتجات') . ' في قائمة الأمنيات')
+                : ('You have ' . $totalWishlistCount . ' ' . ($totalWishlistCount === 1 ? 'item' : 'items') . ' in your wishlist')"
         />
 
         <!-- Wishlist Products Grid -->
@@ -1429,6 +1570,52 @@
                 </div>
             @endforeach
         </div>
+
+        <!-- Pagination -->
+        @if($wishlistItems->hasPages())
+        <div class="wishlist-pagination">
+            <div class="pagination-info">
+                {{ app()->getLocale() == 'ar'
+                    ? 'عرض ' . $wishlistItems->firstItem() . ' - ' . $wishlistItems->lastItem() . ' من ' . $wishlistItems->total() . ' منتج'
+                    : 'Showing ' . $wishlistItems->firstItem() . ' - ' . $wishlistItems->lastItem() . ' of ' . $wishlistItems->total() . ' items' }}
+            </div>
+            <div class="pagination-controls">
+                {{-- Previous Page Link --}}
+                @if($wishlistItems->onFirstPage())
+                    <span class="pagination-btn disabled">
+                        {{ app()->getLocale() == 'ar' ? 'السابق' : 'Previous' }}
+                    </span>
+                @else
+                    <a href="{{ $wishlistItems->previousPageUrl() }}" class="pagination-btn">
+                        {{ app()->getLocale() == 'ar' ? 'السابق' : 'Previous' }}
+                    </a>
+                @endif
+
+                {{-- Page Numbers --}}
+                <div class="pagination-numbers">
+                    @foreach($wishlistItems->getUrlRange(1, $wishlistItems->lastPage()) as $page => $url)
+                        @if($page == $wishlistItems->currentPage())
+                            <span class="page-number active">{{ $page }}</span>
+                        @else
+                            <a href="{{ $url }}" class="page-number">{{ $page }}</a>
+                        @endif
+                    @endforeach
+                </div>
+
+                {{-- Next Page Link --}}
+                @if($wishlistItems->hasMorePages())
+                    <a href="{{ $wishlistItems->nextPageUrl() }}" class="pagination-btn">
+                        {{ app()->getLocale() == 'ar' ? 'التالي' : 'Next' }}
+                    </a>
+                @else
+                    <span class="pagination-btn disabled">
+                        {{ app()->getLocale() == 'ar' ? 'التالي' : 'Next' }}
+                    </span>
+                @endif
+            </div>
+        </div>
+        @endif
+
         @else
         <!-- Empty Wishlist State -->
         <div class="empty-wishlist">
@@ -1494,9 +1681,10 @@
 
                 <!-- Product Info -->
                 <div class="modal-product-info-section">
-                    <!-- Season Badge -->
+                    <!-- Badges Row - Season & Sale -->
                     <div class="modal-product-meta-top">
                         <span class="modal-season-badge" id="wishlistModalSeasonBadge" style="display: none;">{{ app()->getLocale() == 'ar' ? 'الموسم الجديد' : 'New season' }}</span>
+                        <span class="modal-sale-badge-inline" id="wishlistModalSaleBadgeInline" style="display: none;">{{ app()->getLocale() == 'ar' ? 'عرض خاص' : 'On Sale' }}</span>
                     </div>
 
                     <!-- Brand & Title -->
@@ -1717,6 +1905,7 @@ function openWishlistProductModal(productId, wishlistItemId) {
             var modalSizeSelect = document.getElementById('wishlistModalSizeSelect');
             var modalThumbnails = document.getElementById('wishlistModalThumbnails');
             var modalSaleBadgeContainer = document.getElementById('wishlistModalSaleBadgeContainer');
+            var modalSaleBadgeInline = document.getElementById('wishlistModalSaleBadgeInline');
             var modalSeasonBadge = document.getElementById('wishlistModalSeasonBadge');
 
             // Set brand and name
@@ -1733,11 +1922,13 @@ function openWishlistProductModal(productId, wishlistItemId) {
             // Handle price and sale badge
             if (product.is_on_sale && product.sale_price) {
                 modalSaleBadgeContainer.style.display = 'block';
+                if (modalSaleBadgeInline) modalSaleBadgeInline.style.display = 'inline-block';
                 modalOriginalPrice.textContent = product.price;
                 modalOriginalPrice.style.display = 'inline';
                 modalPrice.textContent = product.sale_price;
             } else {
                 modalSaleBadgeContainer.style.display = 'none';
+                if (modalSaleBadgeInline) modalSaleBadgeInline.style.display = 'none';
                 modalOriginalPrice.style.display = 'none';
                 modalPrice.textContent = product.price;
             }
@@ -1929,6 +2120,13 @@ function openWishlistProductModal(productId, wishlistItemId) {
             modalSizeSelect.innerHTML = '<option value="">' + __t('اختر المقاس', 'Choose size') + '</option>';
             if (product.sizes && product.sizes.length > 0) {
                 console.log('✅ Adding ' + product.sizes.length + ' sizes');
+
+                // Show size selection section
+                var modalProductOptions = modalSizeSelect.closest('.modal-product-options');
+                if (modalProductOptions) {
+                    modalProductOptions.style.display = 'block';
+                }
+
                 product.sizes.forEach(function(size) {
                     var option = document.createElement('option');
                     option.value = size;
@@ -1946,6 +2144,12 @@ function openWishlistProductModal(productId, wishlistItemId) {
 
                 if (typeof CustomSelect !== 'undefined') {
                     new CustomSelect(modalSizeSelect);
+                }
+            } else {
+                // Hide size selection section completely when no sizes
+                var modalProductOptions = modalSizeSelect.closest('.modal-product-options');
+                if (modalProductOptions) {
+                    modalProductOptions.style.display = 'none';
                 }
             }
 

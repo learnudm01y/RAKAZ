@@ -502,17 +502,26 @@ class FrontendController extends Controller
         ]);
     }
 
-    public function wishlist()
+    public function wishlist(Request $request)
     {
+        $perPage = 10;
+
         $wishlistItems = auth()->check()
             ? \App\Models\Wishlist::with([
                 'product.brand',
                 'product.category',
                 'product.colorImages'
-            ])->where('user_id', auth()->id())->get()
+            ])->where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage)
             : collect();
 
-        return view('frontend.wishlist', compact('wishlistItems'));
+        // Get total count for header display
+        $totalWishlistCount = auth()->check()
+            ? \App\Models\Wishlist::where('user_id', auth()->id())->count()
+            : 0;
+
+        return view('frontend.wishlist', compact('wishlistItems', 'totalWishlistCount'));
     }
 
     public function orders(Request $request)
