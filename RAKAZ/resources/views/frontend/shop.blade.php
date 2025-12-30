@@ -758,6 +758,20 @@
                 border-radius: 50% !important;
             }
 
+            /* RTL: wishlist button on right */
+            [dir="rtl"] .wishlist-btn,
+            [dir="rtl"] .product-card .wishlist-btn {
+                right: 4px !important;
+                left: auto !important;
+            }
+
+            /* LTR: wishlist button on left */
+            [dir="ltr"] .wishlist-btn,
+            [dir="ltr"] .product-card .wishlist-btn {
+                left: 4px !important;
+                right: auto !important;
+            }
+
             .wishlist-btn svg {
                 width: 12px !important; /* أصغر */
                 height: 12px !important;
@@ -766,9 +780,20 @@
             /* Discount Badge - Smaller */
             .discount-badge-wrapper {
                 top: 4px !important;
-                left: 4px !important;
                 transform: scale(0.65) !important; /* أصغر بكثير */
                 transform-origin: top left !important;
+            }
+
+            /* RTL: discount badge on left */
+            [dir="rtl"] .discount-badge-wrapper {
+                left: 4px !important;
+                right: auto !important;
+            }
+
+            /* LTR: discount badge on right */
+            [dir="ltr"] .discount-badge-wrapper {
+                right: 4px !important;
+                left: auto !important;
             }
 
             .badge {

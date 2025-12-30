@@ -405,22 +405,22 @@
         <div class="checkout-header">
             <div class="checkout-logo">
                 <a href="{{ route('home') }}">
-                    <img src="/assets/images/rakazLogo.png" alt="ركاز">
+                    <img src="/assets/images/rakazLogo.png" alt="{{ app()->getLocale() == 'ar' ? 'ركاز' : 'Rakaz' }}">
                 </a>
             </div>
-            <h1 class="checkout-title">إتمام الطلب</h1>
+            <h1 class="checkout-title">{{ app()->getLocale() == 'ar' ? 'إتمام الطلب' : 'Checkout' }}</h1>
             <div class="checkout-steps">
                 <div class="checkout-step active">
                     <span class="step-number">1</span>
-                    <span>معلومات الشحن</span>
+                    <span>{{ app()->getLocale() == 'ar' ? 'معلومات الشحن' : 'Shipping Info' }}</span>
                 </div>
                 <div class="checkout-step">
                     <span class="step-number">2</span>
-                    <span>طريقة الدفع</span>
+                    <span>{{ app()->getLocale() == 'ar' ? 'طريقة الدفع' : 'Payment Method' }}</span>
                 </div>
                 <div class="checkout-step">
                     <span class="step-number">3</span>
-                    <span>تأكيد الطلب</span>
+                    <span>{{ app()->getLocale() == 'ar' ? 'تأكيد الطلب' : 'Confirm Order' }}</span>
                 </div>
             </div>
         </div>
@@ -442,20 +442,20 @@
 
                     <!-- Contact Information -->
                     <div class="form-section">
-                        <h2 class="form-section-title">معلومات الاتصال</h2>
+                        <h2 class="form-section-title">{{ app()->getLocale() == 'ar' ? 'معلومات الاتصال' : 'Contact Information' }}</h2>
                         <div class="form-grid full">
                             <div class="form-group">
-                                <label class="form-label">الاسم الكامل <span class="required">*</span></label>
+                                <label class="form-label">{{ app()->getLocale() == 'ar' ? 'الاسم الكامل' : 'Full Name' }} <span class="required">*</span></label>
                                 <input type="text" name="customer_name" class="form-input" value="{{ old('customer_name', auth()->user()->name ?? '') }}" required>
                             </div>
                         </div>
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label">البريد الإلكتروني <span class="required">*</span></label>
+                                <label class="form-label">{{ app()->getLocale() == 'ar' ? 'البريد الإلكتروني' : 'Email' }} <span class="required">*</span></label>
                                 <input type="email" name="customer_email" class="form-input" value="{{ old('customer_email', auth()->user()->email ?? '') }}" required>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">رقم الهاتف <span class="required">*</span></label>
+                                <label class="form-label">{{ app()->getLocale() == 'ar' ? 'رقم الهاتف' : 'Phone Number' }} <span class="required">*</span></label>
                                 <input type="tel" name="customer_phone" class="form-input" value="{{ old('customer_phone') }}" required>
                             </div>
                         </div>
@@ -463,91 +463,91 @@
 
                     <!-- Shipping Address -->
                     <div class="form-section">
-                        <h2 class="form-section-title">عنوان الشحن</h2>
+                        <h2 class="form-section-title">{{ app()->getLocale() == 'ar' ? 'عنوان الشحن' : 'Shipping Address' }}</h2>
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label">الدولة <span class="required">*</span></label>
+                                <label class="form-label">{{ app()->getLocale() == 'ar' ? 'الدولة' : 'Country' }} <span class="required">*</span></label>
                                 <select name="shipping_country" class="form-input" required>
-                                    <option value="">اختر الدولة</option>
-                                    <option value="UAE" {{ old('shipping_country') == 'UAE' ? 'selected' : '' }}>الإمارات العربية المتحدة</option>
-                                    <option value="Saudi Arabia" {{ old('shipping_country') == 'Saudi Arabia' ? 'selected' : '' }}>المملكة العربية السعودية</option>
-                                    <option value="Kuwait" {{ old('shipping_country') == 'Kuwait' ? 'selected' : '' }}>الكويت</option>
-                                    <option value="Bahrain" {{ old('shipping_country') == 'Bahrain' ? 'selected' : '' }}>البحرين</option>
-                                    <option value="Qatar" {{ old('shipping_country') == 'Qatar' ? 'selected' : '' }}>قطر</option>
-                                    <option value="Oman" {{ old('shipping_country') == 'Oman' ? 'selected' : '' }}>عُمان</option>
+                                    <option value="">{{ app()->getLocale() == 'ar' ? 'اختر الدولة' : 'Select Country' }}</option>
+                                    <option value="UAE" {{ old('shipping_country') == 'UAE' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'الإمارات العربية المتحدة' : 'United Arab Emirates' }}</option>
+                                    <option value="Saudi Arabia" {{ old('shipping_country') == 'Saudi Arabia' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'المملكة العربية السعودية' : 'Saudi Arabia' }}</option>
+                                    <option value="Kuwait" {{ old('shipping_country') == 'Kuwait' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'الكويت' : 'Kuwait' }}</option>
+                                    <option value="Bahrain" {{ old('shipping_country') == 'Bahrain' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'البحرين' : 'Bahrain' }}</option>
+                                    <option value="Qatar" {{ old('shipping_country') == 'Qatar' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'قطر' : 'Qatar' }}</option>
+                                    <option value="Oman" {{ old('shipping_country') == 'Oman' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'عُمان' : 'Oman' }}</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">المدينة <span class="required">*</span></label>
+                                <label class="form-label">{{ app()->getLocale() == 'ar' ? 'المدينة' : 'City' }} <span class="required">*</span></label>
                                 <input type="text" name="shipping_city" class="form-input" value="{{ old('shipping_city') }}" required>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">المنطقة / الحي</label>
+                                <label class="form-label">{{ app()->getLocale() == 'ar' ? 'المنطقة / الحي' : 'Area / District' }}</label>
                                 <input type="text" name="shipping_state" class="form-input" value="{{ old('shipping_state') }}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">الرمز البريدي</label>
+                                <label class="form-label">{{ app()->getLocale() == 'ar' ? 'الرمز البريدي' : 'Postal Code' }}</label>
                                 <input type="text" name="shipping_postal_code" class="form-input" value="{{ old('shipping_postal_code') }}">
                             </div>
                         </div>
                         <div class="form-grid full">
                             <div class="form-group">
-                                <label class="form-label">العنوان بالتفصيل <span class="required">*</span></label>
-                                <textarea name="shipping_address" class="form-textarea" placeholder="الشارع، رقم المبنى، الطابق، رقم الشقة..." required>{{ old('shipping_address') }}</textarea>
+                                <label class="form-label">{{ app()->getLocale() == 'ar' ? 'العنوان بالتفصيل' : 'Detailed Address' }} <span class="required">*</span></label>
+                                <textarea name="shipping_address" class="form-textarea" placeholder="{{ app()->getLocale() == 'ar' ? 'الشارع، رقم المبنى، الطابق، رقم الشقة...' : 'Street, Building number, Floor, Apartment number...' }}" required>{{ old('shipping_address') }}</textarea>
                             </div>
                         </div>
                     </div>
 
                     <!-- Shipping Method -->
                     <div class="form-section">
-                        <h2 class="form-section-title">طريقة الشحن</h2>
+                        <h2 class="form-section-title">{{ app()->getLocale() == 'ar' ? 'طريقة الشحن' : 'Shipping Method' }}</h2>
                         <div class="shipping-methods">
                             <label class="shipping-option selected">
                                 <input type="radio" name="shipping_method" value="standard" data-cost="0" checked>
                                 <div class="shipping-header">
-                                    <span class="shipping-name">الشحن القياسي</span>
-                                    <span class="shipping-price">مجاني</span>
+                                    <span class="shipping-name">{{ app()->getLocale() == 'ar' ? 'الشحن القياسي' : 'Standard Shipping' }}</span>
+                                    <span class="shipping-price">{{ app()->getLocale() == 'ar' ? 'مجاني' : 'Free' }}</span>
                                 </div>
-                                <div class="shipping-description">التسليم خلال 3-5 أيام عمل</div>
+                                <div class="shipping-description">{{ app()->getLocale() == 'ar' ? 'التسليم خلال 3-5 أيام عمل' : 'Delivery within 3-5 business days' }}</div>
                             </label>
                             <label class="shipping-option">
                                 <input type="radio" name="shipping_method" value="express" data-cost="50">
                                 <div class="shipping-header">
-                                    <span class="shipping-name">الشحن السريع</span>
-                                    <span class="shipping-price">50 د.إ</span>
+                                    <span class="shipping-name">{{ app()->getLocale() == 'ar' ? 'الشحن السريع' : 'Express Shipping' }}</span>
+                                    <span class="shipping-price">{{ app()->getLocale() == 'ar' ? '50 د.إ' : '50 AED' }}</span>
                                 </div>
-                                <div class="shipping-description">التسليم خلال يوم عمل واحد</div>
+                                <div class="shipping-description">{{ app()->getLocale() == 'ar' ? 'التسليم خلال يوم عمل واحد' : 'Delivery within 1 business day' }}</div>
                             </label>
                             <label class="shipping-option">
                                 <input type="radio" name="shipping_method" value="same-day" data-cost="100">
                                 <div class="shipping-header">
-                                    <span class="shipping-name">التوصيل في نفس اليوم</span>
-                                    <span class="shipping-price">100 د.إ</span>
+                                    <span class="shipping-name">{{ app()->getLocale() == 'ar' ? 'التوصيل في نفس اليوم' : 'Same Day Delivery' }}</span>
+                                    <span class="shipping-price">{{ app()->getLocale() == 'ar' ? '100 د.إ' : '100 AED' }}</span>
                                 </div>
-                                <div class="shipping-description">التسليم خلال ساعتين (دبي فقط)</div>
+                                <div class="shipping-description">{{ app()->getLocale() == 'ar' ? 'التسليم خلال ساعتين (دبي فقط)' : 'Delivery within 2 hours (Dubai only)' }}</div>
                             </label>
                         </div>
                     </div>
 
                     <!-- Payment Method -->
                     <div class="form-section">
-                        <h2 class="form-section-title">طريقة الدفع</h2>
+                        <h2 class="form-section-title">{{ app()->getLocale() == 'ar' ? 'طريقة الدفع' : 'Payment Method' }}</h2>
                         <div class="payment-methods">
                             <label class="payment-option selected">
                                 <input type="radio" name="payment_method" value="cash" checked>
                                 <div class="payment-icon">💵</div>
-                                <div class="payment-name">الدفع عند الاستلام</div>
+                                <div class="payment-name">{{ app()->getLocale() == 'ar' ? 'الدفع عند الاستلام' : 'Cash on Delivery' }}</div>
                             </label>
                         </div>
-                        <p style="margin-top: 15px; font-size: 13px; color: #666;">حالياً متاح فقط الدفع عند الاستلام. طرق دفع إضافية قريباً.</p>
+                        <p style="margin-top: 15px; font-size: 13px; color: #666;">{{ app()->getLocale() == 'ar' ? 'حالياً متاح فقط الدفع عند الاستلام. طرق دفع إضافية قريباً.' : 'Currently only cash on delivery is available. More payment methods coming soon.' }}</p>
                     </div>
 
                     <!-- Additional Notes -->
                     <div class="form-section">
-                        <h2 class="form-section-title">ملاحظات إضافية (اختياري)</h2>
+                        <h2 class="form-section-title">{{ app()->getLocale() == 'ar' ? 'ملاحظات إضافية (اختياري)' : 'Additional Notes (Optional)' }}</h2>
                         <div class="form-grid full">
                             <div class="form-group">
-                                <textarea name="notes" class="form-textarea" placeholder="أضف أي ملاحظات خاصة بطلبك...">{{ old('notes') }}</textarea>
+                                <textarea name="notes" class="form-textarea" placeholder="{{ app()->getLocale() == 'ar' ? 'أضف أي ملاحظات خاصة بطلبك...' : 'Add any special notes for your order...' }}">{{ old('notes') }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -555,7 +555,7 @@
 
             <!-- Order Summary -->
             <div class="order-summary">
-                <h3 class="summary-title">ملخص الطلب</h3>
+                <h3 class="summary-title">{{ app()->getLocale() == 'ar' ? 'ملخص الطلب' : 'Order Summary' }}</h3>
 
                 <!-- Items -->
                 @foreach($cartItems as $item)
@@ -566,44 +566,44 @@
                     <div class="summary-item-details">
                         <div class="summary-item-name">{{ $item->product->getName() }}</div>
                         <div class="summary-item-specs">
-                            @if($item->size)المقاس: {{ $item->size }}@endif
-                            @if($item->shoe_size)@if($item->size) | @endif مقاس الحذاء: {{ $item->shoe_size }}@endif
-                            @if($item->color)@if($item->size || $item->shoe_size) | @endif اللون: {{ $item->color }}@endif
-                            | الكمية: {{ $item->quantity }}
+                            @if($item->size){{ app()->getLocale() == 'ar' ? 'المقاس' : 'Size' }}: {{ $item->size }}@endif
+                            @if($item->shoe_size)@if($item->size) | @endif {{ app()->getLocale() == 'ar' ? 'مقاس الحذاء' : 'Shoe Size' }}: {{ $item->shoe_size }}@endif
+                            @if($item->color)@if($item->size || $item->shoe_size) | @endif {{ app()->getLocale() == 'ar' ? 'اللون' : 'Color' }}: {{ $item->color }}@endif
+                            | {{ app()->getLocale() == 'ar' ? 'الكمية' : 'Qty' }}: {{ $item->quantity }}
                         </div>
                     </div>
-                    <div class="summary-item-price">{{ number_format($item->subtotal, 2) }} د.إ</div>
+                    <div class="summary-item-price">{{ number_format($item->subtotal, 2) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</div>
                 </div>
                 @endforeach
 
                 <!-- Totals -->
                 <div class="summary-totals">
                     <div class="summary-row">
-                        <span>المجموع الفرعي</span>
-                        <span id="subtotalDisplay">{{ number_format($cartTotal, 2) }} د.إ</span>
+                        <span>{{ app()->getLocale() == 'ar' ? 'المجموع الفرعي' : 'Subtotal' }}</span>
+                        <span id="subtotalDisplay">{{ number_format($cartTotal, 2) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</span>
                     </div>
                     <div class="summary-row">
-                        <span>الشحن</span>
-                        <span id="shippingDisplay">مجاني</span>
+                        <span>{{ app()->getLocale() == 'ar' ? 'الشحن' : 'Shipping' }}</span>
+                        <span id="shippingDisplay">{{ app()->getLocale() == 'ar' ? 'مجاني' : 'Free' }}</span>
                     </div>
                     <div class="summary-row">
-                        <span>الضريبة (5%)</span>
-                        <span id="taxDisplay">{{ number_format($tax, 2) }} د.إ</span>
+                        <span>{{ app()->getLocale() == 'ar' ? 'الضريبة (5%)' : 'Tax (5%)' }}</span>
+                        <span id="taxDisplay">{{ number_format($tax, 2) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</span>
                     </div>
                     <div class="summary-total">
-                        <span>المجموع الكلي</span>
-                        <span id="totalDisplay">{{ number_format($total, 2) }} د.إ</span>
+                        <span>{{ app()->getLocale() == 'ar' ? 'المجموع الكلي' : 'Total' }}</span>
+                        <span id="totalDisplay">{{ number_format($total, 2) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</span>
                     </div>
                 </div>
 
-                <button type="submit" class="place-order-btn" id="placeOrderBtn">تأكيد وإتمام الطلب</button>
-                <a href="{{ route('cart.index') }}" class="back-to-cart">العودة إلى السلة</a>
+                <button type="submit" class="place-order-btn" id="placeOrderBtn">{{ app()->getLocale() == 'ar' ? 'تأكيد وإتمام الطلب' : 'Place Order' }}</button>
+                <a href="{{ route('cart.index') }}" class="back-to-cart">{{ app()->getLocale() == 'ar' ? 'العودة إلى السلة' : 'Back to Cart' }}</a>
 
                 <div class="secure-checkout">
                     <svg viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V7.3l7-3.11v8.8z"/>
                     </svg>
-                    عملية دفع آمنة ومشفرة
+                    {{ app()->getLocale() == 'ar' ? 'عملية دفع آمنة ومشفرة' : 'Secure & Encrypted Checkout' }}
                 </div>
             </div>
         </div>
@@ -616,15 +616,18 @@
         const subtotal = {{ $cartTotal }};
         const taxRate = 0.05;
         let shippingCost = 0;
+        const isArabic = '{{ app()->getLocale() }}' === 'ar';
+        const currency = isArabic ? 'د.إ' : 'AED';
+        const freeText = isArabic ? 'مجاني' : 'Free';
 
         // Update totals display
         function updateTotals() {
             const tax = (subtotal + shippingCost) * taxRate;
             const total = subtotal + shippingCost + tax;
 
-            document.getElementById('shippingDisplay').textContent = shippingCost > 0 ? shippingCost.toFixed(2) + ' د.إ' : 'مجاني';
-            document.getElementById('taxDisplay').textContent = tax.toFixed(2) + ' د.إ';
-            document.getElementById('totalDisplay').textContent = total.toFixed(2) + ' د.إ';
+            document.getElementById('shippingDisplay').textContent = shippingCost > 0 ? shippingCost.toFixed(2) + ' ' + currency : freeText;
+            document.getElementById('taxDisplay').textContent = tax.toFixed(2) + ' ' + currency;
+            document.getElementById('totalDisplay').textContent = total.toFixed(2) + ' ' + currency;
         }
 
         // Shipping method selection
@@ -664,12 +667,14 @@
 
             // Show confirmation dialog
             Swal.fire({
-                title: 'تأكيد الطلب',
-                html: 'هل أنت متأكد من رغبتك في إتمام الطلب؟<br><small>المجموع الكلي: ' + document.getElementById('totalDisplay').textContent + '</small>',
+                title: isArabic ? 'تأكيد الطلب' : 'Confirm Order',
+                html: isArabic
+                    ? 'هل أنت متأكد من رغبتك في إتمام الطلب؟<br><small>المجموع الكلي: ' + document.getElementById('totalDisplay').textContent + '</small>'
+                    : 'Are you sure you want to place this order?<br><small>Total: ' + document.getElementById('totalDisplay').textContent + '</small>',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'نعم، أكمل الطلب',
-                cancelButtonText: 'المراجعة',
+                confirmButtonText: isArabic ? 'نعم، أكمل الطلب' : 'Yes, Place Order',
+                cancelButtonText: isArabic ? 'المراجعة' : 'Review',
                 confirmButtonColor: '#000',
                 cancelButtonColor: '#666',
                 reverseButtons: true
@@ -677,7 +682,7 @@
                 if (result.isConfirmed) {
                     // Show loading
                     Swal.fire({
-                        title: 'جاري معالجة الطلب...',
+                        title: isArabic ? 'جاري معالجة الطلب...' : 'Processing your order...',
                         allowOutsideClick: false,
                         allowEscapeKey: false,
                         didOpen: () => {
