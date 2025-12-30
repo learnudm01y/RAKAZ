@@ -960,7 +960,7 @@ html, body {
     backface-visibility: hidden;
     transform: translateZ(0) scale(1.0001);
     will-change: transform;
-    filter: blur(0.3px) contrast(1.04) saturate(1.1) brightness(1.01);
+    filter: none;
     transition: all 0.35s ease;
 }
 
@@ -1290,7 +1290,6 @@ html, body {
 .wishlist-btn {
     position: absolute;
     top: 15px;
-    right: 15px;
     width: 40px;
     height: 40px;
     background: rgba(255,255,255,0.9);
@@ -1302,6 +1301,18 @@ html, body {
     cursor: pointer;
     transition: all 0.3s ease;
     z-index: 2;
+}
+
+/* RTL: wishlist button on left */
+[dir="rtl"] .wishlist-btn {
+    left: 15px;
+    right: auto;
+}
+
+/* LTR: wishlist button on right */
+[dir="ltr"] .wishlist-btn {
+    right: 15px;
+    left: auto;
 }
 
 .wishlist-btn:hover {
@@ -1317,7 +1328,6 @@ html, body {
 .badge.new-season {
     position: absolute;
     bottom: 15px;
-    left: 15px;
     background: #1a1a1a;
     color: #fff;
     padding: 6px 12px;
@@ -1329,10 +1339,21 @@ html, body {
     z-index: 3;
 }
 
+/* RTL: new-season badge on left */
+[dir="rtl"] .badge.new-season {
+    left: 15px;
+    right: auto;
+}
+
+/* LTR: new-season badge on right (same side as sale badge) */
+[dir="ltr"] .badge.new-season {
+    right: 15px;
+    left: auto;
+}
+
 .badge.discount {
     position: absolute;
     bottom: 15px;
-    left: 15px;
     background: #dc2626;
     color: #fff;
     padding: 6px 12px;
@@ -1343,6 +1364,18 @@ html, body {
     border-radius: 4px;
     z-index: 3;
     letter-spacing: 0.5px;
+}
+
+/* RTL: discount badge on left */
+[dir="rtl"] .badge.discount {
+    left: 15px;
+    right: auto;
+}
+
+/* LTR: discount badge on right */
+[dir="ltr"] .badge.discount {
+    right: 15px;
+    left: auto;
 }
 
 /* Discount Badge with Image */
@@ -1401,6 +1434,21 @@ html, body {
     line-height: 1.1;
     margin-bottom: 1px;
     text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    text-transform: uppercase;
+}
+
+/* New unified discount text class */
+.discount-text {
+    font-size: 8px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 1px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+[dir="ltr"] .discount-text {
+    font-size: 6px;
     text-transform: uppercase;
 }
 
@@ -1495,8 +1543,8 @@ html, body {
     }
 
     .discount-badge-text {
-        top: 29%;
-        left: -2%;
+        top: 40%;
+        left: 1%;
     }
 
     .discount-text-ar {
@@ -1847,8 +1895,8 @@ html, body {
         backface-visibility: hidden !important;
         transform: translateZ(0) scale(1.0001) !important;
         will-change: transform !important;
-        /* تنعيم فائق القوة للهواتف */
-        filter: blur(0.5px) contrast(1.05) saturate(1.12) brightness(1.02) !important;
+        /* إزالة الضبابية من الصور */
+        filter: none !important;
         -webkit-backface-visibility: hidden !important;
         -webkit-perspective: 1000 !important;
         perspective: 1000 !important;

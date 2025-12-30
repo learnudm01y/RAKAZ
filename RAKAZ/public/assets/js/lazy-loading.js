@@ -63,12 +63,19 @@ class LazyLoadingManager {
         try {
             console.log(`⏳ Loading ${section.name} from server...`);
 
+            // Get current locale
+            const currentLocale = document.documentElement.getAttribute('lang') || 'ar';
+
+            // Build URL with locale parameter
+            const url = section.url + (section.url.includes('?') ? '&' : '?') + 'locale=' + currentLocale;
+
             // Fetch real data from server
-            const response = await fetch(section.url, {
+            const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept-Language': currentLocale
                 }
             });
 
@@ -146,8 +153,46 @@ class LazyLoadingManager {
             case 'footer':
                 // Footer might have interactive elements
                 console.log('✨ Footer loaded successfully');
+                // Initialize footer accordion for mobile/tablet
+                if (window.innerWidth <= 1024) {
+                    this.initFooterAccordion();
+                }
                 break;
         }
+    }
+
+    initFooterAccordion() {
+        const footerColumns = document.querySelectorAll('.footer-column');
+
+        footerColumns.forEach(column => {
+            const title = column.querySelector('.footer-title');
+
+            if (title && !title.hasAttribute('data-accordion-init')) {
+                title.setAttribute('data-accordion-init', 'true');
+
+                title.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const parentColumn = this.closest('.footer-column');
+                    const isActive = parentColumn.classList.contains('active');
+
+                    console.log('Footer accordion clicked:', isActive);
+
+                    // Close all other columns
+                    footerColumns.forEach(col => {
+                        col.classList.remove('active');
+                    });
+
+                    // Toggle current column
+                    if (!isActive) {
+                        parentColumn.classList.add('active');
+                    }
+                });
+            }
+        });
+
+        console.log('Footer accordion initialized for', footerColumns.length, 'columns (from lazy loader)');
     }
 }
 

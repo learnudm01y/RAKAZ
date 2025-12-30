@@ -58,8 +58,14 @@ class LazyLoadController extends Controller
     /**
      * Get Footer data
      */
-    public function getFooter()
+    public function getFooter(Request $request)
     {
+        // Set locale from request
+        $locale = $request->get('locale', $request->header('Accept-Language', 'ar'));
+        if (in_array($locale, ['ar', 'en'])) {
+            app()->setLocale($locale);
+        }
+
         $homePage = \App\Models\HomePage::getActive();
 
         $html = view('frontend.partials.footer-content', compact('homePage'))->render();
@@ -200,8 +206,14 @@ class LazyLoadController extends Controller
     /**
      * Get Shop Sidebar data
      */
-    public function getShopSidebar()
+    public function getShopSidebar(Request $request)
     {
+        // Set locale from request
+        $locale = $request->get('locale', $request->header('Accept-Language', 'ar'));
+        if (in_array($locale, ['ar', 'en'])) {
+            app()->setLocale($locale);
+        }
+
         $sizes = \App\Models\Size::where('is_active', true)
             ->withCount(['products' => function($q) {
                 $q->where('is_active', true);
@@ -394,8 +406,14 @@ class LazyLoadController extends Controller
     /**
      * Get Discover Section data
      */
-    public function getDiscoverSection()
+    public function getDiscoverSection(Request $request)
     {
+        // Set locale from request
+        $locale = $request->get('locale', $request->header('Accept-Language', 'ar'));
+        if (in_array($locale, ['ar', 'en'])) {
+            app()->setLocale($locale);
+        }
+
         $discoverItems = \App\Models\DiscoverItem::active()->ordered()->get();
 
         if ($discoverItems->count() === 0) {

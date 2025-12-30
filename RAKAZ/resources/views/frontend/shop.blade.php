@@ -89,10 +89,12 @@
 
         [dir="rtl"] .modal-sale-badge-container {
             left: 20px;
+            right: auto;
         }
 
         [dir="ltr"] .modal-sale-badge-container {
-            right: 20px;
+            left: 20px;
+            right: auto;
         }
 
         .modal-sale-badge {
@@ -921,12 +923,23 @@
             .modal-sale-badge-container {
                 position: absolute !important;
                 top: 0 !important; /* بدون أي تباعد */
-                left: 0 !important; /* ملاصق للحافة */
                 z-index: 50 !important;
                 width: auto !important;
                 max-width: none !important;
                 writing-mode: vertical-rl !important; /* طولي */
                 text-orientation: mixed !important;
+            }
+
+            /* RTL: Sale badge on left, close button on right */
+            [dir="rtl"] .modal-sale-badge-container {
+                left: 0 !important;
+                right: auto !important;
+            }
+
+            /* LTR: Sale badge on left side (same as RTL for consistency) */
+            [dir="ltr"] .modal-sale-badge-container {
+                left: 0 !important;
+                right: auto !important;
             }
 
             .modal-sale-badge {
@@ -2426,17 +2439,22 @@
                 });
 
                 // Add to Cart Button functionality - Open Modal
-                document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-                    button.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const productCard = this.closest('.product-card');
-                        const productLink = productCard.querySelector('.product-image-wrapper a');
-                        const productUrl = productLink.href;
+                function initializeAddToCartModalListeners() {
+                    document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+                        // Skip if already initialized
+                        if (button.hasAttribute('data-modal-initialized')) return;
+                        button.setAttribute('data-modal-initialized', 'true');
 
-                        // Fetch product data from server
-                        fetch(productUrl, {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
+                        button.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const productCard = this.closest('.product-card');
+                            const productLink = productCard.querySelector('.product-image-wrapper a');
+                            const productUrl = productLink.href;
+
+                            // Fetch product data from server
+                            fetch(productUrl, {
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
                                 'Accept': 'application/json'
                             }
                         })
@@ -2492,6 +2510,13 @@
                         });
                     });
                 });
+                }
+
+                // Initialize on load
+                initializeAddToCartModalListeners();
+
+                // Make it globally accessible for pagination
+                window.initializeAddToCartModalListeners = initializeAddToCartModalListeners;
 
                 // Product Modal Functions
                 function openProductModal(product) {
@@ -2775,8 +2800,10 @@
                     console.log('🔍 Product sizes:', product.sizes);
                     console.log('📊 Sizes length:', product.sizes ? product.sizes.length : 0);
 
-                    // Clear existing options except first one
-                    modalSizeSelect.innerHTML = '<option value="">اختر المقاس</option>';
+                    // Clear existing options - use locale-aware text
+                    const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+                    const chooseSizeText = isRtl ? 'اختر المقاس' : 'Choose size';
+                    modalSizeSelect.innerHTML = '<option value="">' + chooseSizeText + '</option>';
 
                     if (product.sizes && product.sizes.length > 0) {
                         console.log('✅ Displaying ' + product.sizes.length + ' sizes');
@@ -2797,12 +2824,16 @@
 
                         console.log('✅ Added ' + product.sizes.length + ' options to dropdown');
 
-                        // Destroy old custom select if exists
-                        if (modalSizeSelect.parentElement.classList.contains('custom-select-wrapper')) {
-                            const wrapper = modalSizeSelect.parentElement;
-                            const parent = wrapper.parentElement;
-                            parent.insertBefore(modalSizeSelect, wrapper);
-                            wrapper.remove();
+                        // Destroy ALL old custom select wrappers if exists (more thorough cleanup)
+                        const sizeOptionGroup = modalSizeSelect.closest('.modal-option-group');
+                        if (sizeOptionGroup) {
+                            sizeOptionGroup.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
+                                if (wrapper.contains(modalSizeSelect)) {
+                                    // Move the select out first
+                                    sizeOptionGroup.insertBefore(modalSizeSelect, wrapper);
+                                }
+                                wrapper.remove();
+                            });
                         }
 
                         // Initialize custom select

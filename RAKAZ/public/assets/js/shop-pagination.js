@@ -248,6 +248,14 @@ class ShopPagination {
             console.warn('⚠️ refreshProductHoverListeners function not found!');
         }
 
+        // Re-initialize add to cart modal listeners - CRITICAL for modal to work after pagination
+        if (typeof window.initializeAddToCartModalListeners === 'function') {
+            console.log('✅ Calling initializeAddToCartModalListeners...');
+            window.initializeAddToCartModalListeners();
+        } else {
+            console.warn('⚠️ initializeAddToCartModalListeners function not found!');
+        }
+
         console.log('✅ Product scripts reinitialized');
     }
 }

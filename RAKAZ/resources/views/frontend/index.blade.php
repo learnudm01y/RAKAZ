@@ -381,12 +381,14 @@
         // Load Discover Section via AJAX
         function loadDiscoverSection() {
             console.log('🔍 Loading discover section...');
+            const currentLocale = document.documentElement.getAttribute('lang') || 'ar';
 
-            fetch('/api/lazy-load/discover-section', {
+            fetch('/api/lazy-load/discover-section?locale=' + currentLocale, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept-Language': currentLocale
                 }
             })
             .then(response => response.json())

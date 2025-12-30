@@ -922,6 +922,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Mobile search focus handling
     function handleMobileSearch() {
         const searchInput = document.querySelector('.search-box input');
+        const searchBtn = document.querySelector('.header-search-btn');
+
+        // Create mobile search overlay if it doesn't exist
+        if (window.innerWidth <= 1024 && searchBtn && !document.querySelector('.mobile-search-overlay')) {
+            createMobileSearchOverlay();
+        }
+
         if (searchInput && window.innerWidth < 768) {
             searchInput.addEventListener('focus', function() {
                 // Scroll to top on mobile when search is focused
@@ -951,6 +958,216 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Create mobile search overlay
+    function createMobileSearchOverlay() {
+        const isArabic = document.documentElement.getAttribute('dir') === 'rtl';
+
+        const overlay = document.createElement('div');
+        overlay.className = 'mobile-search-overlay';
+        overlay.innerHTML = `
+            <div class="mobile-search-container">
+                <div class="mobile-search-header">
+                    <button class="mobile-search-close">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                    <form action="/search" method="GET" class="mobile-search-form">
+                        <input type="text" name="q" class="mobile-search-input" placeholder="${isArabic ? 'ابحث عن منتج او تصنيف...' : 'Search for product or category...'}" autocomplete="off">
+                    </form>
+                </div>
+                <div class="mobile-search-suggestions"></div>
+            </div>
+        `;
+
+        // Add styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .mobile-search-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: #fff;
+                z-index: 99999;
+                display: none;
+                flex-direction: column;
+            }
+            .mobile-search-overlay.active {
+                display: flex;
+            }
+            .mobile-search-container {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+            .mobile-search-header {
+                display: flex;
+                align-items: center;
+                padding: 15px;
+                gap: 10px;
+                border-bottom: 1px solid #e5e5e5;
+                background: #fff;
+            }
+            .mobile-search-close {
+                background: none;
+                border: none;
+                padding: 8px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .mobile-search-close svg {
+                stroke: #333;
+            }
+            .mobile-search-form {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                background: #f5f5f5;
+                border-radius: 8px;
+                padding: 10px 15px;
+                gap: 10px;
+            }
+            .mobile-search-form .search-icon {
+                width: 20px;
+                height: 20px;
+                stroke: #666;
+                flex-shrink: 0;
+            }
+            .mobile-search-input {
+                flex: 1;
+                border: none;
+                background: none;
+                font-size: 16px;
+                outline: none;
+                color: #333;
+            }
+            .mobile-search-input::placeholder {
+                color: #999;
+            }
+            .mobile-search-suggestions {
+                flex: 1;
+                overflow-y: auto;
+                padding: 15px;
+            }
+            .mobile-search-suggestion-item {
+                display: flex;
+                align-items: center;
+                padding: 12px;
+                gap: 12px;
+                border-bottom: 1px solid #f0f0f0;
+                text-decoration: none;
+                color: #333;
+            }
+            .mobile-search-suggestion-item:hover {
+                background: #f9f9f9;
+            }
+            .mobile-search-suggestion-img {
+                width: 50px;
+                height: 50px;
+                object-fit: cover;
+                border-radius: 6px;
+            }
+            .mobile-search-suggestion-info {
+                flex: 1;
+            }
+            .mobile-search-suggestion-name {
+                font-weight: 500;
+                margin-bottom: 4px;
+            }
+            .mobile-search-suggestion-price {
+                font-size: 14px;
+                color: #666;
+            }
+        `;
+        document.head.appendChild(style);
+        document.body.appendChild(overlay);
+
+        // Event handlers
+        const searchBtn = document.querySelector('.header-search-btn');
+        const closeBtn = overlay.querySelector('.mobile-search-close');
+        const searchInput = overlay.querySelector('.mobile-search-input');
+        const suggestionsContainer = overlay.querySelector('.mobile-search-suggestions');
+        const searchForm = overlay.querySelector('.mobile-search-form');
+
+        // Open search overlay
+        if (searchBtn) {
+            searchBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                setTimeout(() => searchInput.focus(), 100);
+            });
+        }
+
+        // Close search overlay
+        closeBtn.addEventListener('click', function() {
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+            searchInput.value = '';
+            suggestionsContainer.innerHTML = '';
+        });
+
+        // Handle search input with live suggestions
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+
+            if (query.length < 2) {
+                suggestionsContainer.innerHTML = '';
+                return;
+            }
+
+            // Get current locale from HTML dir attribute
+            const currentLocale = document.documentElement.getAttribute('dir') === 'rtl' ? 'ar' : 'en';
+
+            searchTimeout = setTimeout(() => {
+                fetch('/api/search-suggestions?q=' + encodeURIComponent(query) + '&locale=' + currentLocale, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.suggestions && data.suggestions.length > 0) {
+                        suggestionsContainer.innerHTML = data.suggestions.map(item => `
+                            <a href="${item.url}" class="mobile-search-suggestion-item">
+                                <img src="${item.image}" alt="${item.name}" class="mobile-search-suggestion-img">
+                                <div class="mobile-search-suggestion-info">
+                                    <div class="mobile-search-suggestion-name">${item.name}</div>
+                                    <div class="mobile-search-suggestion-price">${item.price}</div>
+                                </div>
+                            </a>
+                        `).join('');
+                    } else {
+                        const isArabic = document.documentElement.getAttribute('dir') === 'rtl';
+                        suggestionsContainer.innerHTML = `<p style="text-align: center; color: #999; padding: 20px;">${isArabic ? 'لا توجد نتائج' : 'No results found'}</p>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                });
+            }, 300);
+        });
+
+        // Handle form submit
+        searchForm.addEventListener('submit', function(e) {
+            const query = searchInput.value.trim();
+            if (query.length < 1) {
+                e.preventDefault();
+            }
+        });
+
+        console.log('✅ Mobile search overlay created');
+    }
+
     // Mobile product card touch interactions
     function initMobileProductInteractions() {
         const productCards = document.querySelectorAll('.product-card');
@@ -958,32 +1175,73 @@ document.addEventListener('DOMContentLoaded', function() {
         productCards.forEach(card => {
             let touchStartTime = 0;
             let touchDuration = 0;
+            let isScrolling = false;
+            let startX = 0;
+            let startY = 0;
 
-            card.addEventListener('touchstart', function() {
+            card.addEventListener('touchstart', function(e) {
                 touchStartTime = Date.now();
+                isScrolling = false;
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+
+                // Trigger preload of overlay content
+                const productId = this.dataset.productId;
+                if (productId && window.homeProductOverlayLoader) {
+                    window.homeProductOverlayLoader.handleCardHover(productId, this);
+                }
+            }, { passive: true });
+
+            card.addEventListener('touchmove', function(e) {
+                // Detect if user is scrolling
+                const diffX = Math.abs(e.touches[0].clientX - startX);
+                const diffY = Math.abs(e.touches[0].clientY - startY);
+                if (diffX > 10 || diffY > 10) {
+                    isScrolling = true;
+                }
             }, { passive: true });
 
             card.addEventListener('touchend', function(e) {
                 touchDuration = Date.now() - touchStartTime;
 
-                // If touch duration is short (< 200ms), it's a tap
-                if (touchDuration < 200) {
-                    // Show size selector on mobile tap
+                // Only if not scrolling and touch duration is short (< 300ms), it's a tap
+                if (!isScrolling && touchDuration < 300) {
+                    // Show overlay info section on mobile tap
+                    const overlayInfoSection = this.querySelector('.overlay-info-section');
                     const sizeSelector = this.querySelector('.size-selector');
+
+                    if (overlayInfoSection) {
+                        overlayInfoSection.style.opacity = '1';
+                        overlayInfoSection.style.visibility = 'visible';
+                        overlayInfoSection.style.transform = 'translateY(0)';
+
+                        // Hide after 4 seconds
+                        setTimeout(() => {
+                            overlayInfoSection.style.opacity = '';
+                            overlayInfoSection.style.visibility = '';
+                            overlayInfoSection.style.transform = '';
+                        }, 4000);
+                    }
+
                     if (sizeSelector) {
                         sizeSelector.style.opacity = '1';
                         sizeSelector.style.visibility = 'visible';
                         sizeSelector.style.transform = 'translateY(0)';
 
-                        // Hide after 3 seconds
+                        // Hide after 4 seconds
                         setTimeout(() => {
                             sizeSelector.style.opacity = '0';
                             sizeSelector.style.visibility = 'hidden';
                             sizeSelector.style.transform = 'translateY(-10px)';
-                        }, 3000);
+                        }, 4000);
                     }
                 }
             }, { passive: true });
+
+            // Prevent image context menu (long press save)
+            card.querySelectorAll('img').forEach(img => {
+                img.addEventListener('contextmenu', (e) => e.preventDefault());
+            });
         });
     }
 

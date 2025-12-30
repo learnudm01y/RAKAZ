@@ -167,13 +167,14 @@ class CartController extends Controller
     public function apiIndex()
     {
         $identifier = $this->getIdentifier();
+        $locale = app()->getLocale();
 
         $cartItems = Cart::with('product')
             ->where($identifier['user_id'] ? 'user_id' : 'session_id',
                     $identifier['user_id'] ?: $identifier['session_id'])
             ->get();
 
-        $items = $cartItems->map(function($item) {
+        $items = $cartItems->map(function($item) use ($locale) {
             $product = $item->product;
             $mainImage = null;
 
@@ -184,12 +185,15 @@ class CartController extends Controller
                 $mainImage = asset('storage/' . $product->images[0]);
             }
 
+            $currency = $locale == 'ar' ? 'د.إ' : 'AED';
+            $defaultBrand = $locale == 'ar' ? 'ركاز' : 'Rakaz';
+
             return [
                 'id' => $item->id,
                 'image' => $mainImage,
-                'brand' => ($product->brand && is_object($product->brand)) ? $product->brand->getName() : 'ركاز',
-                'name' => $product->getName(),
-                'price' => number_format($item->price, 0) . ' د.إ',
+                'brand' => ($product->brand && is_object($product->brand)) ? $product->brand->getName($locale) : $defaultBrand,
+                'name' => $product->getName($locale),
+                'price' => number_format($item->price, 0) . ' ' . $currency,
                 'size' => $item->size ?? $item->shoe_size ?? '',
                 'quantity' => $item->quantity
             ];

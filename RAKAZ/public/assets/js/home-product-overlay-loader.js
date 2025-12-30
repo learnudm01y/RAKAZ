@@ -1,6 +1,6 @@
 /**
  * Home Product Overlay Lazy Loader
- * Loads overlay content (secondary image + info section) on hover for homepage products
+ * Loads overlay content (secondary image + info section) on hover/touch for homepage products
  */
 class HomeProductOverlayLoader {
     constructor() {
@@ -8,17 +8,18 @@ class HomeProductOverlayLoader {
         this.loadingProducts = new Set();
         this.productCards = [];
         this.eventListeners = new Map();
+        this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
         this.init();
     }
 
     init() {
-        console.log('🏠 Home Product Overlay Loader initialized');
+        console.log('🏠 Home Product Overlay Loader initialized (Touch:', this.isTouchDevice, ')');
         this.attachHoverListeners();
     }
 
     attachHoverListeners() {
-        console.log('🔗 Attaching home product hover listeners...');
+        console.log('🔗 Attaching home product hover/touch listeners...');
 
         // Clean up old listeners
         this.cleanupListeners();
@@ -37,15 +38,34 @@ class HomeProductOverlayLoader {
             currentProductIds.add(productId);
 
             // Create hover handler
-            const handler = () => {
+            const hoverHandler = () => {
                 this.handleCardHover(productId, card);
             };
 
-            // Store handler for cleanup
-            this.eventListeners.set(card, handler);
+            // Create touch handler
+            const touchHandler = (e) => {
+                // Preload on first touch
+                this.handleCardHover(productId, card);
+            };
 
-            // Add listener
-            card.addEventListener('mouseenter', handler);
+            // Store handlers for cleanup
+            this.eventListeners.set(card, { hover: hoverHandler, touch: touchHandler });
+
+            // Add mouse listener for desktop
+            card.addEventListener('mouseenter', hoverHandler);
+
+            // Add touch listener for mobile - preload on touchstart
+            card.addEventListener('touchstart', touchHandler, { passive: true });
+
+            // Prevent image download on long press
+            const images = card.querySelectorAll('img');
+            images.forEach(img => {
+                img.addEventListener('contextmenu', (e) => e.preventDefault());
+                img.style.webkitUserSelect = 'none';
+                img.style.userSelect = 'none';
+                img.style.webkitTouchCallout = 'none';
+                img.setAttribute('draggable', 'false');
+            });
         });
 
         // Clean up loaded products cache
@@ -57,13 +77,14 @@ class HomeProductOverlayLoader {
             }
         });
 
-        console.log(`👀 Attached hover listeners to ${this.productCards.length} home product cards`);
+        console.log(`👀 Attached hover/touch listeners to ${this.productCards.length} home product cards`);
         console.log(`💾 Home cached products: ${this.loadedProducts.size}`);
     }
 
     cleanupListeners() {
-        this.eventListeners.forEach((handler, card) => {
-            card.removeEventListener('mouseenter', handler);
+        this.eventListeners.forEach((handlers, card) => {
+            if (handlers.hover) card.removeEventListener('mouseenter', handlers.hover);
+            if (handlers.touch) card.removeEventListener('touchstart', handlers.touch);
         });
         this.eventListeners.clear();
     }

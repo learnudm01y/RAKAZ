@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\LazyLoadController;
+use App\Http\Controllers\FrontendController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -16,6 +17,56 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+// Search Suggestions API for Mobile
+Route::get('/search-suggestions', function (Request $request) {
+    $searchQuery = $request->input('q', '');
+
+    // Get locale from request parameter, referer URL, or default to checking HTML dir
+    $locale = $request->input('locale');
+    if (!$locale) {
+        // Try to detect from session or cookie
+        $locale = session('locale', 'ar');
+    }
+
+    // Set the locale
+    if (in_array($locale, ['ar', 'en'])) {
+        app()->setLocale($locale);
+    }
+
+    if (empty($searchQuery) || strlen($searchQuery) < 2) {
+        return response()->json([
+            'success' => false,
+            'suggestions' => []
+        ]);
+    }
+
+    // Search products (limit to 8)
+    $products = \App\Models\Product::where('is_active', true)
+        ->where(function($query) use ($searchQuery) {
+            $query->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) LIKE ?", ["%{$searchQuery}%"])
+                  ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) LIKE ?", ["%{$searchQuery}%"])
+                  ->orWhere('brand', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('sku', 'LIKE', "%{$searchQuery}%");
+        })
+        ->limit(8)
+        ->get()
+        ->map(function($product) use ($locale) {
+            return [
+                'name' => $product->getName($locale),
+                'url' => route('product.details', $product->getSlug($locale)),
+                'image' => $product->main_image ? asset('storage/' . $product->main_image) : '/assets/images/placeholder.png',
+                'price' => $product->sale_price ?
+                    number_format($product->sale_price, 0) . ' ' . ($locale == 'ar' ? 'د.إ' : 'AED') :
+                    number_format($product->price, 0) . ' ' . ($locale == 'ar' ? 'د.إ' : 'AED')
+            ];
+        });
+
+    return response()->json([
+        'success' => true,
+        'suggestions' => $products
+    ]);
+});
 
 // Lazy Load API Routes
 Route::get('/lazy-load/hero-banner', [LazyLoadController::class, 'getHeroBanner']);

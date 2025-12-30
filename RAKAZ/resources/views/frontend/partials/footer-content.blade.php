@@ -1,14 +1,17 @@
 <footer class="main-footer">
+    @php
+        $isAr = app()->getLocale() == 'ar';
+    @endphp
     <div class="footer-social-newsletter">
         <div class="newsletter-inline">
-            <h3 class="newsletter-title">{{ app()->getLocale() == 'ar' ? 'اشترك في نشرتنا الإخبارية' : 'Subscribe to our newsletter' }}</h3>
+            <h3 class="newsletter-title">{{ $isAr ? 'اشترك في نشرتنا الإخبارية' : 'Subscribe to our newsletter' }}</h3>
             <div class="newsletter-form">
-                <input type="email" placeholder="{{ app()->getLocale() == 'ar' ? 'أدخل عنوان بريدك الإلكتروني هنا' : 'Enter your email address' }}">
-                <button type="submit">{{ app()->getLocale() == 'ar' ? 'اشترك' : 'Subscribe' }}</button>
+                <input type="email" placeholder="{{ $isAr ? 'أدخل عنوان بريدك الإلكتروني هنا' : 'Enter your email address' }}">
+                <button type="submit">{{ $isAr ? 'اشترك' : 'Subscribe' }}</button>
             </div>
         </div>
         <div class="social-inline">
-            <p class="social-title">تابع ركاز</p>
+            <p class="social-title">{{ $isAr ? 'تابع ركاز' : 'Follow Rakaz' }}</p>
             <div class="social-icons">
                 <a href="#" class="social-icon" rel="noopener">
                     <svg viewBox="0 0 24 24" fill="currentColor">
@@ -41,54 +44,54 @@
 
     <div class="footer-content">
         <div class="footer-column">
-            <h4 class="footer-title">مجموعات الكندورة</h4>
+            <h4 class="footer-title">{{ $isAr ? 'مجموعات الكندورة' : 'Kandora Collections' }}</h4>
             <ul class="footer-links">
-                <li><a href="#">كندورة كلاسيكية</a></li>
-                <li><a href="#">كندورة فاخرة</a></li>
-                <li><a href="#">كندورة الصيف</a></li>
-                <li><a href="#">كندورة الشتاء</a></li>
-                <li><a href="#">تفصيل حسب الطلب</a></li>
+                <li><a href="#">{{ $isAr ? 'كندورة كلاسيكية' : 'Classic Kandora' }}</a></li>
+                <li><a href="#">{{ $isAr ? 'كندورة فاخرة' : 'Luxury Kandora' }}</a></li>
+                <li><a href="#">{{ $isAr ? 'كندورة الصيف' : 'Summer Kandora' }}</a></li>
+                <li><a href="#">{{ $isAr ? 'كندورة الشتاء' : 'Winter Kandora' }}</a></li>
+                <li><a href="#">{{ $isAr ? 'تفصيل حسب الطلب' : 'Custom Tailoring' }}</a></li>
             </ul>
         </div>
         <div class="footer-column">
-            <h4 class="footer-title">الفئات الرائجة</h4>
+            <h4 class="footer-title">{{ $isAr ? 'الفئات الرائجة' : 'Trending Categories' }}</h4>
             <ul class="footer-links">
-                <li><a href="#">الكنادير الإماراتية</a></li>
-                <li><a href="#">الكنادير السعودية</a></li>
-                <li><a href="#">الشالات القطنية</a></li>
-                <li><a href="#">الفانيل الفاخرة</a></li>
-                <li><a href="#">مستلزمات العناية</a></li>
+                <li><a href="#">{{ $isAr ? 'الكنادير الإماراتية' : 'Emirati Kandoras' }}</a></li>
+                <li><a href="#">{{ $isAr ? 'الكنادير السعودية' : 'Saudi Kandoras' }}</a></li>
+                <li><a href="#">{{ $isAr ? 'الشالات القطنية' : 'Cotton Shawls' }}</a></li>
+                <li><a href="#">{{ $isAr ? 'الفانيل الفاخرة' : 'Luxury Flannel' }}</a></li>
+                <li><a href="#">{{ $isAr ? 'مستلزمات العناية' : 'Care Essentials' }}</a></li>
             </ul>
         </div>
         <div class="footer-column">
-            <h4 class="footer-title">العناية بالعملاء</h4>
+            <h4 class="footer-title">{{ $isAr ? 'العناية بالعملاء' : 'Customer Care' }}</h4>
             <ul class="footer-links">
-                <li><a href="{{ route('contact') }}">اتصل بنا</a></li>
-                <li><a href="#">الأسئلة الشائعة</a></li>
-                <li><a href="#">الدفع</a></li>
-                <li><a href="#">تتبع الطلب</a></li>
+                <li><a href="{{ route('contact') }}">{{ $isAr ? 'اتصل بنا' : 'Contact Us' }}</a></li>
+                <li><a href="#">{{ $isAr ? 'الأسئلة الشائعة' : 'FAQs' }}</a></li>
+                <li><a href="#">{{ $isAr ? 'الدفع' : 'Payment' }}</a></li>
+                <li><a href="#">{{ $isAr ? 'تتبع الطلب' : 'Track Order' }}</a></li>
             </ul>
         </div>
         <div class="footer-column">
-            <h4 class="footer-title">معلومات عنا</h4>
+            <h4 class="footer-title">{{ $isAr ? 'معلومات عنا' : 'About Us' }}</h4>
             <ul class="footer-links">
-                <li><a href="{{ route('about') }}">من نحن</a></li>
-                <li><a href="#">الوظائف</a></li>
+                <li><a href="{{ route('about') }}">{{ $isAr ? 'من نحن' : 'Who We Are' }}</a></li>
+                <li><a href="#">{{ $isAr ? 'الوظائف' : 'Careers' }}</a></li>
             </ul>
         </div>
         <div class="footer-column">
-            <h4 class="footer-title">الشحن والإرجاع</h4>
+            <h4 class="footer-title">{{ $isAr ? 'الشحن والإرجاع' : 'Shipping & Returns' }}</h4>
             <ul class="footer-links">
-                <li><a href="#">الشحن والتوصيل</a></li>
-                <li><a href="#">الإرجاع عبر الإنترنت</a></li>
+                <li><a href="#">{{ $isAr ? 'الشحن والتوصيل' : 'Shipping & Delivery' }}</a></li>
+                <li><a href="#">{{ $isAr ? 'الإرجاع عبر الإنترنت' : 'Online Returns' }}</a></li>
             </ul>
         </div>
         <div class="footer-column">
-            <h4 class="footer-title">القانوني</h4>
+            <h4 class="footer-title">{{ $isAr ? 'القانوني' : 'Legal' }}</h4>
             <ul class="footer-links">
-                <li><a href="#">الشروط والأحكام</a></li>
-                <li><a href="{{ route('privacy.policy') }}">سياسة الخصوصية والكوكيز</a></li>
-                <li><a href="#">مطابقة الأسعار</a></li>
+                <li><a href="#">{{ $isAr ? 'الشروط والأحكام' : 'Terms & Conditions' }}</a></li>
+                <li><a href="{{ route('privacy.policy') }}">{{ $isAr ? 'سياسة الخصوصية والكوكيز' : 'Privacy & Cookie Policy' }}</a></li>
+                <li><a href="#">{{ $isAr ? 'مطابقة الأسعار' : 'Price Match' }}</a></li>
             </ul>
         </div>
     </div>
@@ -96,9 +99,14 @@
     <div class="footer-bottom">
         <div class="footer-apps">
             <div class="app-badges">
-                <p class="apps-title">تطبيقات ركاز</p>
+                <p class="apps-title">{{ $isAr ? 'تطبيقات ركاز' : 'Rakaz Apps' }}</p>
                 <div class="app-badges">
                     @php
+                        // Get homePage if not already available
+                        if (!isset($homePage) || !$homePage) {
+                            $homePage = \App\Models\HomePage::getActive();
+                        }
+
                         // Default badge images
                         $googlePlayImage = 'https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg';
                         $appStoreImage = 'https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg';
@@ -108,13 +116,20 @@
                         $appStoreLink = '#';
 
                         // Use custom uploaded images and links if available from HomePage
-                        if (isset($homePage) && $homePage) {
-                            if (isset($homePage->app_image) && is_array($homePage->app_image)) {
-                                if (!empty($homePage->app_image['android'])) {
-                                    $googlePlayImage = $homePage->app_image['android'];
+                        if ($homePage) {
+                            $appImages = $homePage->app_image;
+
+                            // Handle if app_image is a string (JSON)
+                            if (is_string($appImages)) {
+                                $appImages = json_decode($appImages, true);
+                            }
+
+                            if (is_array($appImages)) {
+                                if (!empty($appImages['android'])) {
+                                    $googlePlayImage = $appImages['android'];
                                 }
-                                if (!empty($homePage->app_image['ios'])) {
-                                    $appStoreImage = $homePage->app_image['ios'];
+                                if (!empty($appImages['ios'])) {
+                                    $appStoreImage = $appImages['ios'];
                                 }
                             }
 
@@ -128,24 +143,37 @@
                         }
                     @endphp
 
-                    <a href="{{ $appStoreLink }}" class="app-badge-small" @if($appStoreLink != '#') target="_blank" @endif rel="noopener">
+                    @if($homePage && $homePage->app_store_link && $homePage->app_store_link != '#')
+                    <a href="{{ $appStoreLink }}" class="app-badge-small" target="_blank" rel="noopener">
                         <img src="{{ $appStoreImage }}" alt="App Store" loading="lazy">
                     </a>
-                    <a href="{{ $googlePlayLink }}" class="app-badge-small" @if($googlePlayLink != '#') target="_blank" @endif rel="noopener">
+                    @else
+                    <a href="#" class="app-badge-small" rel="noopener">
+                        <img src="{{ $appStoreImage }}" alt="App Store" loading="lazy">
+                    </a>
+                    @endif
+
+                    @if($homePage && $homePage->google_play_link && $homePage->google_play_link != '#')
+                    <a href="{{ $googlePlayLink }}" class="app-badge-small" target="_blank" rel="noopener">
                         <img src="{{ $googlePlayImage }}" alt="Google Play" loading="lazy">
                     </a>
+                    @else
+                    <a href="#" class="app-badge-small" rel="noopener">
+                        <img src="{{ $googlePlayImage }}" alt="Google Play" loading="lazy">
+                    </a>
+                    @endif
                 </div>
             </div>
         </div>
 
         <div class="footer-info">
             <div class="footer-contact">
-                <p>خدمة العملاء: <a href="tel:800717171">800 717171</a></p>
-                <p>خدمة واتساب: <a href="https://wa.me/971553007879">+971 55 300 7879</a></p>
+                <p>{{ $isAr ? 'خدمة العملاء:' : 'Customer Service:' }} <a href="tel:800717171">800 717171</a></p>
+                <p>{{ $isAr ? 'خدمة واتساب:' : 'WhatsApp:' }} <a href="https://wa.me/971553007879">+971 55 300 7879</a></p>
             </div>
             <div class="footer-copyright">
                 <img src="https://placehold.co/150x40/000000/ffffff?text=بيت+الكندورة" alt="ركاز" class="tayer-logo" loading="lazy">
-                <p>ركاز LLC. 2025. جميع الحقوق محفوظة</p>
+                <p>{{ $isAr ? 'ركاز LLC. 2025. جميع الحقوق محفوظة' : 'Rakaz LLC. 2025. All Rights Reserved' }}</p>
             </div>
         </div>
     </div>

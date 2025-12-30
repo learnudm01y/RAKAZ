@@ -39,7 +39,11 @@ class ShopSidebarLoader {
         console.log('⏳ Loading shop sidebar content...');
 
         try {
-            const response = await fetch('/api/lazy-load/shop-sidebar', {
+            // Get current locale
+            const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+            const locale = isRtl ? 'ar' : 'en';
+
+            const response = await fetch(`/api/lazy-load/shop-sidebar?locale=${locale}`, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',

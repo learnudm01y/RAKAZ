@@ -2,26 +2,28 @@
    Mobile & Tablet Responsive Styles
    ======================================== */
 
-/* Force Hide English Text in Header-Top on Mobile - EXTREME FORCE */
-.header-top .en-text {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    height: 0 !important;
-    width: 0 !important;
-    max-height: 0 !important;
-    max-width: 0 !important;
-    overflow: hidden !important;
-    position: absolute !important;
-    left: -99999px !important;
-    top: -99999px !important;
-    font-size: 0 !important;
-    line-height: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    border: 0 !important;
-    clip: rect(0, 0, 0, 0) !important;
-    white-space: nowrap !important;
+/* Force Hide English Text in Header-Top on Mobile/Tablet Only */
+@media (max-width: 1023px) {
+    .header-top .en-text {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        width: 0 !important;
+        max-height: 0 !important;
+        max-width: 0 !important;
+        overflow: hidden !important;
+        position: absolute !important;
+        left: -99999px !important;
+        top: -99999px !important;
+        font-size: 0 !important;
+        line-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+    }
 }
 
 /* Mobile Landscape & Small Tablets (600px - 767px) */
@@ -770,7 +772,7 @@
         flex-shrink: 0;
     }
 
-    .header-link span {
+    .header-link span:not(.badge) {
         display: none !important;
     }
 
@@ -794,10 +796,13 @@
         height: 18px;
         padding: 0 5px;
         font-size: 10px;
-        display: flex;
+        display: flex !important;
         align-items: center;
         justify-content: center;
         border-radius: 10px;
+        background: #1a1a1a;
+        color: #fff;
+        font-weight: 600;
     }
 
     body[dir="ltr"] .header-link .badge {
@@ -813,6 +818,33 @@
     /* Search button */
     .header-search-btn {
         display: flex !important;
+    }
+
+    /* Mobile wishlist button */
+    .mobile-wishlist-btn {
+        display: flex !important;
+        position: relative;
+    }
+
+    .mobile-wishlist-btn .badge {
+        position: absolute;
+        top: -5px;
+        right: -8px;
+        background: #e63946;
+        color: white;
+        font-size: 10px;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+
+    body[dir="ltr"] .mobile-wishlist-btn .badge {
+        right: auto;
+        left: -8px;
     }
 
     /* Hide main logo container on mobile */
@@ -1079,12 +1111,30 @@
     .product-card,
     .product-card *,
     .product-image-wrapper,
-    .product-image-wrapper * {
+    .product-image-wrapper *,
+    .overlay-image-section,
+    .overlay-image-section img,
+    .overlay-main-image {
         -webkit-tap-highlight-color: transparent !important;
         -webkit-touch-callout: none !important;
         user-select: none !important;
         transition: none !important;
         transform: none !important;
+    }
+
+    /* Prevent image save on long press */
+    .product-card img,
+    .overlay-image-section img,
+    .overlay-main-image {
+        pointer-events: none;
+        -webkit-user-drag: none;
+    }
+
+    /* Re-enable pointer events on card link */
+    .product-card a,
+    .product-card .product-link,
+    .overlay-info-section {
+        pointer-events: auto;
     }
 
     /* Hide secondary product image on mobile */

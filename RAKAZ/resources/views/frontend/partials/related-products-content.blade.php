@@ -32,8 +32,7 @@
                         <div class="discount-badge-wrapper">
                             <img src="{{ asset('assets/images/discount.png') }}" alt="Discount" class="discount-badge-image">
                             <div class="discount-badge-text">
-                                <span class="discount-text-ar">تخفيض</span>
-                                <span class="discount-text-en">DISCOUNT</span>
+                                <span class="discount-text">{{ app()->getLocale() == 'ar' ? 'تخفيض' : 'DISCOUNT' }}</span>
                                 <span class="discount-percent">%{{ $discountPercent }}</span>
                             </div>
                         </div>

@@ -488,6 +488,11 @@ textarea {
     display: none;
 }
 
+/* Hide mobile wishlist button on desktop */
+.mobile-wishlist-btn {
+    display: none;
+}
+
 .header-link .icon {
     width: 20px;
     height: 20px;

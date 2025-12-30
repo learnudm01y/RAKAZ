@@ -3,29 +3,29 @@
    Same layout as mobile but with scaled up elements
    ======================================== */
 
-/* Force Hide English Text in Header-Top on Tablet - EXTREME FORCE */
-.header-top .en-text {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    height: 0 !important;
-    width: 0 !important;
-    max-height: 0 !important;
-    max-width: 0 !important;
-    overflow: hidden !important;
-    position: absolute !important;
-    left: -99999px !important;
-    top: -99999px !important;
-    font-size: 0 !important;
-    line-height: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    border: 0 !important;
-    clip: rect(0, 0, 0, 0) !important;
-    white-space: nowrap !important;
-}
-
 @media (min-width: 768px) and (max-width: 1024px) {
+
+    /* Force Hide English Text in Header-Top on Tablet */
+    .header-top .en-text {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        width: 0 !important;
+        max-height: 0 !important;
+        max-width: 0 !important;
+        overflow: hidden !important;
+        position: absolute !important;
+        left: -99999px !important;
+        top: -99999px !important;
+        font-size: 0 !important;
+        line-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+    }
 
     /* إخفاء أزرار التنقل على التابلت */
     .slider-btn {

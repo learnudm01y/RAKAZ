@@ -254,8 +254,8 @@ class CartSidebar {
     }
 
     renderCartItems() {
-        // Remove existing cart items
-        this.cartItemsContainer.querySelectorAll('.cart-item').forEach(item => item.remove());
+        // Remove ALL existing cart items (both regular and skeleton)
+        this.cartItemsContainer.querySelectorAll('.cart-item, .cart-item-skeleton').forEach(item => item.remove());
 
         // Add cart items
         this.cart.forEach(item => {

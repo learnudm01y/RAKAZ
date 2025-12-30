@@ -66,6 +66,7 @@
 
 <body dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}">
     <!-- Cart Sidebar -->
+    @php $isAr = app()->getLocale() == 'ar'; @endphp
     <div class="cart-sidebar" id="cartSidebar">
         <div class="cart-sidebar-overlay" id="cartOverlay"></div>
         <div class="cart-sidebar-content">
@@ -76,7 +77,7 @@
                         <line x1="3" y1="6" x2="21" y2="6"></line>
                         <path d="M16 10a4 4 0 0 1-8 0"></path>
                     </svg>
-                    حقيبة التسوق
+                    {{ $isAr ? 'حقيبة التسوق' : 'Shopping Bag' }}
                 </h2>
                 <button class="cart-sidebar-close" id="cartClose">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -95,22 +96,19 @@
                         <line x1="3" y1="6" x2="21" y2="6"></line>
                         <path d="M16 10a4 4 0 0 1-8 0"></path>
                     </svg>
-                    <p>حقيبتك فارغة</p>
-                    <span>ابدأ بإضافة بعض المنتجات الرائعة!</span>
+                    <p>{{ $isAr ? 'حقيبتك فارغة' : 'Your bag is empty' }}</p>
+                    <span>{{ $isAr ? 'ابدأ بإضافة بعض المنتجات الرائعة!' : 'Start adding some great products!' }}</span>
                 </div>
             </div>
 
             <div class="cart-sidebar-footer" id="cartFooter">
                 <div class="cart-subtotal">
-                    <span>المجموع الفرعي:</span>
-                    <span class="cart-subtotal-amount" id="cartSubtotal">0 درهم</span>
+                    <span>{{ $isAr ? 'المجموع الفرعي:' : 'Subtotal:' }}</span>
+                    <span class="cart-subtotal-amount" id="cartSubtotal">{{ $isAr ? '0 درهم' : '0 AED' }}</span>
                 </div>
-                <p class="cart-shipping-note">الشحن والضرائب يتم حسابها عند الدفع</p>
-                <a href="{{ route('checkout.index') }}" class="cart-checkout-btn">إتمام الشراء</a>
-                <a href="{{ route('cart.index') }}" class="cart-view-btn">
-                    <span class="ar-text">عرض الحقيبة</span>
-                    <span class="en-text">View bag</span>
-                </a>
+                <p class="cart-shipping-note">{{ $isAr ? 'الشحن والضرائب يتم حسابها عند الدفع' : 'Shipping and taxes calculated at checkout' }}</p>
+                <a href="{{ route('checkout.index') }}" class="cart-checkout-btn">{{ $isAr ? 'إتمام الشراء' : 'Checkout' }}</a>
+                <a href="{{ route('cart.index') }}" class="cart-view-btn">{{ $isAr ? 'عرض الحقيبة' : 'View Bag' }}</a>
             </div>
         </div>
     </div>
@@ -700,94 +698,11 @@
         });
     </script>
 
-    <!-- Force Hide English Text in Header-Top on Mobile/Tablet -->
+
+    <!-- Note: English text hiding for mobile is handled via CSS in styles-mobile.css -->
+
+    <!-- Currency Dropdown Lazy Loading -->
     <script>
-        (function() {
-            'use strict';
-
-            // Function to hide English text with extreme force
-            function forceHideEnglishText() {
-                // Only on mobile and tablet (< 1024px)
-                if (window.innerWidth < 1024) {
-                    // Select all .en-text within .header-top
-                    const headerTop = document.querySelector('.header-top');
-                    if (headerTop) {
-                        const englishTexts = headerTop.querySelectorAll('.en-text');
-                        englishTexts.forEach(function(element) {
-                            // Multiple aggressive hiding methods
-                            element.style.setProperty('display', 'none', 'important');
-                            element.style.setProperty('visibility', 'hidden', 'important');
-                            element.style.setProperty('opacity', '0', 'important');
-                            element.style.setProperty('height', '0', 'important');
-                            element.style.setProperty('width', '0', 'important');
-                            element.style.setProperty('overflow', 'hidden', 'important');
-                            element.style.setProperty('position', 'absolute', 'important');
-                            element.style.setProperty('left', '-9999px', 'important');
-                            element.textContent = '';
-                            element.innerHTML = '';
-                            element.remove(); // Remove completely from DOM
-                        });
-
-                        // Also hide text nodes containing 'Search', 'Bag', 'Wishlist'
-                        const forbiddenWords = ['Search', 'Bag', 'Wishlist'];
-                        const allElements = headerTop.querySelectorAll('*');
-                        allElements.forEach(function(element) {
-                            forbiddenWords.forEach(function(word) {
-                                if (element.textContent && element.textContent.trim() === word) {
-                                    element.style.setProperty('display', 'none', 'important');
-                                    element.textContent = '';
-                                }
-                            });
-                        });
-                    }
-                }
-            }
-
-            // Execute immediately
-            forceHideEnglishText();
-
-            // Execute on DOM ready
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', forceHideEnglishText);
-            }
-
-            // Execute on window load
-            window.addEventListener('load', forceHideEnglishText);
-
-            // Execute on resize
-            let resizeTimer;
-            window.addEventListener('resize', function() {
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(forceHideEnglishText, 100);
-            });
-
-            // Use MutationObserver to detect any DOM changes
-            const observer = new MutationObserver(function() {
-                forceHideEnglishText();
-            });
-
-            // Start observing when DOM is ready
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', function() {
-                    observer.observe(document.body, {
-                        childList: true,
-                        subtree: true,
-                        characterData: true
-                    });
-                });
-            } else {
-                observer.observe(document.body, {
-                    childList: true,
-                    subtree: true,
-                    characterData: true
-                });
-            }
-
-            // Execute every 500ms for extra safety
-            setInterval(forceHideEnglishText, 500);
-        })();
-
-        // Currency Dropdown Lazy Loading
         (function() {
             let currencyDropdownLoaded = false;
             let isLoading = false;
