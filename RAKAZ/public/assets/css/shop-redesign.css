@@ -1303,16 +1303,16 @@ html, body {
     z-index: 2;
 }
 
-/* RTL: wishlist button on left */
+/* RTL: wishlist button on right (opposite of discount badge) */
 [dir="rtl"] .wishlist-btn {
-    left: 15px;
-    right: auto;
-}
-
-/* LTR: wishlist button on right */
-[dir="ltr"] .wishlist-btn {
     right: 15px;
     left: auto;
+}
+
+/* LTR: wishlist button on left (opposite of discount badge) */
+[dir="ltr"] .wishlist-btn {
+    left: 15px;
+    right: auto;
 }
 
 .wishlist-btn:hover {
@@ -1328,8 +1328,8 @@ html, body {
 .badge.new-season {
     position: absolute;
     bottom: 15px;
-    background: #1a1a1a;
-    color: #fff;
+    background: #ffffff;
+    color: #000000;
     padding: 6px 12px;
     font-size: 11px;
     font-weight: 600;
@@ -1387,11 +1387,13 @@ html, body {
     height: 65px;
 }
 
+/* RTL: discount badge on left */
 [dir="rtl"] .discount-badge-wrapper {
     left: 10px;
     right: auto;
 }
 
+/* LTR: discount badge on right */
 [dir="ltr"] .discount-badge-wrapper {
     right: 10px;
     left: auto;
@@ -1468,12 +1470,16 @@ html, body {
         top: 8px;
     }
 
+    /* RTL: discount badge on left */
     [dir="rtl"] .discount-badge-wrapper {
         left: 8px;
+        right: auto;
     }
 
+    /* LTR: discount badge on right */
     [dir="ltr"] .discount-badge-wrapper {
         right: 8px;
+        left: auto;
     }
 
     .discount-badge-text {
@@ -1505,12 +1511,16 @@ html, body {
         top: 5px;
     }
 
+    /* RTL: discount badge on left */
     [dir="rtl"] .discount-badge-wrapper {
         left: 5px;
+        right: auto;
     }
 
+    /* LTR: discount badge on right */
     [dir="ltr"] .discount-badge-wrapper {
         right: 5px;
+        left: auto;
     }
 
     .discount-badge-text {
@@ -1542,12 +1552,16 @@ html, body {
         top: 5px;
     }
 
+    /* RTL: discount badge on left */
     [dir="rtl"] .discount-badge-wrapper {
         left: 5px;
+        right: auto;
     }
 
+    /* LTR: discount badge on right */
     [dir="ltr"] .discount-badge-wrapper {
         right: 5px;
+        left: auto;
     }
 
     .discount-badge-text {
@@ -1958,9 +1972,20 @@ html, body {
         position: absolute !important;
         width: 32px !important;
         height: 32px !important;
-        right: 10px !important;
         top: 10px !important;
         margin: 0 !important;
+    }
+
+    /* LTR: wishlist on left in tablet */
+    [dir="ltr"] .product-card .wishlist-btn {
+        left: 10px !important;
+        right: auto !important;
+    }
+
+    /* RTL: wishlist on right in tablet */
+    [dir="rtl"] .product-card .wishlist-btn {
+        right: 10px !important;
+        left: auto !important;
     }
 
     /* Single product view - Tablet */
@@ -2294,8 +2319,19 @@ html, body {
     .wishlist-btn {
         width: 28px;
         height: 28px;
-        right: 8px;
         top: 8px;
+    }
+
+    /* LTR: wishlist on left in mobile */
+    [dir="ltr"] .wishlist-btn {
+        left: 8px;
+        right: auto;
+    }
+
+    /* RTL: wishlist on right in mobile */
+    [dir="rtl"] .wishlist-btn {
+        right: 8px;
+        left: auto;
     }
 
     .wishlist-btn svg {
@@ -2647,14 +2683,25 @@ html, body {
     .badge.new-season {
         font-size: 6px;
         padding: 2px 4px;
-        max-width: 50px;
+        max-width: 63px;
     }
 
     .wishlist-btn {
         width: 26px;
         height: 26px;
-        right: 6px;
         top: 6px;
+    }
+
+    /* LTR: wishlist on left in small mobile */
+    [dir="ltr"] .wishlist-btn {
+        left: 6px;
+        right: auto;
+    }
+
+    /* RTL: wishlist on right in small mobile */
+    [dir="rtl"] .wishlist-btn {
+        right: 6px;
+        left: auto;
     }
 
     .wishlist-btn svg {

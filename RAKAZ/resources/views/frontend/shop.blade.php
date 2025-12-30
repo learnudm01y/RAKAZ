@@ -1571,8 +1571,13 @@
                                 @endif
                             </h1>
                             <p class="results-count">
-                                <span id="product-count">{{ $products->count() }}</span>
-                                {{ app()->getLocale() == 'ar' ? 'منتج' : 'Product' }}<span id="product-plural">{{ $products->count() != 1 ? (app()->getLocale() == 'ar' ? '' : 's') : '' }}</span><span id="page-info"></span>
+                                @php
+                                    $productCount = $products instanceof \Illuminate\Pagination\LengthAwarePaginator ? $products->total() : $products->count();
+                                    $currentPageNum = $products instanceof \Illuminate\Pagination\LengthAwarePaginator ? $products->currentPage() : 1;
+                                    $lastPageNum = $products instanceof \Illuminate\Pagination\LengthAwarePaginator ? $products->lastPage() : 1;
+                                @endphp
+                                <span id="product-count">{{ $productCount }}</span>
+                                {{ app()->getLocale() == 'ar' ? 'منتج' : 'Product' }}<span id="product-plural">{{ $productCount != 1 ? (app()->getLocale() == 'ar' ? '' : 's') : '' }}</span><span id="page-info">@if($currentPageNum > 1) ({{ app()->getLocale() == 'ar' ? 'صفحة' : 'Page' }} {{ $currentPageNum }} {{ app()->getLocale() == 'ar' ? 'من' : 'of' }} {{ $lastPageNum }})@endif</span>
                             </p>
                         </div>
                         <div class="shop-controls">
@@ -1624,8 +1629,12 @@
                         @include('frontend.partials.shop-products-grid')
                     </div>
 
-                    <!-- Pagination - Show skeleton on first load, will be replaced via AJAX after 1.5s -->
-                    @include('frontend.partials.shop-pagination-skeleton')
+                    <!-- Pagination - Show actual pagination if page > 1, otherwise show skeleton -->
+                    @if(isset($isPaginated) && $isPaginated && $products instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                        @include('frontend.partials.shop-pagination')
+                    @else
+                        @include('frontend.partials.shop-pagination-skeleton')
+                    @endif
                 </section>
             </div>
         </main>

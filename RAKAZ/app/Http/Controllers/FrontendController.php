@@ -195,8 +195,28 @@ class FrontendController extends Controller
             ]);
         }
 
-        // For initial page load: get only 10 products WITHOUT expensive count query
-        $products = $query->limit(10)->get();
+        // For initial page load: check if page parameter exists
+        $page = $request->get('page', 1);
+
+        if ($page > 1) {
+            // If accessing a specific page via URL, use paginate to get correct products
+            $products = $query->paginate(10);
+
+            // Append filter parameters to pagination links
+            $products->appends($request->only([
+                'categories',
+                'brands',
+                'sizes',
+                'shoe_sizes',
+                'colors',
+                'min_price',
+                'max_price'
+            ]));
+        } else {
+            // For first page, get only 10 products WITHOUT expensive count query
+            $products = $query->limit(10)->get();
+        }
+
         // Get filters data with product counts
         $sizes = Size::where('is_active', true)
             ->withCount(['products' => function($q) {
@@ -228,7 +248,11 @@ class FrontendController extends Controller
             ->selectRaw('MAX(COALESCE(sale_price, price)) as max_price')
             ->value('max_price') ?? 30000;
 
-        return view('frontend.shop', compact('products', 'sizes', 'shoeSizes', 'colors', 'minPrice', 'maxPrice'));
+        // Pass current page info to view
+        $currentPage = $page;
+        $isPaginated = $page > 1;
+
+        return view('frontend.shop', compact('products', 'sizes', 'shoeSizes', 'colors', 'minPrice', 'maxPrice', 'currentPage', 'isPaginated'));
     }
 
     public function category(Request $request, $slug)
