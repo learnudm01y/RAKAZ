@@ -37,7 +37,7 @@
             transform: translate(-50%, -50%);
             width: 90%;
             max-width: 1200px;
-            max-height: 90vh;
+            max-height: 81vh;
             background: white;
             border-radius: 12px;
             overflow-y: auto;
@@ -847,7 +847,7 @@
             .product-modal-content {
                 width: calc(100vw - 20px) !important; /* 10px من كل جهة */
                 max-width: calc(100vw - 20px) !important;
-                max-height: calc(100vh - 20px) !important;
+                max-height: 85vh !important;
                 height: auto !important;
                 border-radius: 12px !important;
                 overflow-y: auto !important;
@@ -1282,7 +1282,7 @@
             .product-modal-content {
                 width: 95% !important;
                 max-width: 900px !important;
-                max-height: 95vh !important;
+                max-height: 85vh !important;
                 border-radius: 12px !important;
             }
 
