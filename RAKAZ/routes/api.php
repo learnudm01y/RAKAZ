@@ -323,9 +323,12 @@ Route::post('/admin/compress-image', function (Request $request) {
         ];
         $directory = $directories[$type] ?? 'uploads/temp';
 
+        // Determine if this is a thumbnail type (hover or color) - max 20KB
+        $isThumbnail = in_array($type, ['hover', 'color']);
+
         // Use ImageCompressionService
         $imageService = app(\App\Services\ImageCompressionService::class);
-        $path = $imageService->compressAndStore($file, $directory);
+        $path = $imageService->compressAndStore($file, $directory, $isThumbnail);
 
         // Get file info
         $fullPath = storage_path('app/public/' . $path);

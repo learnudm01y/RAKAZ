@@ -18,6 +18,13 @@ class ImageCompressionService
     protected int $maxWidth = 1200;
     protected int $maxHeight = 1200;
 
+    // Thumbnail settings for hover and color images (max 20KB)
+    protected int $thumbnailMaxFileSize = 20 * 1024; // 20KB
+    protected int $thumbnailInitialQuality = 75;
+    protected int $thumbnailMinQuality = 30;
+    protected int $thumbnailMaxWidth = 600;
+    protected int $thumbnailMaxHeight = 600;
+
     public function __construct()
     {
         $this->manager = new ImageManager(new Driver());
@@ -28,19 +35,27 @@ class ImageCompressionService
      *
      * @param UploadedFile $file The uploaded image file
      * @param string $directory The storage directory (e.g., 'products', 'products/gallery')
+     * @param bool $isThumbnail Whether to use aggressive thumbnail compression (max 20KB)
      * @return string The stored file path
      */
-    public function compressAndStore(UploadedFile $file, string $directory = 'products'): string
+    public function compressAndStore(UploadedFile $file, string $directory = 'products', bool $isThumbnail = false): string
     {
         // Read the image
         $image = $this->manager->read($file->getPathname());
+
+        // Use thumbnail settings if specified
+        $maxWidth = $isThumbnail ? $this->thumbnailMaxWidth : $this->maxWidth;
+        $maxHeight = $isThumbnail ? $this->thumbnailMaxHeight : $this->maxHeight;
+        $maxFileSize = $isThumbnail ? $this->thumbnailMaxFileSize : $this->maxFileSize;
+        $initialQuality = $isThumbnail ? $this->thumbnailInitialQuality : $this->initialQuality;
+        $minQuality = $isThumbnail ? $this->thumbnailMinQuality : $this->minQuality;
 
         // Resize if larger than max dimensions (maintaining aspect ratio)
         $width = $image->width();
         $height = $image->height();
 
-        if ($width > $this->maxWidth || $height > $this->maxHeight) {
-            $image->scaleDown($this->maxWidth, $this->maxHeight);
+        if ($width > $maxWidth || $height > $maxHeight) {
+            $image->scaleDown($maxWidth, $maxHeight);
         }
 
         // Generate unique filename with .webp extension
@@ -55,7 +70,7 @@ class ImageCompressionService
         }
 
         // Start with initial quality and decrease until file size is acceptable
-        $quality = $this->initialQuality;
+        $quality = $initialQuality;
 
         do {
             // Encode as WebP - much better compression than JPEG
@@ -65,18 +80,18 @@ class ImageCompressionService
             $fileSize = filesize($fullPath);
 
             // If file size is acceptable or we've reached minimum quality, stop
-            if ($fileSize <= $this->maxFileSize || $quality <= $this->minQuality) {
+            if ($fileSize <= $maxFileSize || $quality <= $minQuality) {
                 break;
             }
 
             // Decrease quality for next iteration
             $quality -= $this->qualityStep;
 
-        } while ($quality >= $this->minQuality);
+        } while ($quality >= $minQuality);
 
         // If still too large at minimum quality, resize further
-        if ($fileSize > $this->maxFileSize && $quality <= $this->minQuality) {
-            $this->resizeUntilUnderLimit($image, $fullPath);
+        if ($fileSize > $maxFileSize && $quality <= $minQuality) {
+            $this->resizeUntilUnderLimit($image, $fullPath, $maxFileSize, $minQuality);
         }
 
         return $path;
@@ -85,9 +100,12 @@ class ImageCompressionService
     /**
      * Resize image until it's under the file size limit
      */
-    protected function resizeUntilUnderLimit($image, string $fullPath): void
+    protected function resizeUntilUnderLimit($image, string $fullPath, int $maxFileSize = null, int $minQuality = null): void
     {
-        $scaleFactors = [0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5];
+        $maxFileSize = $maxFileSize ?? $this->maxFileSize;
+        $minQuality = $minQuality ?? $this->minQuality;
+
+        $scaleFactors = [0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3];
 
         $originalWidth = $image->width();
         $originalHeight = $image->height();
@@ -99,10 +117,10 @@ class ImageCompressionService
             $image->resize($newWidth, $newHeight);
 
             // Use WebP for resized images too
-            $encoded = $image->toWebp($this->minQuality);
+            $encoded = $image->toWebp($minQuality);
             file_put_contents($fullPath, $encoded);
 
-            if (filesize($fullPath) <= $this->maxFileSize) {
+            if (filesize($fullPath) <= $maxFileSize) {
                 break;
             }
         }
