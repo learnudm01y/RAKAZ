@@ -680,7 +680,7 @@ html, body {
     opacity: 1;
     visibility: visible;
     max-height: 300px;
-    padding: 10px 6px;
+    padding: 0px 6px;
     pointer-events: auto;
 }
 
@@ -732,10 +732,10 @@ html, body {
    Product Gallery Section - Enhanced
    ======================================== */
 .product-gallery-section {
-    padding: 8px 0;
+    padding: 0px 0;
     background: transparent;
     position: relative;
-    margin: 8px 0;
+    margin: 0px 0;
     display: flex;
     align-items: center;
     justify-content: center;
