@@ -116,25 +116,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========================================
     // Wishlist Functionality
     // ========================================
-    const wishlistBtns = document.querySelectorAll('.wishlist-btn-large, .wishlist-btn-small, .btn-add-to-wishlist');
-
-    wishlistBtns.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            this.classList.toggle('active');
-
-            if (this.classList.contains('active')) {
-                Swal.fire({
-                    icon: 'success',
-                    title: t('تمت الإضافة!', 'Added!'),
-                    text: t('تم إضافة المنتج إلى قائمة المفضلة', 'Added to wishlist'),
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-            }
-        });
-    });
+    // NOTE: Wishlist functionality is handled in product-details.blade.php
+    // using the global toggleWishlist function which checks for authentication.
+    // DO NOT add event listener here to prevent bypassing login check!
 
     // ========================================
     // Add to Bag

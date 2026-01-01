@@ -59,6 +59,99 @@
     <script src="https://cdn.jsdelivr.net/npm/pica@9.0.1/dist/pica.min.js"></script>
     <script>
         const isArabic = '{{ app()->getLocale() }}' === 'ar';
+        const isLoggedIn = {{ auth()->check() ? 'true' : 'false' }};
+
+        // Helper function for translations
+        function t(ar, en) {
+            return isArabic ? ar : en;
+        }
+
+        // Global toggleWishlist function for all wishlist buttons (including AJAX loaded content)
+        async function toggleWishlist(button, productId) {
+            if (!isLoggedIn) {
+                // Not logged in - show login prompt
+                Swal.fire({
+                    title: t('تسجيل الدخول مطلوب', 'Login Required'),
+                    text: t('يجب تسجيل الدخول لإضافة المنتجات للمفضلة', 'Please login to add products to wishlist'),
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: t('تسجيل الدخول', 'Login'),
+                    cancelButtonText: t('إلغاء', 'Cancel'),
+                    confirmButtonColor: '#000',
+                    cancelButtonColor: '#666'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '{{ route("login") }}';
+                    }
+                });
+                return;
+            }
+
+            // User is logged in - proceed with toggle
+            button.disabled = true;
+            button.style.opacity = '0.6';
+
+            try {
+                const response = await fetch('{{ route("wishlist.toggle") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ product_id: productId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const wasAdded = data.added;
+                    button.classList.toggle('active', wasAdded);
+
+                    // Update heart icon
+                    const heartPath = button.querySelector('svg path');
+                    if (heartPath) {
+                        heartPath.setAttribute('fill', wasAdded ? 'currentColor' : 'none');
+                    }
+
+                    // Update wishlist badge
+                    const wishlistBadge = document.querySelector('.header-link .badge');
+                    if (wishlistBadge) {
+                        let currentCount = parseInt(wishlistBadge.textContent) || 0;
+                        if (wasAdded) {
+                            currentCount++;
+                        } else {
+                            currentCount = Math.max(0, currentCount - 1);
+                        }
+                        wishlistBadge.textContent = currentCount;
+                    }
+
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: data.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    throw new Error(data.message || 'Failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: t('خطأ!', 'Error!'),
+                    text: t('حدث خطأ أثناء تحديث المفضلة', 'Error updating wishlist'),
+                    confirmButtonColor: '#d33'
+                });
+            } finally {
+                button.disabled = false;
+                button.style.opacity = '1';
+            }
+        }
+
+        // Make it available globally for AJAX loaded content
+        window.toggleWishlist = toggleWishlist;
 
         // CSS handles image quality optimization better without distortion
 
@@ -299,6 +392,23 @@
             const addToCartBtn = document.getElementById('addToCartBtn');
             if (addToCartBtn) {
                 addToCartBtn.addEventListener('click', function() {
+                    if (!isLoggedIn) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: t('يجب تسجيل الدخول', 'Login Required'),
+                            text: t('يجب عليك تسجيل الدخول لإضافة منتجات للسلة', 'You need to login to add products to cart'),
+                            confirmButtonText: t('تسجيل الدخول', 'Login'),
+                            showCancelButton: true,
+                            cancelButtonText: t('إلغاء', 'Cancel'),
+                            confirmButtonColor: '#1a1a1a'
+                        }).then(function(result) {
+                            if (result.isConfirmed) {
+                                window.location.href = '{{ route("login") }}';
+                            }
+                        });
+                        return;
+                    }
+
                     const productId = this.dataset.productId;
                     const sizeSelect = document.getElementById('sizeSelect');
                     const selectedSize = sizeSelect ? sizeSelect.value : null;
@@ -387,108 +497,28 @@
                 });
             }
 
-            // Add to wishlist
+            // Add to wishlist - use the global toggleWishlist function
             var addToWishlistBtn = document.getElementById('addToWishlistBtn');
             if (addToWishlistBtn) {
                 addToWishlistBtn.addEventListener('click', function() {
-                    @guest
-                        Swal.fire({
-                            icon: 'warning',
-                            title: isArabic ? 'يجب تسجيل الدخول' : 'Login Required',
-                            text: isArabic ? 'يجب عليك تسجيل الدخول لإضافة منتجات للمفضلة' : 'You need to login to add products to wishlist',
-                            confirmButtonText: isArabic ? 'تسجيل الدخول' : 'Login',
-                            showCancelButton: true,
-                            cancelButtonText: isArabic ? 'إلغاء' : 'Cancel'
-                        }).then(function(result) {
-                            if (result.isConfirmed) {
-                                window.location.href = '{{ route("login") }}';
-                            }
-                        });
-                        return;
-                    @endguest
-
                     var productId = this.dataset.productId;
-                    var button = this;
-                    var wasActive = button.classList.contains('active');
-
-                    fetch('{{ route("wishlist.toggle") }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({ product_id: productId })
-                    })
-                    .then(function(response) {
-                        return response.json();
-                    })
-                    .then(function(data) {
-                        if (data.success) {
-                            // Toggle button state
-                            button.classList.toggle('active');
-
-                            // Update wishlist count in header - Real-time update
-                            var wishlistBadges = document.querySelectorAll('.header-link .badge');
-                            for (var i = 0; i < wishlistBadges.length; i++) {
-                                (function(badge) {
-                                    var currentCount = parseInt(badge.textContent) || 0;
-                                    if (wasActive) {
-                                        // Removing from wishlist
-                                        badge.textContent = Math.max(0, currentCount - 1);
-                                    } else {
-                                        // Adding to wishlist
-                                        badge.textContent = currentCount + 1;
-                                    }
-
-                                    // Add pulse animation
-                                    badge.style.animation = 'none';
-                                    setTimeout(function() {
-                                        badge.style.animation = 'pulse 0.3s ease-in-out';
-                                    }, 10);
-                                })(wishlistBadges[i]);
-                            }
-
-                            // Update heart icon fill
-                            var heartIcon = button.querySelector('svg path');
-                            if (heartIcon) {
-                                if (!wasActive) {
-                                    // Fill the heart
-                                    heartIcon.setAttribute('fill', 'currentColor');
-                                } else {
-                                    // Unfill the heart
-                                    heartIcon.setAttribute('fill', 'none');
-                                }
-                            }
-
-                            Swal.fire({
-                                icon: 'success',
-                                title: data.message,
-                                timer: 1500,
-                                showConfirmButton: false
-                            });
-                        }
-                    })
-                    .catch(function(error) {
-                        console.error('Error:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: isArabic ? 'خطأ!' : 'Error!',
-                            text: isArabic ? 'حدث خطأ أثناء الإضافة للمفضلة' : 'Error adding to wishlist'
-                        });
-                    });
+                    toggleWishlist(this, productId);
                 });
             }
 
-            // Wishlist buttons in related products
-            var wishlistBtns = document.querySelectorAll('.wishlist-btn-small');
-            for (var i = 0; i < wishlistBtns.length; i++) {
-                wishlistBtns[i].addEventListener('click', function(e) {
+            // Event delegation for wishlist buttons in AJAX loaded content (related products, etc.)
+            document.addEventListener('click', function(e) {
+                const wishlistBtn = e.target.closest('.wishlist-btn, .overlay-wishlist-btn, .wishlist-btn-small');
+                if (wishlistBtn && wishlistBtn.id !== 'addToWishlistBtn') {
                     e.preventDefault();
                     e.stopPropagation();
-                    this.classList.toggle('active');
-                });
-            }
+
+                    const productId = wishlistBtn.dataset.productId;
+                    if (productId) {
+                        toggleWishlist(wishlistBtn, productId);
+                    }
+                }
+            }, true);
 
             // Initialize custom select for size dropdown
             var sizeSelect = document.getElementById('sizeSelect');
