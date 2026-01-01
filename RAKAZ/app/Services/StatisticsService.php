@@ -18,6 +18,7 @@ class StatisticsService
     // Cache TTL in seconds
     const TTL_REALTIME = 60;        // 1 minute for real-time data (online users)
     const TTL_SHORT = 300;          // 5 minutes for frequently changing data
+    const TTL_ORDERS = 30;          // 30 seconds for recent orders (near real-time)
     const TTL_MEDIUM = 900;         // 15 minutes for moderately changing data
     const TTL_LONG = 3600;          // 1 hour for rarely changing data
 
@@ -132,28 +133,28 @@ class StatisticsService
     }
 
     /**
-     * Get recent orders
+     * Get recent orders (No cache for real-time updates)
      */
     public function getRecentOrders($limit = 5)
     {
-        return StatisticsCache::getOrCompute('recent_orders_' . $limit, function() use ($limit) {
-            return Order::with('user')
-                ->orderBy('created_at', 'desc')
-                ->limit($limit)
-                ->get()
-                ->map(function($order) {
-                    return [
-                        'id' => $order->id,
-                        'order_number' => $order->order_number,
-                        'customer_name' => $order->customer_name,
-                        'total' => $order->total,
-                        'status' => $order->status,
-                        'created_at' => $order->created_at->toDateTimeString(),
-                        'created_at_human' => $order->created_at->locale('ar')->diffForHumans(),
-                    ];
-                })
-                ->toArray();
-        }, 'orders', self::TTL_SHORT);
+        // Direct query without cache for instant updates
+        return Order::with('user')
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get()
+            ->map(function($order) {
+                return [
+                    'id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'customer_name' => $order->customer_name,
+                    'total' => $order->total,
+                    'status' => $order->status,
+                    'created_at' => $order->created_at->toDateTimeString(),
+                    'created_at_human' => $order->created_at->locale('ar')->diffForHumans(),
+                    'created_at_human_en' => $order->created_at->locale('en')->diffForHumans(),
+                ];
+            })
+            ->toArray();
     }
 
     /**

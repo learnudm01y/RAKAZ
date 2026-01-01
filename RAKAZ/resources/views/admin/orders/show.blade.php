@@ -1,65 +1,70 @@
 @extends('admin.layouts.app')
 
-@section('title', 'تفاصيل الطلب #' . $order->order_number)
+@section('title', (app()->getLocale() == 'ar' ? 'تفاصيل الطلب #' : 'Order Details #') . $order->order_number)
 
 @section('content')
 <div class="container-fluid">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-0">تفاصيل الطلب #{{ $order->order_number }}</h1>
-            <small class="text-muted">تاريخ الطلب: {{ $order->created_at->format('d F Y - H:i') }}</small>
+            <h1 class="h3 mb-0">{{ app()->getLocale() == 'ar' ? 'تفاصيل الطلب' : 'Order Details' }} #{{ $order->order_number }}</h1>
+            <small class="text-muted">{{ app()->getLocale() == 'ar' ? 'تاريخ الطلب' : 'Order Date' }}: {{ $order->created_at->format('d F Y - H:i') }}</small>
         </div>
-        <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-right"></i> العودة للقائمة
-        </a>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-dark" id="printInvoiceBtn">
+                <i class="fas fa-print {{ app()->getLocale() == 'ar' ? 'ms-2' : 'me-2' }}"></i>{{ app()->getLocale() == 'ar' ? 'طباعة الفاتورة' : 'Print Invoice' }}
+            </button>
+            <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-dark">
+                <i class="fas fa-arrow-{{ app()->getLocale() == 'ar' ? 'right' : 'left' }}"></i> {{ app()->getLocale() == 'ar' ? 'العودة للقائمة' : 'Back to List' }}
+            </a>
+        </div>
     </div>
 
     <div class="row">
         <!-- Order Status Card -->
         <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
+            <div class="card border-dark">
+                <div class="card-header bg-dark text-white">
                     <h5 class="card-title mb-0">
-                        <i class="fas fa-info-circle"></i> حالة الطلب
+                        <i class="fas fa-info-circle"></i> {{ app()->getLocale() == 'ar' ? 'حالة الطلب' : 'Order Status' }}
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">الحالة الحالية</label>
+                        <label class="form-label">{{ app()->getLocale() == 'ar' ? 'الحالة الحالية' : 'Current Status' }}</label>
                         <select class="form-select" id="orderStatus">
-                            <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>قيد الانتظار</option>
-                            <option value="confirmed" {{ $order->status == 'confirmed' ? 'selected' : '' }}>قيد التحضير</option>
-                            <option value="processing" {{ $order->status == 'processing' ? 'selected' : '' }}>قيد المعالجة</option>
-                            <option value="shipped" {{ $order->status == 'shipped' ? 'selected' : '' }}>تم الشحن</option>
-                            <option value="delivered" {{ $order->status == 'delivered' ? 'selected' : '' }}>تم التوصيل</option>
-                            <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>ملغي</option>
+                            <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'قيد الانتظار' : 'Pending' }}</option>
+                            <option value="confirmed" {{ $order->status == 'confirmed' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'قيد التحضير' : 'Confirmed' }}</option>
+                            <option value="processing" {{ $order->status == 'processing' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'قيد المعالجة' : 'Processing' }}</option>
+                            <option value="shipped" {{ $order->status == 'shipped' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'تم الشحن' : 'Shipped' }}</option>
+                            <option value="delivered" {{ $order->status == 'delivered' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'تم التوصيل' : 'Delivered' }}</option>
+                            <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'ملغي' : 'Cancelled' }}</option>
                         </select>
                     </div>
-                    <button type="button" class="btn btn-primary w-100" onclick="updateOrderStatus()">
-                        <i class="fas fa-save"></i> تحديث الحالة
+                    <button type="button" class="btn btn-dark w-100" onclick="updateOrderStatus()">
+                        <i class="fas fa-save"></i> {{ app()->getLocale() == 'ar' ? 'تحديث الحالة' : 'Update Status' }}
                     </button>
 
                     <hr>
 
-                    <div class="mb-2">
-                        <strong>الإجمالي:</strong>
-                        <span class="float-end">{{ number_format($order->total_amount, 2) }} د.إ</span>
+                    <div class="mb-2 d-flex justify-content-between">
+                        <strong>{{ app()->getLocale() == 'ar' ? 'الإجمالي:' : 'Subtotal:' }}</strong>
+                        <span>{{ number_format($order->total_amount, 2) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</span>
                     </div>
-                    <div class="mb-2">
-                        <strong>رسوم الشحن:</strong>
-                        <span class="float-end">{{ number_format($order->shipping_fee ?? 0, 2) }} د.إ</span>
+                    <div class="mb-2 d-flex justify-content-between">
+                        <strong>{{ app()->getLocale() == 'ar' ? 'رسوم الشحن:' : 'Shipping:' }}</strong>
+                        <span>{{ number_format($order->shipping_fee ?? 0, 2) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</span>
                     </div>
                     @if($order->discount_amount)
-                    <div class="mb-2 text-success">
-                        <strong>الخصم:</strong>
-                        <span class="float-end">-{{ number_format($order->discount_amount, 2) }} د.إ</span>
+                    <div class="mb-2 d-flex justify-content-between">
+                        <strong>{{ app()->getLocale() == 'ar' ? 'الخصم:' : 'Discount:' }}</strong>
+                        <span>-{{ number_format($order->discount_amount, 2) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</span>
                     </div>
                     @endif
                     <hr>
-                    <div>
-                        <strong>المجموع الكلي:</strong>
-                        <span class="float-end h5 text-primary">{{ number_format($order->total_amount, 2) }} د.إ</span>
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ app()->getLocale() == 'ar' ? 'المجموع الكلي:' : 'Total:' }}</strong>
+                        <span class="h5 mb-0" style="color: #000;">{{ number_format($order->total_amount, 2) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</span>
                     </div>
                 </div>
             </div>
@@ -67,38 +72,38 @@
 
         <!-- Customer Info Card -->
         <div class="col-md-8 mb-4">
-            <div class="card">
-                <div class="card-header bg-info text-white">
+            <div class="card border-dark">
+                <div class="card-header bg-dark text-white">
                     <h5 class="card-title mb-0">
-                        <i class="fas fa-user"></i> معلومات العميل
+                        <i class="fas fa-user"></i> {{ app()->getLocale() == 'ar' ? 'معلومات العميل' : 'Customer Information' }}
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted">الاسم</label>
+                            <label class="text-muted">{{ app()->getLocale() == 'ar' ? 'الاسم' : 'Name' }}</label>
                             <p class="mb-0"><strong>{{ $order->customer_name }}</strong></p>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted">البريد الإلكتروني</label>
+                            <label class="text-muted">{{ app()->getLocale() == 'ar' ? 'البريد الإلكتروني' : 'Email' }}</label>
                             <p class="mb-0">{{ $order->customer_email }}</p>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted">رقم الهاتف</label>
+                            <label class="text-muted">{{ app()->getLocale() == 'ar' ? 'رقم الهاتف' : 'Phone Number' }}</label>
                             <p class="mb-0">{{ $order->customer_phone }}</p>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted">طريقة الدفع</label>
+                            <label class="text-muted">{{ app()->getLocale() == 'ar' ? 'طريقة الدفع' : 'Payment Method' }}</label>
                             <p class="mb-0">
                                 @if($order->payment_method == 'cash')
-                                    الدفع عند الاستلام
+                                    {{ app()->getLocale() == 'ar' ? 'الدفع عند الاستلام' : 'Cash on Delivery' }}
                                 @else
                                     {{ $order->payment_method }}
                                 @endif
                             </p>
                         </div>
                         <div class="col-12">
-                            <label class="text-muted">عنوان الشحن</label>
+                            <label class="text-muted">{{ app()->getLocale() == 'ar' ? 'عنوان الشحن' : 'Shipping Address' }}</label>
                             <p class="mb-0">{{ $order->shipping_address }}</p>
                         </div>
                     </div>
@@ -108,24 +113,24 @@
     </div>
 
     <!-- Order Items Card -->
-    <div class="card">
-        <div class="card-header bg-success text-white">
+    <div class="card border-dark">
+        <div class="card-header bg-dark text-white">
             <h5 class="card-title mb-0">
-                <i class="fas fa-shopping-bag"></i> المنتجات ({{ $order->items->count() }} منتج)
+                <i class="fas fa-shopping-bag"></i> {{ app()->getLocale() == 'ar' ? 'المنتجات' : 'Products' }} ({{ $order->items->count() }} {{ app()->getLocale() == 'ar' ? 'منتج' : 'items' }})
             </h5>
         </div>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover">
-                    <thead class="table-light">
+                    <thead class="table-dark">
                         <tr>
-                            <th style="width: 80px;">الصورة</th>
-                            <th>المنتج</th>
-                            <th>اللون</th>
-                            <th>المقاس</th>
-                            <th>السعر</th>
-                            <th>الكمية</th>
-                            <th>الإجمالي</th>
+                            <th style="width: 80px;">{{ app()->getLocale() == 'ar' ? 'الصورة' : 'Image' }}</th>
+                            <th>{{ app()->getLocale() == 'ar' ? 'المنتج' : 'Product' }}</th>
+                            <th>{{ app()->getLocale() == 'ar' ? 'اللون' : 'Color' }}</th>
+                            <th>{{ app()->getLocale() == 'ar' ? 'المقاس' : 'Size' }}</th>
+                            <th>{{ app()->getLocale() == 'ar' ? 'السعر' : 'Price' }}</th>
+                            <th>{{ app()->getLocale() == 'ar' ? 'الكمية' : 'Qty' }}</th>
+                            <th>{{ app()->getLocale() == 'ar' ? 'الإجمالي' : 'Total' }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -143,8 +148,8 @@
                                 }
 
                                 $productName = $product ? (is_array($product->name)
-                                    ? ($product->name[app()->getLocale()] ?? $product->name['ar'] ?? $product->name['en'] ?? 'منتج')
-                                    : $product->name) : 'منتج محذوف';
+                                    ? ($product->name[app()->getLocale()] ?? $product->name['ar'] ?? $product->name['en'] ?? (app()->getLocale() == 'ar' ? 'منتج' : 'Product'))
+                                    : $product->name) : (app()->getLocale() == 'ar' ? 'منتج محذوف' : 'Deleted Product');
                             @endphp
                             <tr>
                                 <td>
@@ -159,16 +164,16 @@
                                 </td>
                                 <td>{{ $item->color ?? '-' }}</td>
                                 <td>{{ $item->size ?? '-' }}</td>
-                                <td>{{ number_format($item->price, 2) }} د.إ</td>
-                                <td><span class="badge bg-secondary">{{ $item->quantity }}</span></td>
-                                <td><strong>{{ number_format($item->price * $item->quantity, 2) }} د.إ</strong></td>
+                                <td>{{ number_format($item->price, 2) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</td>
+                                <td><span class="badge bg-dark">{{ $item->quantity }}</span></td>
+                                <td><strong>{{ number_format($item->price * $item->quantity, 2) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</strong></td>
                             </tr>
                         @endforeach
                     </tbody>
                     <tfoot class="table-light">
                         <tr>
-                            <td colspan="6" class="text-end"><strong>الإجمالي:</strong></td>
-                            <td><strong>{{ number_format($order->total_amount, 2) }} د.إ</strong></td>
+                            <td colspan="6" class="text-end"><strong>{{ app()->getLocale() == 'ar' ? 'الإجمالي:' : 'Total:' }}</strong></td>
+                            <td><strong>{{ number_format($order->total_amount, 2) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</strong></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -180,17 +185,30 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+const isArabic = '{{ app()->getLocale() }}' === 'ar';
+const orderId = {{ $order->id }};
+
+// Print Invoice Button
+document.getElementById('printInvoiceBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    // Open invoice in new window and trigger print
+    var printWindow = window.open(`/admin/orders/${orderId}/invoice/stream`, '_blank');
+    printWindow.onload = function() {
+        printWindow.print();
+    };
+});
+
 async function updateOrderStatus() {
     const newStatus = document.getElementById('orderStatus').value;
 
     try {
         const result = await Swal.fire({
-            title: 'تأكيد التغيير',
-            text: 'هل أنت متأكد من تغيير حالة الطلب؟',
+            title: isArabic ? 'تأكيد التغيير' : 'Confirm Change',
+            text: isArabic ? 'هل أنت متأكد من تغيير حالة الطلب؟' : 'Are you sure you want to change the order status?',
             icon: 'question',
             showCancelButton: true,
-            confirmButtonText: 'نعم، غيّر الحالة',
-            cancelButtonText: 'إلغاء',
+            confirmButtonText: isArabic ? 'نعم، غيّر الحالة' : 'Yes, Change Status',
+            cancelButtonText: isArabic ? 'إلغاء' : 'Cancel',
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33'
         });
@@ -211,14 +229,14 @@ async function updateOrderStatus() {
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error('Server Error:', errorText);
-                throw new Error(`خطأ في الخادم (${response.status}): ${response.statusText}`);
+                throw new Error(isArabic ? `خطأ في الخادم (${response.status}): ${response.statusText}` : `Server Error (${response.status}): ${response.statusText}`);
             }
 
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
                 const htmlResponse = await response.text();
                 console.error('Expected JSON but received:', htmlResponse.substring(0, 200));
-                throw new Error('الخادم لم يرجع استجابة JSON صحيحة');
+                throw new Error(isArabic ? 'الخادم لم يرجع استجابة JSON صحيحة' : 'Server did not return a valid JSON response');
             }
 
             const data = await response.json();
@@ -226,13 +244,13 @@ async function updateOrderStatus() {
             if (data.success) {
                 Swal.fire({
                     icon: 'success',
-                    title: 'تم التحديث!',
-                    text: data.message,
+                    title: isArabic ? 'تم التحديث!' : 'Updated!',
+                    text: data.message || (isArabic ? 'تم تحديث الحالة بنجاح' : 'Status updated successfully'),
                     timer: 2000,
                     showConfirmButton: false
                 });
             } else {
-                throw new Error(data.message || 'حدث خطأ');
+                throw new Error(data.message || (isArabic ? 'حدث خطأ' : 'An error occurred'));
             }
         }
     } catch (error) {
@@ -240,8 +258,8 @@ async function updateOrderStatus() {
 
         Swal.fire({
             icon: 'error',
-            title: 'خطأ!',
-            text: error.message || 'حدث خطأ أثناء تحديث الحالة'
+            title: isArabic ? 'خطأ!' : 'Error!',
+            text: error.message || (isArabic ? 'حدث خطأ أثناء تحديث الحالة' : 'An error occurred while updating the status')
         });
     }
 }

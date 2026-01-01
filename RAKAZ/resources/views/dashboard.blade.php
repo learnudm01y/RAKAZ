@@ -2173,6 +2173,11 @@ function updateRecentOrders(orders) {
     var html = '';
     for (var i = 0; i < orders.length; i++) {
         var order = orders[i];
+
+        // Time display for both languages
+        var timeAr = order.created_at_human || order.created_at;
+        var timeEn = order.created_at_human_en || order.created_at;
+
         html += '<div class="activity-item">';
         html += '<div class="activity-icon" style="background: #e6f2ff; color: #3182ce;">📦</div>';
         html += '<div class="activity-content">';
@@ -2180,9 +2185,9 @@ function updateRecentOrders(orders) {
         html += '<span class="ar-text">طلب #' + order.order_number + '</span>';
         html += '<span class="en-text">Order #' + order.order_number + '</span>';
         html += ' - <span style="font-size: 0.875rem; color: #666;">' + (order.customer_name || '-') + '</span>';
-        html += ' - <strong>' + formatNumber(order.total) + ' د.إ</strong>';
+        html += ' - <strong>' + formatNumber(order.total) + ' <span class="ar-text">د.إ</span><span class="en-text">AED</span></strong>';
         html += '</div>';
-        html += '<div class="activity-time">' + (order.created_at_human || order.created_at) + '</div>';
+        html += '<div class="activity-time"><span class="ar-text">' + timeAr + '</span><span class="en-text">' + timeEn + '</span></div>';
         html += '</div>';
         html += '<a href="/admin/orders/' + order.id + '" style="color: #3182ce; text-decoration: none;">';
         html += '<svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">';
@@ -2265,5 +2270,261 @@ setInterval(function() {
     console.log('🔄 Auto-refresh: Reloading statistics...');
     loadStatistics();
 }, 300000);
+
+// ==================== REAL-TIME RECENT ORDERS UPDATE ====================
+
+// Load only recent orders (lightweight API call)
+function loadRecentOrdersOnly() {
+    console.log('🔄 Real-time: Fetching recent orders...');
+
+    var csrfToken = '';
+    var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    if (csrfMeta) {
+        csrfToken = csrfMeta.getAttribute('content');
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/admin/api/statistics/recent-orders', true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    xhr.setRequestHeader('Accept', 'application/json');
+    if (csrfToken) {
+        xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
+    }
+    xhr.withCredentials = true;
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.success && response.data) {
+                        console.log('✅ Real-time orders updated:', response.data.length, 'orders');
+                        updateRecentOrdersRealTime(response.data);
+                    }
+                } catch (e) {
+                    console.error('❌ Error parsing recent orders:', e);
+                }
+            }
+        }
+    };
+
+    xhr.send();
+}
+
+// Update recent orders with animation for new orders
+function updateRecentOrdersRealTime(orders) {
+    var container = document.getElementById('recent-orders-container');
+    if (!container) return;
+
+    // Detect language using body direction (LTR = English, RTL = Arabic)
+    var isEnglish = document.body.getAttribute('dir') === 'ltr';
+
+    if (!orders || orders.length === 0) {
+        container.innerHTML = '<div class="activity-item"><div class="activity-content"><div class="activity-title" style="text-align: center; color: #999;"><span class="ar-text">لا توجد طلبات بعد</span><span class="en-text">No orders yet</span></div></div></div>';
+        return;
+    }
+
+    var html = '';
+    for (var i = 0; i < orders.length; i++) {
+        var order = orders[i];
+
+        // Time display for both languages using CSS classes
+        var timeAr = order.created_at_human || order.created_at;
+        var timeEn = order.created_at_human_en || order.created_at;
+
+        html += '<div class="activity-item" style="animation: fadeInUp 0.3s ease-out;">';
+        html += '<div class="activity-icon" style="background: #e6f2ff; color: #3182ce;">📦</div>';
+        html += '<div class="activity-content">';
+        html += '<div class="activity-title">';
+        html += '<span class="ar-text">طلب #' + order.order_number + '</span>';
+        html += '<span class="en-text">Order #' + order.order_number + '</span>';
+        html += ' - <span style="font-size: 0.875rem; color: #666;">' + (order.customer_name || '-') + '</span>';
+        html += ' - <strong>' + formatNumber(order.total) + ' <span class="ar-text">د.إ</span><span class="en-text">AED</span></strong>';
+        html += '</div>';
+        html += '<div class="activity-time"><span class="ar-text">' + timeAr + '</span><span class="en-text">' + timeEn + '</span></div>';
+        html += '</div>';
+        html += '<a href="/admin/orders/' + order.id + '" style="color: #3182ce; text-decoration: none;" title=""><span class="ar-text" style="display:none;">عرض الطلب</span><span class="en-text" style="display:none;">View Order</span>';
+        html += '<svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">';
+        html += '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>';
+        html += '</svg></a>';
+        html += '</div>';
+    }
+
+    container.innerHTML = html;
+}
+
+// Track last order count and IDs for smart updates
+var lastOrderCount = 0;
+var lastOrderIds = [];
+
+// Smart update - only update if there are new orders
+function loadRecentOrdersSmart() {
+    var csrfToken = '';
+    var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    if (csrfMeta) {
+        csrfToken = csrfMeta.getAttribute('content');
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/admin/api/statistics/recent-orders', true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    xhr.setRequestHeader('Accept', 'application/json');
+    if (csrfToken) {
+        xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
+    }
+    xhr.withCredentials = true;
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            try {
+                var response = JSON.parse(xhr.responseText);
+                if (response.success && response.data) {
+                    var orders = response.data;
+                    var currentIds = orders.map(function(o) { return o.id; });
+
+                    // Check if there are new orders (compare first order ID)
+                    var hasNewOrders = orders.length > 0 &&
+                                       (lastOrderIds.length === 0 || currentIds[0] !== lastOrderIds[0]);
+
+                    if (hasNewOrders) {
+                        console.log('🆕 New order detected! Updating list...');
+                        updateRecentOrdersSmooth(orders);
+                        lastOrderIds = currentIds;
+                        lastOrderCount = orders.length;
+
+                        // Show notification for new order
+                        showNewOrderNotification(orders[0]);
+                    }
+                }
+            } catch (e) {
+                console.error('Error:', e);
+            }
+        }
+    };
+
+    xhr.send();
+}
+
+// Smooth update without jarring animation
+function updateRecentOrdersSmooth(orders) {
+    var container = document.getElementById('recent-orders-container');
+    if (!container) return;
+
+    if (!orders || orders.length === 0) {
+        container.innerHTML = '<div class="activity-item"><div class="activity-content"><div class="activity-title" style="text-align: center; color: #999;"><span class="ar-text">لا توجد طلبات بعد</span><span class="en-text">No orders yet</span></div></div></div>';
+        return;
+    }
+
+    var html = '';
+    for (var i = 0; i < orders.length; i++) {
+        var order = orders[i];
+        var timeAr = order.created_at_human || order.created_at;
+        var timeEn = order.created_at_human_en || order.created_at;
+        var isNew = i === 0 && lastOrderIds.length > 0 && order.id !== lastOrderIds[0];
+
+        html += '<div class="activity-item' + (isNew ? ' new-order-highlight' : '') + '">';
+        html += '<div class="activity-icon" style="background: #e6f2ff; color: #3182ce;">📦</div>';
+        html += '<div class="activity-content">';
+        html += '<div class="activity-title">';
+        html += '<span class="ar-text">طلب #' + order.order_number + '</span>';
+        html += '<span class="en-text">Order #' + order.order_number + '</span>';
+        if (isNew) {
+            html += ' <span class="new-badge">NEW</span>';
+        }
+        html += ' - <span style="font-size: 0.875rem; color: #666;">' + (order.customer_name || '-') + '</span>';
+        html += ' - <strong>' + formatNumber(order.total) + ' <span class="ar-text">د.إ</span><span class="en-text">AED</span></strong>';
+        html += '</div>';
+        html += '<div class="activity-time"><span class="ar-text">' + timeAr + '</span><span class="en-text">' + timeEn + '</span></div>';
+        html += '</div>';
+        html += '<a href="/admin/orders/' + order.id + '" style="color: #3182ce; text-decoration: none;">';
+        html += '<svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">';
+        html += '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>';
+        html += '</svg></a>';
+        html += '</div>';
+    }
+
+    container.innerHTML = html;
+
+    // Remove highlight after 3 seconds
+    setTimeout(function() {
+        var highlighted = container.querySelector('.new-order-highlight');
+        if (highlighted) {
+            highlighted.classList.remove('new-order-highlight');
+        }
+        var badge = container.querySelector('.new-badge');
+        if (badge) {
+            badge.remove();
+        }
+    }, 3000);
+}
+
+// Show subtle notification for new order
+function showNewOrderNotification(order) {
+    // Play notification sound if available
+    try {
+        var audio = new Audio('/assets/sounds/notification.mp3');
+        audio.volume = 0.3;
+        audio.play().catch(function() {});
+    } catch(e) {}
+
+    // Update page title temporarily
+    var originalTitle = document.title;
+    document.title = '🆕 New Order! - ' + originalTitle;
+    setTimeout(function() {
+        document.title = originalTitle;
+    }, 5000);
+}
+
+// Real-time update interval (every 5 seconds for faster detection)
+var realtimeOrdersInterval = setInterval(function() {
+    loadRecentOrdersSmart();
+}, 5000);
+
+// Add styles for new order highlight
+var realtimeStyle = document.createElement('style');
+realtimeStyle.textContent = `
+    .new-order-highlight {
+        background: linear-gradient(to right, #f0fff4, #ffffff) !important;
+        border-left: 3px solid #48bb78 !important;
+    }
+    .new-badge {
+        background: #48bb78;
+        color: white;
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 3px;
+        margin-left: 5px;
+        font-weight: bold;
+    }
+`;
+document.head.appendChild(realtimeStyle);
+
+// Initial load to set baseline
+setTimeout(function() {
+    var csrfToken = '';
+    var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    if (csrfMeta) csrfToken = csrfMeta.getAttribute('content');
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/admin/api/statistics/recent-orders', true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    xhr.setRequestHeader('Accept', 'application/json');
+    if (csrfToken) xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
+    xhr.withCredentials = true;
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            try {
+                var response = JSON.parse(xhr.responseText);
+                if (response.success && response.data) {
+                    lastOrderIds = response.data.map(function(o) { return o.id; });
+                    lastOrderCount = response.data.length;
+                }
+            } catch(e) {}
+        }
+    };
+    xhr.send();
+}, 3000);
+
+console.log('⚡ Smart real-time orders update enabled (every 5 seconds, updates only on new orders)');
 </script>
 @endsection

@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeebly Delivery Test Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-shadow { box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .status-badge { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .log-entry { animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #667eea; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-6 shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold">🧪 لوحة اختبار التوصيل</h1>
+                    <p class="text-purple-200 mt-1">Jeebly Delivery Integration - ربط حقيقي</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div id="connectionStatus" class="bg-white/20 backdrop-blur rounded-lg px-4 py-2">
+                        <span class="text-sm">حالة الاتصال:</span>
+                        <span id="connectionStatusText" class="font-bold text-xl mr-2">غير متصل</span>
+                    </div>
+                    <button onclick="testConnection()" class="bg-white/20 hover:bg-white/30 transition p-2 rounded-lg" title="اختبار الاتصال">
+                        🔌
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Left Column: Configuration & Order Simulator -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Configuration Section -->
+                <section class="bg-white rounded-2xl card-shadow p-6">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="text-3xl">⚙️</span>
+                        <h2 class="text-xl font-bold text-gray-800">إعدادات API</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Jeebly Settings -->
+                        <div class="space-y-4">
+                            <h3 class="font-semibold text-purple-600 flex items-center gap-2">
+                                <span>📦</span> Jeebly API
+                            </h3>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Client Key</label>
+                                <input type="text" id="jeeblyClientKey"
+                                    value="967X250731093419Y4d6f7374616661536862616972"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-sm font-mono">
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <h3 class="font-semibold text-purple-600 flex items-center gap-2">
+                                <span>🔑</span> API Key
+                            </h3>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">X-API-KEY</label>
+                                <input type="text" id="jeeblyApiKey"
+                                    value="JjEeEeBbLlYy1200"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-sm font-mono">
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <h3 class="font-semibold text-purple-600 flex items-center gap-2">
+                                <span>🌐</span> Base URL
+                            </h3>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Base URL</label>
+                                <input type="text" id="jeeblyBaseUrl"
+                                    value="https://demo.jeebly.com"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-sm font-mono">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-blue-50 rounded-lg flex items-center justify-between">
+                        <p class="text-sm text-blue-700">💡 <strong>ملاحظة:</strong> هذا ربط حقيقي مع Jeebly API - سيتم إرسال الطلبات فعلياً</p>
+                        <button onclick="testConnection()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm">
+                            🔌 اختبار الاتصال
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Order Simulator -->
+                <section class="bg-white rounded-2xl card-shadow p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">📝</span>
+                            <h2 class="text-xl font-bold text-gray-800">محاكي الطلبات</h2>
+                        </div>
+                        <button onclick="runBulkTest()" class="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-lg hover:shadow-lg transition flex items-center gap-2">
+                            <span>🚀</span> اختبار جماعي (5 طلبات)
+                        </button>
+                    </div>
+
+                    <form id="orderForm" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">اسم العميل</label>
+                                <input type="text" id="customerName" required
+                                    placeholder="أحمد محمد"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">رقم الهاتف</label>
+                                <input type="tel" id="customerPhone" required
+                                    placeholder="967XXXXXXXXX"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">العنوان</label>
+                            <textarea id="customerAddress" required rows="2"
+                                placeholder="صنعاء، شارع الستين، بجانب..."
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition resize-none"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">قيمة الطلب (ر.ي)</label>
+                                <input type="number" id="orderValue" required min="1"
+                                    placeholder="5000"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">رسوم التوصيل (ر.ي)</label>
+                                <input type="number" id="deliveryFee" value="500" min="0"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">وصف المنتج</label>
+                                <input type="text" id="productDescription"
+                                    placeholder="حذاء رياضي"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-lg hover:shadow-lg transition font-semibold flex items-center justify-center gap-2">
+                                <span>📤</span> إرسال طلب Jeebly
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Jeebly Response Section -->
+                <section class="bg-white rounded-2xl card-shadow p-6">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="text-3xl">📦</span>
+                        <h2 class="text-xl font-bold text-gray-800">استجابة Jeebly API</h2>
+                    </div>
+
+                    <div>
+                        <h3 class="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                            <span class="w-3 h-3 bg-purple-500 rounded-full"></span>
+                            آخر استجابة من الخادم
+                        </h3>
+                        <div id="jeeblyResponse" class="bg-gray-900 text-purple-400 rounded-lg p-4 font-mono text-sm h-48 overflow-auto">
+                            <span class="text-gray-500">// انتظار استجابة التوصيل...</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Column: Webhook Monitor & Status -->
+            <div class="space-y-6">
+
+                <!-- Webhook Monitor -->
+                <section class="bg-white rounded-2xl card-shadow p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">📡</span>
+                            <h2 class="text-lg font-bold text-gray-800">مراقب Webhook</h2>
+                        </div>
+                        <span class="status-badge bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">مباشر</span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Webhook URL</label>
+                        <input type="text" readonly
+                            value="https://boulevard.r-y-x.net/api/v1/Courier/UpdateCourierStatus"
+                            class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-xs font-mono">
+                    </div>
+
+                    <!-- Manual Status Simulation -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">محاكاة حالة يدوية</label>
+                        <div class="flex gap-2">
+                            <select id="manualStatus" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <option value="Assigned">📋 Assigned - تم التعيين</option>
+                                <option value="Out for Delivery">🚚 Out for Delivery - جاري التوصيل</option>
+                                <option value="Delivered">✅ Delivered - تم التسليم</option>
+                                <option value="Cancelled">❌ Cancelled - ملغي</option>
+                                <option value="Low Wallet Balance">⚠️ Low Wallet Balance - رصيد منخفض</option>
+                            </select>
+                            <button onclick="simulateWebhook()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                                إرسال
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Webhook Events -->
+                    <div class="space-y-2 max-h-64 overflow-auto" id="webhookEvents">
+                        <div class="text-center text-gray-400 text-sm py-4">
+                            لم تصل أي تحديثات بعد...
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Track Order -->
+                <section class="bg-white rounded-2xl card-shadow p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-2xl">🔍</span>
+                        <h2 class="text-lg font-bold text-gray-800">تتبع طلب</h2>
+                    </div>
+
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="trackOrderId" placeholder="أدخل رقم الطلب (مثل: E251230XXXXX)"
+                            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <button onclick="trackOrder()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
+                            🔍 تتبع
+                        </button>
+                    </div>
+
+                    <div id="trackingResult" class="hidden">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="font-semibold text-gray-700">حالة الطلب:</span>
+                                <span id="trackingStatus" class="px-3 py-1 rounded-full text-sm font-semibold"></span>
+                            </div>
+                            <div id="trackingDetails" class="text-sm text-gray-600 space-y-2"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Active Orders -->
+                <section class="bg-white rounded-2xl card-shadow p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">📋</span>
+                            <h2 class="text-lg font-bold text-gray-800">الطلبات النشطة</h2>
+                        </div>
+                        <button onclick="refreshActiveOrders()" class="text-purple-600 hover:text-purple-800 text-sm">
+                            🔄 تحديث
+                        </button>
+                    </div>
+
+                    <div id="activeOrders" class="space-y-3 max-h-64 overflow-auto">
+                        <div class="text-center text-gray-400 text-sm py-4">
+                            لا توجد طلبات نشطة
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Quick Stats -->
+                <section class="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-2xl card-shadow p-6 text-white">
+                    <h3 class="font-bold mb-4">📊 إحصائيات الجلسة</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white/20 rounded-lg p-3 text-center">
+                            <div id="totalOrders" class="text-2xl font-bold">0</div>
+                            <div class="text-xs text-purple-200">إجمالي الطلبات</div>
+                        </div>
+                        <div class="bg-white/20 rounded-lg p-3 text-center">
+                            <div id="successfulOrders" class="text-2xl font-bold">0</div>
+                            <div class="text-xs text-purple-200">طلبات ناجحة</div>
+                        </div>
+                        <div class="bg-white/20 rounded-lg p-3 text-center">
+                            <div id="failedOrders" class="text-2xl font-bold">0</div>
+                            <div class="text-xs text-purple-200">طلبات فاشلة</div>
+                        </div>
+                        <div class="bg-white/20 rounded-lg p-3 text-center">
+                            <div id="totalAmount" class="text-2xl font-bold">0</div>
+                            <div class="text-xs text-purple-200">إجمالي المبلغ</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Logs Section -->
+        <section class="mt-6 bg-white rounded-2xl card-shadow p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">📜</span>
+                    <h2 class="text-xl font-bold text-gray-800">سجل العمليات</h2>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="filterLogs('all')" class="log-filter active px-3 py-1 rounded-lg text-sm bg-gray-200 hover:bg-gray-300 transition" data-filter="all">الكل</button>
+                    <button onclick="filterLogs('success')" class="log-filter px-3 py-1 rounded-lg text-sm bg-green-100 text-green-700 hover:bg-green-200 transition" data-filter="success">نجاح</button>
+                    <button onclick="filterLogs('error')" class="log-filter px-3 py-1 rounded-lg text-sm bg-red-100 text-red-700 hover:bg-red-200 transition" data-filter="error">خطأ</button>
+                    <button onclick="filterLogs('info')" class="log-filter px-3 py-1 rounded-lg text-sm bg-blue-100 text-blue-700 hover:bg-blue-200 transition" data-filter="info">معلومات</button>
+                    <button onclick="clearLogs()" class="px-3 py-1 rounded-lg text-sm bg-red-500 text-white hover:bg-red-600 transition">🗑️ مسح</button>
+                </div>
+            </div>
+
+            <div id="logsContainer" class="bg-gray-900 rounded-lg p-4 h-64 overflow-auto font-mono text-sm">
+                <div class="text-gray-500">// سجل العمليات سيظهر هنا...</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 left-4 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <div class="bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3">
+            <span id="toastIcon">✅</span>
+            <span id="toastMessage">رسالة</span>
+        </div>
+    </div>
+
+    <!-- Low Balance Alert Modal -->
+    <div id="lowBalanceModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-6 max-w-md mx-4 transform scale-95 transition">
+            <div class="text-center">
+                <span class="text-6xl">⚠️</span>
+                <h3 class="text-xl font-bold text-gray-800 mt-4">تنبيه: رصيد المحفظة منخفض!</h3>
+                <p class="text-gray-600 mt-2">رصيد محفظة Jeebly منخفض جداً. يرجى التواصل مع فريق Jeebly لشحن المحفظة.</p>
+                <div class="mt-4 p-3 bg-yellow-50 rounded-lg">
+                    <p class="text-yellow-700 font-semibold">تواصل مع: navneet@jeebly.com</p>
+                </div>
+                <button onclick="closeLowBalanceModal()" class="mt-4 bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
+                    حسناً، فهمت
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== Configuration ====================
+        const CONFIG = {
+            // Laravel API base URL (same domain)
+            laravelApiUrl: '/api/jeebly',
+            jeebly: {
+                baseUrl: 'https://demo.jeebly.com',
+                clientKey: '967X250731093419Y4d6f7374616661536862616972',
+                apiKey: 'JjEeEeBbLlYy1200'
+            },
+            webhookUrl: 'https://boulevard.r-y-x.net/api/v1/Courier/UpdateCourierStatus'
+        };
+
+        // ==================== State Management ====================
+        let state = {
+            orders: [],
+            logs: [],
+            stats: {
+                total: 0,
+                successful: 0,
+                failed: 0,
+                totalAmount: 0
+            },
+            walletBalance: null
+        };
+
+        // ==================== Utility Functions ====================
+        function generateOrderId() {
+            return 'ORD-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
+        }
+
+        function formatDate(date = new Date()) {
+            return date.toLocaleString('ar-EG', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMessage');
+
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+
+            icon.textContent = icons[type] || icons.info;
+            msg.textContent = message;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function addLog(message, type = 'info', details = null) {
+            const timestamp = formatDate();
+            const colors = {
+                success: 'text-green-400',
+                error: 'text-red-400',
+                warning: 'text-yellow-400',
+                info: 'text-blue-400'
+            };
+
+            const icons = {
+                success: '✓',
+                error: '✗',
+                warning: '⚠',
+                info: 'ℹ'
+            };
+
+            const log = { timestamp, message, type, details };
+            state.logs.unshift(log);
+
+            const logsContainer = document.getElementById('logsContainer');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${colors[type]} py-1 border-b border-gray-800`;
+            logEntry.dataset.type = type;
+
+            let detailsHtml = '';
+            if (details) {
+                detailsHtml = `<pre class="text-xs text-gray-500 mt-1 mr-6">${JSON.stringify(details, null, 2)}</pre>`;
+            }
+
+            logEntry.innerHTML = `
+                <span class="text-gray-500">[${timestamp}]</span>
+                <span class="font-bold">${icons[type]}</span>
+                <span>${message}</span>
+                ${detailsHtml}
+            `;
+
+            if (logsContainer.firstChild && logsContainer.firstChild.classList && logsContainer.firstChild.classList.contains('text-gray-500')) {
+                logsContainer.innerHTML = '';
+            }
+
+            logsContainer.insertBefore(logEntry, logsContainer.firstChild);
+        }
+
+        function filterLogs(filter) {
+            document.querySelectorAll('.log-filter').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-offset-2', 'ring-purple-500');
+            });
+            event.target.classList.add('ring-2', 'ring-offset-2', 'ring-purple-500');
+
+            document.querySelectorAll('.log-entry').forEach(entry => {
+                if (filter === 'all' || entry.dataset.type === filter) {
+                    entry.style.display = 'block';
+                } else {
+                    entry.style.display = 'none';
+                }
+            });
+        }
+
+        function clearLogs() {
+            state.logs = [];
+            document.getElementById('logsContainer').innerHTML = '<div class="text-gray-500">// سجل العمليات سيظهر هنا...</div>';
+            showToast('تم مسح السجل', 'info');
+        }
+
+        function updateStats() {
+            document.getElementById('totalOrders').textContent = state.stats.total;
+            document.getElementById('successfulOrders').textContent = state.stats.successful;
+            document.getElementById('failedOrders').textContent = state.stats.failed;
+            document.getElementById('totalAmount').textContent = state.stats.totalAmount.toLocaleString();
+        }
+
+        function updateActiveOrders() {
+            const container = document.getElementById('activeOrders');
+            if (state.orders.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 text-sm py-4">لا توجد طلبات نشطة</div>';
+                return;
+            }
+
+            container.innerHTML = state.orders.slice(0, 10).map(order => `
+                <div class="bg-gray-50 rounded-lg p-3 border-r-4 ${getStatusBorderColor(order.status)}">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-semibold text-sm">${order.id}</div>
+                            <div class="text-xs text-gray-500">${order.customerName}</div>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full ${getStatusBadgeColor(order.status)}">
+                            ${order.status}
+                        </span>
+                    </div>
+                    <div class="text-xs text-gray-600 mt-1">${order.value.toLocaleString()} ر.ي</div>
+                </div>
+            `).join('');
+        }
+
+        function getStatusBorderColor(status) {
+            const colors = {
+                'Pending': 'border-yellow-500',
+                'Assigned': 'border-blue-500',
+                'Out for Delivery': 'border-purple-500',
+                'Delivered': 'border-green-500',
+                'Cancelled': 'border-red-500'
+            };
+            return colors[status] || 'border-gray-300';
+        }
+
+        function getStatusBadgeColor(status) {
+            const colors = {
+                'Pending': 'bg-yellow-100 text-yellow-700',
+                'Assigned': 'bg-blue-100 text-blue-700',
+                'Out for Delivery': 'bg-purple-100 text-purple-700',
+                'Delivered': 'bg-green-100 text-green-700',
+                'Cancelled': 'bg-red-100 text-red-700'
+            };
+            return colors[status] || 'bg-gray-100 text-gray-700';
+        }
+
+        // ==================== API Functions ====================
+
+        // Get configuration values from inputs
+        function getConfig() {
+            return {
+                jeebly: {
+                    baseUrl: document.getElementById('jeeblyBaseUrl').value,
+                    clientKey: document.getElementById('jeeblyClientKey').value,
+                    apiKey: document.getElementById('jeeblyApiKey').value
+                }
+            };
+        }
+
+        // Test connection to Jeebly via Laravel API
+        async function testConnection() {
+            const config = getConfig();
+            addLog('جاري اختبار الاتصال بـ Jeebly...', 'info');
+
+            document.getElementById('connectionStatusText').textContent = 'جاري...';
+
+            try {
+                const response = await fetch(CONFIG.laravelApiUrl + '/test-connection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        base_url: config.jeebly.baseUrl,
+                        client_key: config.jeebly.clientKey,
+                        api_key: config.jeebly.apiKey
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('connectionStatusText').textContent = 'متصل ✓';
+                    document.getElementById('connectionStatus').classList.remove('bg-white/20');
+                    document.getElementById('connectionStatus').classList.add('bg-green-500/30');
+                    addLog('تم الاتصال بـ Jeebly بنجاح', 'success', data);
+                    showToast('تم الاتصال بنجاح!', 'success');
+                } else {
+                    document.getElementById('connectionStatusText').textContent = 'فشل';
+                    document.getElementById('connectionStatus').classList.remove('bg-white/20');
+                    document.getElementById('connectionStatus').classList.add('bg-red-500/30');
+                    addLog('فشل الاتصال: ' + (data.message || 'Unknown error'), 'error');
+                    showToast('فشل الاتصال', 'error');
+                }
+            } catch (error) {
+                document.getElementById('connectionStatusText').textContent = 'خطأ';
+                addLog('خطأ في الاتصال: ' + error.message, 'error');
+                showToast('خطأ في الاتصال', 'error');
+            }
+        }
+
+        function showLowBalanceAlert(balance) {
+            const modal = document.getElementById('lowBalanceModal');
+            document.getElementById('modalBalance').textContent = balance.toLocaleString();
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeLowBalanceModal() {
+            const modal = document.getElementById('lowBalanceModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Submit Order to Jeebly via Laravel API (REAL API CALL)
+        async function submitJeeblyOrder(orderData) {
+            const config = getConfig();
+            addLog(`إرسال طلب حقيقي إلى Jeebly: ${orderData.id}`, 'info');
+
+            const requestBody = {
+                // Jeebly config
+                base_url: config.jeebly.baseUrl,
+                client_key: config.jeebly.clientKey,
+                api_key: config.jeebly.apiKey,
+                // Order data
+                order_id: orderData.id,
+                customer_name: orderData.customerName,
+                customer_phone: orderData.customerPhone,
+                customer_address: orderData.customerAddress,
+                order_value: orderData.value,
+                delivery_fee: orderData.deliveryFee,
+                product_description: orderData.productDescription
+            };
+
+            // Show request being sent
+            document.getElementById('jeeblyResponse').innerHTML = `
+                <div class="text-yellow-400 mb-2">// جاري إرسال الطلب...</div>
+                <pre class="text-gray-500">${JSON.stringify(requestBody, null, 2)}</pre>
+            `;
+
+            try {
+                const response = await fetch(CONFIG.laravelApiUrl + '/order/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update response display
+                    document.getElementById('jeeblyResponse').innerHTML = `
+                        <div class="text-green-400 mb-2">// استجابة حقيقية من Jeebly ✓</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+
+                    // Add to orders
+                    state.orders.unshift({
+                        ...orderData,
+                        status: 'Pending',
+                        jeeblyOrderId: data.data?.jeebly_order_id || data.order_id
+                    });
+
+                    state.stats.total++;
+                    state.stats.successful++;
+                    state.stats.totalAmount += orderData.value;
+
+                    updateStats();
+                    updateActiveOrders();
+
+                    addLog(`تم إنشاء الطلب بنجاح: ${orderData.id}`, 'success', data);
+                    showToast('تم إرسال الطلب لـ Jeebly بنجاح!', 'success');
+
+                    return data;
+                } else {
+                    // Handle Jeebly error (like low wallet balance)
+                    document.getElementById('jeeblyResponse').innerHTML = `
+                        <div class="text-red-400 mb-2">// خطأ من Jeebly ✗</div>
+                        <pre class="text-red-300">${JSON.stringify(data, null, 2)}</pre>
+                    `;
+
+                    state.stats.total++;
+                    state.stats.failed++;
+                    updateStats();
+
+                    // Check for wallet balance error
+                    if (data.message && data.message.toLowerCase().includes('wallet')) {
+                        showLowBalanceAlert(0);
+                        addLog('فشل إنشاء الطلب: رصيد المحفظة منخفض', 'error', data);
+                    } else {
+                        addLog(`فشل إنشاء الطلب: ${data.message}`, 'error', data);
+                    }
+                    showToast('فشل إرسال الطلب', 'error');
+
+                    throw new Error(data.message || 'Unknown error');
+                }
+            } catch (error) {
+                if (!document.getElementById('jeeblyResponse').innerHTML.includes('خطأ')) {
+                    document.getElementById('jeeblyResponse').innerHTML = `
+                        <div class="text-red-400 mb-2">// خطأ في الاتصال ✗</div>
+                        <pre class="text-red-300">${JSON.stringify({ error: error.message }, null, 2)}</pre>
+                    `;
+                }
+
+                if (!state.stats.failed) {
+                    state.stats.total++;
+                    state.stats.failed++;
+                    updateStats();
+                }
+
+                addLog(`خطأ في الاتصال: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        // Simulate Webhook Event
+        function simulateWebhook() {
+            const status = document.getElementById('manualStatus').value;
+            const orderId = state.orders.length > 0 ? state.orders[0].id : generateOrderId();
+
+            const webhookData = {
+                order_id: orderId,
+                status: status,
+                timestamp: new Date().toISOString(),
+                courier_name: 'محمد أحمد',
+                notes: getStatusNote(status)
+            };
+
+            addWebhookEvent(webhookData);
+
+            // Update order status if exists
+            const order = state.orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = status === 'Low Wallet Balance' ? 'Pending' : status;
+                updateActiveOrders();
+            }
+
+            // Handle special cases
+            if (status === 'Delivered') {
+                addLog(`تم تسليم الطلب ${orderId} بنجاح`, 'success');
+                showToast('تم تسليم الطلب بنجاح! ✓', 'success');
+            } else if (status === 'Cancelled') {
+                addLog(`تم إلغاء الطلب ${orderId} - سيتم إعادة المنتجات للمخزون`, 'warning');
+                showToast('تم إلغاء الطلب', 'warning');
+            } else if (status === 'Low Wallet Balance') {
+                showLowBalanceAlert(500);
+                addLog(`فشل إنشاء الطلب: رصيد المحفظة غير كافي`, 'error');
+            } else {
+                addLog(`تحديث حالة الطلب ${orderId}: ${status}`, 'info');
+            }
+        }
+
+        function getStatusNote(status) {
+            const notes = {
+                'Assigned': 'تم تعيين مندوب للطلب',
+                'Out for Delivery': 'المندوب في الطريق للعميل',
+                'Delivered': 'تم تسليم الطلب للعميل بنجاح',
+                'Cancelled': 'تم إلغاء الطلب بناءً على طلب العميل',
+                'Low Wallet Balance': 'رصيد المحفظة غير كافي لإنشاء الطلب'
+            };
+            return notes[status] || '';
+        }
+
+        function addWebhookEvent(data) {
+            addWebhookEventToUI(data, new Date().toISOString());
+        }
+
+        function addWebhookEventToUI(data, receivedAt) {
+            const container = document.getElementById('webhookEvents');
+
+            // Remove placeholder if exists
+            if (container.querySelector('.text-gray-400')) {
+                container.innerHTML = '';
+            }
+
+            const statusColors = {
+                'Assigned': 'bg-blue-100 text-blue-700 border-blue-300',
+                'Out for Delivery': 'bg-purple-100 text-purple-700 border-purple-300',
+                'Delivered': 'bg-green-100 text-green-700 border-green-300',
+                'Cancelled': 'bg-red-100 text-red-700 border-red-300',
+                'Low Wallet Balance': 'bg-yellow-100 text-yellow-700 border-yellow-300'
+            };
+
+            const statusIcons = {
+                'Assigned': '📋',
+                'Out for Delivery': '🚚',
+                'Delivered': '✅',
+                'Cancelled': '❌',
+                'Low Wallet Balance': '⚠️'
+            };
+
+            const status = data.status || 'Unknown';
+            const eventDiv = document.createElement('div');
+            eventDiv.className = `p-3 rounded-lg border ${statusColors[status] || 'bg-gray-100 text-gray-700 border-gray-300'} log-entry`;
+            eventDiv.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="font-semibold">${statusIcons[status] || '📦'} ${status}</span>
+                    <span class="text-xs">${formatDate(new Date(receivedAt))}</span>
+                </div>
+                <div class="text-xs mt-1">
+                    <div>الطلب: ${data.order_id || 'N/A'}</div>
+                    ${data.rider_name ? `<div>المندوب: ${data.rider_name}</div>` : ''}
+                    ${data.rider_phone ? `<div>هاتف: ${data.rider_phone}</div>` : ''}
+                </div>
+            `;
+
+            container.insertBefore(eventDiv, container.firstChild);
+        }
+
+        // Bulk Test Function
+        async function runBulkTest() {
+            addLog('بدء الاختبار الجماعي (5 طلبات)...', 'info');
+            showToast('جاري تنفيذ الاختبار الجماعي...', 'info');
+
+            const testOrders = [
+                { customerName: 'أحمد محمد', customerPhone: '967777111111', customerAddress: 'صنعاء، شارع الستين', value: 5000, deliveryFee: 500, productDescription: 'حذاء رياضي' },
+                { customerName: 'سارة علي', customerPhone: '967777222222', customerAddress: 'صنعاء، حدة', value: 3500, deliveryFee: 500, productDescription: 'حقيبة جلدية' },
+                { customerName: 'محمد خالد', customerPhone: '967777333333', customerAddress: 'صنعاء، شارع التحرير', value: 8000, deliveryFee: 700, productDescription: 'ساعة ذكية' },
+                { customerName: 'فاطمة أحمد', customerPhone: '967777444444', customerAddress: 'صنعاء، الزبيري', value: 2500, deliveryFee: 400, productDescription: 'نظارة شمسية' },
+                { customerName: 'عبدالله حسن', customerPhone: '967777555555', customerAddress: 'صنعاء، شارع المطار', value: 12000, deliveryFee: 800, productDescription: 'هاتف ذكي' }
+            ];
+
+            let successCount = 0;
+            let failCount = 0;
+
+            for (let i = 0; i < testOrders.length; i++) {
+                const order = testOrders[i];
+                order.id = generateOrderId();
+
+                try {
+                    await submitJeeblyOrder(order);
+                    successCount++;
+                    await new Promise(resolve => setTimeout(resolve, 500)); // Small delay between requests
+                } catch (error) {
+                    failCount++;
+                }
+            }
+
+            addLog(`اكتمل الاختبار الجماعي: ${successCount} نجاح، ${failCount} فشل`, successCount === 5 ? 'success' : 'warning');
+            showToast(`اكتمل الاختبار: ${successCount}/5 طلبات ناجحة`, successCount === 5 ? 'success' : 'warning');
+        }
+
+        // ==================== Webhook Functions ====================
+
+        // Fetch real webhook events from server
+        async function fetchWebhookEvents() {
+            try {
+                const response = await fetch(CONFIG.laravelApiUrl + '/webhook-events', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.events && data.events.length > 0) {
+                    const container = document.getElementById('webhookEvents');
+                    container.innerHTML = '';
+
+                    data.events.forEach(event => {
+                        addWebhookEventToUI(event.data, event.received_at);
+                    });
+                }
+            } catch (error) {
+                console.log('Could not fetch webhook events:', error.message);
+            }
+        }
+
+        // ==================== Track Order Function ====================
+
+        async function trackOrder() {
+            const orderId = document.getElementById('trackOrderId').value.trim();
+
+            if (!orderId) {
+                showToast('الرجاء إدخال رقم الطلب', 'warning');
+                return;
+            }
+
+            const config = getConfig();
+            addLog(`تتبع الطلب: ${orderId}`, 'info');
+
+            document.getElementById('trackingResult').classList.add('hidden');
+            document.getElementById('trackOrderId').disabled = true;
+
+            try {
+                const response = await fetch(CONFIG.laravelApiUrl + '/order/track', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        base_url: config.jeebly.baseUrl,
+                        client_key: config.jeebly.clientKey,
+                        api_key: config.jeebly.apiKey,
+                        order_id: orderId
+                    })
+                });
+
+                const data = await response.json();
+
+                document.getElementById('trackingResult').classList.remove('hidden');
+
+                const statusColors = {
+                    'Pending': 'bg-yellow-100 text-yellow-700',
+                    'Assigned': 'bg-blue-100 text-blue-700',
+                    'Picked up': 'bg-indigo-100 text-indigo-700',
+                    'Out for Delivery': 'bg-purple-100 text-purple-700',
+                    'Delivered': 'bg-green-100 text-green-700',
+                    'Cancelled': 'bg-red-100 text-red-700',
+                    'Returned': 'bg-gray-100 text-gray-700'
+                };
+
+                if (data.success && data.data) {
+                    const orderData = data.data;
+                    const status = orderData.status || 'غير معروف';
+
+                    document.getElementById('trackingStatus').className =
+                        `px-3 py-1 rounded-full text-sm font-semibold ${statusColors[status] || 'bg-gray-100 text-gray-700'}`;
+                    document.getElementById('trackingStatus').textContent = status;
+
+                    document.getElementById('trackingDetails').innerHTML = `
+                        <div class="grid grid-cols-2 gap-2">
+                            ${orderData.awb ? `<div><strong>AWB:</strong> ${orderData.awb}</div>` : ''}
+                            ${orderData.rider_name ? `<div><strong>المندوب:</strong> ${orderData.rider_name}</div>` : ''}
+                            ${orderData.rider_phone ? `<div><strong>هاتف المندوب:</strong> ${orderData.rider_phone}</div>` : ''}
+                            ${orderData.cod_amount ? `<div><strong>المبلغ:</strong> ${orderData.cod_amount} ر.ي</div>` : ''}
+                            ${orderData.created_at ? `<div><strong>تاريخ الإنشاء:</strong> ${orderData.created_at}</div>` : ''}
+                            ${orderData.updated_at ? `<div><strong>آخر تحديث:</strong> ${orderData.updated_at}</div>` : ''}
+                        </div>
+                        ${orderData.timeline ? `
+                            <div class="mt-3 pt-3 border-t">
+                                <strong>التاريخ:</strong>
+                                <div class="mt-2 space-y-1">
+                                    ${orderData.timeline.map(t => `
+                                        <div class="flex items-center gap-2 text-xs">
+                                            <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
+                                            <span>${t.status}</span>
+                                            <span class="text-gray-400">${t.timestamp || ''}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    `;
+
+                    addLog(`تم تتبع الطلب ${orderId}: ${status}`, 'success', data.data);
+                    showToast(`حالة الطلب: ${status}`, 'success');
+                } else {
+                    document.getElementById('trackingStatus').className =
+                        'px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-700';
+                    document.getElementById('trackingStatus').textContent = 'غير موجود';
+                    document.getElementById('trackingDetails').innerHTML = `
+                        <div class="text-red-600">
+                            ${data.message || 'لم يتم العثور على الطلب'}
+                        </div>
+                        <pre class="text-xs text-gray-500 mt-2">${JSON.stringify(data, null, 2)}</pre>
+                    `;
+
+                    addLog(`فشل تتبع الطلب ${orderId}`, 'error', data);
+                    showToast('لم يتم العثور على الطلب', 'error');
+                }
+            } catch (error) {
+                document.getElementById('trackingResult').classList.remove('hidden');
+                document.getElementById('trackingStatus').className =
+                    'px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-700';
+                document.getElementById('trackingStatus').textContent = 'خطأ';
+                document.getElementById('trackingDetails').innerHTML = `
+                    <div class="text-red-600">${error.message}</div>
+                `;
+                addLog(`خطأ في تتبع الطلب: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('trackOrderId').disabled = false;
+            }
+        }
+
+        function refreshActiveOrders() {
+            // Refresh orders from local state
+            updateActiveOrders();
+            showToast('تم تحديث قائمة الطلبات', 'info');
+        }
+
+        // ==================== Event Listeners ====================
+
+        document.getElementById('orderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const orderData = {
+                id: generateOrderId(),
+                customerName: document.getElementById('customerName').value,
+                customerPhone: document.getElementById('customerPhone').value,
+                customerAddress: document.getElementById('customerAddress').value,
+                value: parseFloat(document.getElementById('orderValue').value),
+                deliveryFee: parseFloat(document.getElementById('deliveryFee').value) || 500,
+                productDescription: document.getElementById('productDescription').value || 'منتج'
+            };
+
+            try {
+                await submitJeeblyOrder(orderData);
+                e.target.reset();
+                document.getElementById('deliveryFee').value = '500';
+            } catch (error) {
+                console.error('Order submission failed:', error);
+            }
+        });
+
+        // Save configuration to localStorage
+        function saveConfig() {
+            const config = getConfig();
+            localStorage.setItem('integrationTestConfig', JSON.stringify(config));
+        }
+
+        function loadConfig() {
+            const saved = localStorage.getItem('integrationTestConfig');
+            if (saved) {
+                try {
+                    const config = JSON.parse(saved);
+                    if (config.jeebly) {
+                        document.getElementById('jeeblyBaseUrl').value = config.jeebly.baseUrl || CONFIG.jeebly.baseUrl;
+                        document.getElementById('jeeblyClientKey').value = config.jeebly.clientKey || CONFIG.jeebly.clientKey;
+                        document.getElementById('jeeblyApiKey').value = config.jeebly.apiKey || CONFIG.jeebly.apiKey;
+                    }
+                } catch (e) {
+                    console.error('Failed to load config:', e);
+                }
+            }
+        }
+
+        // Auto-save configuration on input change
+        document.querySelectorAll('#jeeblyBaseUrl, #jeeblyClientKey, #jeeblyApiKey').forEach(input => {
+            input.addEventListener('change', saveConfig);
+        });
+
+        // ==================== Initialization ====================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadConfig();
+            addLog('تم تهيئة لوحة الاختبار - ربط حقيقي', 'success');
+            addLog('سيتم إرسال الطلبات فعلياً إلى Jeebly API', 'warning');
+
+            // Fetch existing webhook events
+            fetchWebhookEvents();
+
+            // Test connection on load
+            setTimeout(() => {
+                testConnection();
+            }, 1000);
+        });
+
+        // Poll for new webhook events every 10 seconds
+        setInterval(() => {
+            fetchWebhookEvents();
+        }, 10000);
+    </script>
+</body>
+</html>

@@ -999,7 +999,7 @@ textarea.d-none {
 <script src="https://cdn.jsdelivr.net/npm/pica@9.0.1/dist/pica.min.js"></script>
 
 <script>
-// ============ Image Compression System ============
+// ============ Image Compression System with Queue ============
 const ImageCompressor = {
     pendingCompressions: new Set(),
     compressedImages: {
@@ -1008,9 +1008,13 @@ const ImageCompressor = {
         gallery: [],
         colors: {}
     },
+    // Queue system for color images
+    colorQueue: [],
+    isProcessingQueue: false,
+    colorSectionLocked: false,
 
     isCompressing: function() {
-        return this.pendingCompressions.size > 0;
+        return this.pendingCompressions.size > 0 || this.isProcessingQueue;
     },
 
     addPending: function(id) {
@@ -1044,7 +1048,155 @@ const ImageCompressor = {
         }
     },
 
+    // Lock/Unlock individual color card (not the whole section)
+    lockColorCard: function(colorId) {
+        const card = $('[data-color-id="' + colorId + '"]');
+        if (card.hasClass('processing')) return;
+
+        card.addClass('processing');
+        card.css('position', 'relative');
+        card.find('input[type="file"], button').prop('disabled', true);
+    },
+
+    unlockColorCard: function(colorId) {
+        const card = $('[data-color-id="' + colorId + '"]');
+        card.removeClass('processing');
+        card.find('input[type="file"], button').prop('disabled', false);
+    },
+
+    updateQueueStatus: function() {
+        // No longer needed for section-wide status
+    },
+
+    // Add color image to queue
+    addToColorQueue: function(file, colorId, card, previewContainer, filenameDisplay) {
+        // Create a copy of the file to avoid reference issues
+        const fileClone = new File([file], file.name, { type: file.type });
+
+        // Lock this specific card
+        this.lockColorCard(colorId);
+
+        this.colorQueue.push({
+            file: fileClone,
+            colorId: colorId,
+            card: card,
+            previewContainer: previewContainer,
+            filenameDisplay: filenameDisplay
+        });
+
+        // Start processing if not already running
+        if (!this.isProcessingQueue) {
+            this.processColorQueue();
+        }
+    },
+
+    // Process color queue one by one
+    processColorQueue: async function() {
+        if (this.colorQueue.length === 0) {
+            this.isProcessingQueue = false;
+            this.updateSubmitButton();
+            return;
+        }
+
+        this.isProcessingQueue = true;
+
+        // Get next item from queue
+        const item = this.colorQueue.shift();
+
+        try {
+            // Compress the image
+            const result = await this.compressColorImage(item.file, item.colorId);
+            const isArabic = '{{ app()->getLocale() }}' === 'ar';
+
+            if (result.success) {
+                item.previewContainer.html(`
+                    <img src="${result.url}" alt="Preview">
+                    <div class="compression-success-badge">
+                        <i class="fas fa-check-circle"></i> ${result.sizeKB} KB
+                    </div>
+                    <input type="hidden" name="compressed_color_images[${item.colorId}]" value="${result.path}">
+                `);
+                item.filenameDisplay.text(item.file.name + ' (' + result.sizeKB + ' KB)');
+
+                // Store compressed path
+                colorImagesData[item.colorId] = { file: item.file, path: result.path, compressed: true };
+            } else {
+                // Fallback to original preview if compression fails
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    item.previewContainer.html(`
+                        <img src="${e.target.result}" alt="Preview">
+                        <div class="compression-failed-badge">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    `);
+                    item.filenameDisplay.text(item.file.name);
+                };
+                reader.readAsDataURL(item.file);
+
+                // Store original file reference
+                colorImagesData[item.colorId] = { file: item.file, compressed: false };
+            }
+
+            // Unlock this specific card after processing
+            this.unlockColorCard(item.colorId);
+        } catch (error) {
+            console.error('Error processing color image:', error);
+            // Unlock the card even on error
+            this.unlockColorCard(item.colorId);
+        }
+
+        // Process next item in queue
+        await this.processColorQueue();
+    },
+
+    // Compress color image (separate from main compress to handle independently)
+    compressColorImage: async function(file, colorId) {
+        // Validate file before sending
+        if (!file || !(file instanceof File) || file.size === 0) {
+            console.error('Invalid file for color:', colorId);
+            return { success: false, error: 'Invalid file' };
+        }
+
+        const formData = new FormData();
+        formData.append('image', file, file.name);
+        formData.append('type', 'color');
+        formData.append('_token', '{{ csrf_token() }}');
+
+        try {
+            const response = await fetch('/api/admin/compress-image', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Store compressed image path
+                this.compressedImages.colors[colorId] = data.path;
+
+                return {
+                    success: true,
+                    url: data.url,
+                    path: data.path,
+                    sizeKB: data.size_kb
+                };
+            } else {
+                throw new Error(data.error || 'Compression failed');
+            }
+        } catch (error) {
+            console.error('Color compression error:', error);
+            return { success: false, error: error.message };
+        }
+    },
+
     compress: async function(file, type, elementId, colorId = null) {
+        // Validate file before processing
+        if (!file || !(file instanceof File) || file.size === 0) {
+            console.error('Invalid file provided for compression');
+            return { success: false, error: 'No valid image provided' };
+        }
+
         const uniqueId = `${type}_${elementId}_${Date.now()}`;
         this.addPending(uniqueId);
 
@@ -1756,7 +1908,6 @@ function createColorImageCard(color) {
     var arText = '{{ app()->getLocale() }}' === 'ar';
     var uploadText = arText ? 'اختر صورة' : 'Choose Image';
     var removeText = arText ? 'حذف' : 'Remove';
-    var primaryText = arText ? 'صورة رئيسية لهذا اللون' : 'Primary image for this color';
 
     return `
         <div class="color-image-card" data-color-id="${color.id}">
@@ -1780,17 +1931,13 @@ function createColorImageCard(color) {
                         <i class="fas fa-trash-alt"></i> ${removeText}
                     </button>
                     <div class="color-image-filename" id="color_image_filename_${color.id}"></div>
-                    <label class="color-image-primary-label">
-                        <input type="checkbox" name="color_image_primary[${color.id}]" value="1">
-                        ${primaryText}
-                    </label>
                 </div>
             </div>
         </div>
     `;
 }
 
-// Handle color image selection with compression
+// Handle color image selection with compression using queue system
 async function handleColorImageSelect(input, colorId) {
     var file = input.files[0];
     if (!file) return;
@@ -1814,47 +1961,21 @@ async function handleColorImageSelect(input, colorId) {
         return;
     }
 
-    // Show loading state
+    // Show queued/loading state on this specific card
     previewContainer.html(`
         <div class="image-compressing-overlay">
             <div class="compression-spinner"></div>
-            <p class="mb-0">${isArabic ? 'جاري الضغط...' : 'Compressing...'}</p>
+            <p class="mb-0">${isArabic ? 'في قائمة الانتظار...' : 'Queued...'}</p>
         </div>
     `);
     card.addClass('has-image');
 
-    // Compress via AJAX
-    const result = await ImageCompressor.compress(file, 'color', colorId, colorId);
+    // Add to queue instead of processing directly
+    // This ensures sequential processing and proper file handling
+    ImageCompressor.addToColorQueue(file, colorId, card, previewContainer, filenameDisplay);
 
-    if (result.success) {
-        previewContainer.html(`
-            <img src="${result.url}" alt="Preview">
-            <div class="compression-success-badge">
-                <i class="fas fa-check-circle"></i> ${result.sizeKB} KB
-            </div>
-            <input type="hidden" name="compressed_color_images[${colorId}]" value="${result.path}">
-        `);
-        filenameDisplay.text(file.name + ' (' + result.sizeKB + ' KB)');
-
-        // Store compressed path
-        colorImagesData[colorId] = { file: file, path: result.path, compressed: true };
-    } else {
-        // Fallback to original preview if compression fails
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            previewContainer.html(`
-                <img src="${e.target.result}" alt="Preview">
-                <div class="compression-failed-badge">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-            `);
-            filenameDisplay.text(file.name);
-        };
-        reader.readAsDataURL(file);
-
-        // Store original file reference
-        colorImagesData[colorId] = { file: file, compressed: false };
-    }
+    // Clear the input to allow re-selecting the same file
+    input.value = '';
 }
 
 // Remove color image

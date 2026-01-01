@@ -347,3 +347,33 @@ Route::post('/admin/compress-image', function (Request $request) {
         ], 500);
     }
 })->middleware('web');
+
+/*
+|--------------------------------------------------------------------------
+| Jeebly Delivery API Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('jeebly')->group(function () {
+    // Test connection
+    Route::post('/test-connection', [\App\Http\Controllers\Api\JeeblyController::class, 'testConnection']);
+
+    // Create order
+    Route::post('/order/create', [\App\Http\Controllers\Api\JeeblyController::class, 'createOrder']);
+
+    // Cancel order
+    Route::post('/order/cancel', [\App\Http\Controllers\Api\JeeblyController::class, 'cancelOrder']);
+
+    // Track order
+    Route::post('/order/track', [\App\Http\Controllers\Api\JeeblyController::class, 'trackOrder']);
+
+    // Get webhook events (for test dashboard)
+    Route::get('/webhook-events', [\App\Http\Controllers\Api\JeeblyController::class, 'getWebhookEvents']);
+
+    // Clear webhook events
+    Route::post('/webhook-events/clear', [\App\Http\Controllers\Api\JeeblyController::class, 'clearWebhookEvents']);
+});
+
+// Jeebly Webhook endpoint (called by Jeebly to update order status)
+Route::prefix('v1/Courier')->group(function () {
+    Route::post('/UpdateCourierStatus', [\App\Http\Controllers\Api\JeeblyController::class, 'webhookStatusUpdate']);
+});
