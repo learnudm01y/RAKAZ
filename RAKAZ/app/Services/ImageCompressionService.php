@@ -25,6 +25,13 @@ class ImageCompressionService
     protected int $thumbnailMaxWidth = 600;
     protected int $thumbnailMaxHeight = 600;
 
+    // Mobile-optimized settings for phones (max 15KB)
+    protected int $mobileMaxFileSize = 15 * 1024; // 15KB - strict limit for mobile devices
+    protected int $mobileInitialQuality = 65;
+    protected int $mobileMinQuality = 25;
+    protected int $mobileMaxWidth = 480;
+    protected int $mobileMaxHeight = 480;
+
     public function __construct()
     {
         $this->manager = new ImageManager(new Driver());
@@ -163,5 +170,122 @@ class ImageCompressionService
         $this->maxWidth = $width;
         $this->maxHeight = $height;
         return $this;
+    }
+
+    /**
+     * Compress and store a mobile-optimized version of the image (max 15KB)
+     * This creates a smaller version specifically for mobile devices
+     *
+     * @param UploadedFile|string $file The uploaded image file or existing file path
+     * @param string $directory The storage directory (e.g., 'products/mobile')
+     * @return string The stored file path
+     */
+    public function compressAndStoreForMobile(UploadedFile|string $file, string $directory = 'products/mobile'): string
+    {
+        // Read the image from either uploaded file or existing path
+        if ($file instanceof UploadedFile) {
+            $image = $this->manager->read($file->getPathname());
+        } else {
+            // It's a path to an existing file
+            $fullFilePath = storage_path('app/public/' . $file);
+            if (!file_exists($fullFilePath)) {
+                throw new \Exception("Source file not found: {$file}");
+            }
+            $image = $this->manager->read($fullFilePath);
+        }
+
+        // Use mobile settings - very aggressive compression
+        $maxWidth = $this->mobileMaxWidth;
+        $maxHeight = $this->mobileMaxHeight;
+        $maxFileSize = $this->mobileMaxFileSize;
+        $initialQuality = $this->mobileInitialQuality;
+        $minQuality = $this->mobileMinQuality;
+
+        // Resize if larger than max dimensions (maintaining aspect ratio)
+        $width = $image->width();
+        $height = $image->height();
+
+        if ($width > $maxWidth || $height > $maxHeight) {
+            $image->scaleDown($maxWidth, $maxHeight);
+        }
+
+        // Generate unique filename with .webp extension
+        $filename = Str::random(40) . '.webp';
+        $path = $directory . '/' . $filename;
+        $fullPath = storage_path('app/public/' . $path);
+
+        // Ensure directory exists
+        $directoryPath = dirname($fullPath);
+        if (!is_dir($directoryPath)) {
+            mkdir($directoryPath, 0755, true);
+        }
+
+        // Start with initial quality and decrease until file size is acceptable
+        $quality = $initialQuality;
+
+        do {
+            // Encode as WebP - much better compression than JPEG
+            $encoded = $image->toWebp($quality);
+            file_put_contents($fullPath, $encoded);
+
+            $fileSize = filesize($fullPath);
+
+            // If file size is acceptable or we've reached minimum quality, stop
+            if ($fileSize <= $maxFileSize || $quality <= $minQuality) {
+                break;
+            }
+
+            // Decrease quality for next iteration
+            $quality -= $this->qualityStep;
+
+        } while ($quality >= $minQuality);
+
+        // If still too large at minimum quality, resize further
+        if ($fileSize > $maxFileSize && $quality <= $minQuality) {
+            $this->resizeUntilUnderLimit($image, $fullPath, $maxFileSize, $minQuality);
+        }
+
+        return $path;
+    }
+
+    /**
+     * Compress and store multiple gallery images for mobile (max 15KB each)
+     *
+     * @param array $files Array of UploadedFile objects or existing file paths
+     * @param string $directory The storage directory
+     * @return array Array of stored file paths
+     */
+    public function compressAndStoreMultipleForMobile(array $files, string $directory = 'products/mobile/gallery'): array
+    {
+        $paths = [];
+
+        foreach ($files as $file) {
+            if ($file instanceof UploadedFile && $file->isValid()) {
+                $paths[] = $this->compressAndStoreForMobile($file, $directory);
+            } elseif (is_string($file)) {
+                // It's an existing file path
+                $paths[] = $this->compressAndStoreForMobile($file, $directory);
+            }
+        }
+
+        return $paths;
+    }
+
+    /**
+     * Create mobile version from an already stored desktop image path
+     *
+     * @param string $desktopImagePath The path to the desktop image (relative to public storage)
+     * @param string $mobileDirectory The directory to store mobile version
+     * @return string|null The mobile image path or null if source doesn't exist
+     */
+    public function createMobileVersionFromExisting(string $desktopImagePath, string $mobileDirectory = 'products/mobile'): ?string
+    {
+        $fullPath = storage_path('app/public/' . $desktopImagePath);
+
+        if (!file_exists($fullPath)) {
+            return null;
+        }
+
+        return $this->compressAndStoreForMobile($desktopImagePath, $mobileDirectory);
     }
 }

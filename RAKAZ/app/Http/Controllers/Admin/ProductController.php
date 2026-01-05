@@ -163,6 +163,7 @@ class ProductController extends Controller
 
             // Handle main image - check for pre-compressed image first
             $mainImagePath = null;
+            $mobileMainImagePath = null;
             if ($request->filled('compressed_main_image')) {
                 // Move from temp to permanent location
                 $tempPath = $request->input('compressed_main_image');
@@ -171,14 +172,23 @@ class ProductController extends Controller
                     Storage::disk('public')->move($tempPath, $newPath);
                     $mainImagePath = $newPath;
                     Log::info('Main image moved from temp', ['from' => $tempPath, 'to' => $newPath]);
+
+                    // Create mobile version (max 15KB)
+                    $mobileMainImagePath = $this->imageService->createMobileVersionFromExisting($mainImagePath, 'products/mobile');
+                    Log::info('Mobile main image created', ['path' => $mobileMainImagePath]);
                 }
             } elseif ($request->hasFile('main_image')) {
                 $mainImagePath = $this->imageService->compressAndStore($request->file('main_image'), 'products');
                 Log::info('Main image compressed and stored', ['path' => $mainImagePath]);
+
+                // Create mobile version (max 15KB)
+                $mobileMainImagePath = $this->imageService->compressAndStoreForMobile($request->file('main_image'), 'products/mobile');
+                Log::info('Mobile main image created', ['path' => $mobileMainImagePath]);
             }
 
             // Handle hover image - check for pre-compressed image first
             $hoverImagePath = null;
+            $mobileHoverImagePath = null;
             if ($request->filled('compressed_hover_image')) {
                 // Move from temp to permanent location
                 $tempPath = $request->input('compressed_hover_image');
@@ -187,14 +197,23 @@ class ProductController extends Controller
                     Storage::disk('public')->move($tempPath, $newPath);
                     $hoverImagePath = $newPath;
                     Log::info('Hover image moved from temp', ['from' => $tempPath, 'to' => $newPath]);
+
+                    // Create mobile version (max 15KB)
+                    $mobileHoverImagePath = $this->imageService->createMobileVersionFromExisting($hoverImagePath, 'products/mobile');
+                    Log::info('Mobile hover image created', ['path' => $mobileHoverImagePath]);
                 }
             } elseif ($request->hasFile('hover_image')) {
                 $hoverImagePath = $this->imageService->compressAndStore($request->file('hover_image'), 'products');
                 Log::info('Hover image compressed and stored', ['path' => $hoverImagePath]);
+
+                // Create mobile version (max 15KB)
+                $mobileHoverImagePath = $this->imageService->compressAndStoreForMobile($request->file('hover_image'), 'products/mobile');
+                Log::info('Mobile hover image created', ['path' => $mobileHoverImagePath]);
             }
 
             // Handle gallery images - check for pre-compressed images first
             $galleryImages = [];
+            $mobileGalleryImages = [];
             if ($request->filled('compressed_gallery_images')) {
                 $compressedGalleryImages = $request->input('compressed_gallery_images');
                 foreach ($compressedGalleryImages as $tempPath) {
@@ -203,6 +222,13 @@ class ProductController extends Controller
                         Storage::disk('public')->move($tempPath, $newPath);
                         $galleryImages[] = $newPath;
                         Log::info('Gallery image moved from temp', ['from' => $tempPath, 'to' => $newPath]);
+
+                        // Create mobile version (max 15KB)
+                        $mobilePath = $this->imageService->createMobileVersionFromExisting($newPath, 'products/mobile/gallery');
+                        if ($mobilePath) {
+                            $mobileGalleryImages[] = $mobilePath;
+                            Log::info('Mobile gallery image created', ['path' => $mobilePath]);
+                        }
                     }
                 }
             } elseif ($request->hasFile('gallery_images')) {
@@ -216,6 +242,16 @@ class ProductController extends Controller
                 Log::info('Gallery images compressed and stored:', [
                     'count' => count($galleryImages),
                     'paths' => $galleryImages
+                ]);
+
+                // Create mobile versions (max 15KB each)
+                $mobileGalleryImages = $this->imageService->compressAndStoreMultipleForMobile(
+                    $request->file('gallery_images'),
+                    'products/mobile/gallery'
+                );
+                Log::info('Mobile gallery images created:', [
+                    'count' => count($mobileGalleryImages),
+                    'paths' => $mobileGalleryImages
                 ]);
             }
 
@@ -251,8 +287,11 @@ class ProductController extends Controller
                 'stock_status' => $validated['stock_status'],
                 'low_stock_threshold' => $validated['low_stock_threshold'] ?? null,
                 'main_image' => $mainImagePath,
+                'mobile_main_image' => $mobileMainImagePath,
                 'hover_image' => $hoverImagePath,
+                'mobile_hover_image' => $mobileHoverImagePath,
                 'gallery_images' => $galleryImages,
+                'mobile_gallery_images' => $mobileGalleryImages,
                 'brand_id' => $request->brand_id ?? null,
                 'brand' => $validated['brand'] ?? null,
                 'manufacturer' => $validated['manufacturer'] ?? null,
@@ -446,10 +485,14 @@ class ProductController extends Controller
             ]);
 
             // Handle main image - check for pre-compressed image first
+            $mobileMainImagePath = $product->mobile_main_image;
             if ($request->filled('compressed_main_image')) {
-                // Delete old image
+                // Delete old images
                 if ($product->main_image) {
                     Storage::disk('public')->delete($product->main_image);
+                }
+                if ($product->mobile_main_image) {
+                    Storage::disk('public')->delete($product->mobile_main_image);
                 }
                 // Move from temp to permanent location
                 $tempPath = $request->input('compressed_main_image');
@@ -458,25 +501,40 @@ class ProductController extends Controller
                     Storage::disk('public')->move($tempPath, $newPath);
                     $mainImagePath = $newPath;
                     Log::info('Main image moved from temp (update)', ['from' => $tempPath, 'to' => $newPath]);
+
+                    // Create mobile version (max 15KB)
+                    $mobileMainImagePath = $this->imageService->createMobileVersionFromExisting($mainImagePath, 'products/mobile');
+                    Log::info('Mobile main image created (update)', ['path' => $mobileMainImagePath]);
                 } else {
                     $mainImagePath = $product->main_image;
                 }
             } elseif ($request->hasFile('main_image')) {
-                // Delete old image
+                // Delete old images
                 if ($product->main_image) {
                     Storage::disk('public')->delete($product->main_image);
                 }
+                if ($product->mobile_main_image) {
+                    Storage::disk('public')->delete($product->mobile_main_image);
+                }
                 $mainImagePath = $this->imageService->compressAndStore($request->file('main_image'), 'products');
                 Log::info('Main image compressed and stored (update)', ['path' => $mainImagePath]);
+
+                // Create mobile version (max 15KB)
+                $mobileMainImagePath = $this->imageService->compressAndStoreForMobile($request->file('main_image'), 'products/mobile');
+                Log::info('Mobile main image created (update)', ['path' => $mobileMainImagePath]);
             } else {
                 $mainImagePath = $product->main_image;
             }
 
             // Handle hover image - check for pre-compressed image first
+            $mobileHoverImagePath = $product->mobile_hover_image;
             if ($request->filled('compressed_hover_image')) {
-                // Delete old image
+                // Delete old images
                 if ($product->hover_image) {
                     Storage::disk('public')->delete($product->hover_image);
+                }
+                if ($product->mobile_hover_image) {
+                    Storage::disk('public')->delete($product->mobile_hover_image);
                 }
                 // Move from temp to permanent location
                 $tempPath = $request->input('compressed_hover_image');
@@ -485,33 +543,52 @@ class ProductController extends Controller
                     Storage::disk('public')->move($tempPath, $newPath);
                     $hoverImagePath = $newPath;
                     Log::info('Hover image moved from temp (update)', ['from' => $tempPath, 'to' => $newPath]);
+
+                    // Create mobile version (max 15KB)
+                    $mobileHoverImagePath = $this->imageService->createMobileVersionFromExisting($hoverImagePath, 'products/mobile');
+                    Log::info('Mobile hover image created (update)', ['path' => $mobileHoverImagePath]);
                 } else {
                     $hoverImagePath = $product->hover_image;
                 }
             } elseif ($request->hasFile('hover_image')) {
-                // Delete old image
+                // Delete old images
                 if ($product->hover_image) {
                     Storage::disk('public')->delete($product->hover_image);
                 }
+                if ($product->mobile_hover_image) {
+                    Storage::disk('public')->delete($product->mobile_hover_image);
+                }
                 $hoverImagePath = $this->imageService->compressAndStore($request->file('hover_image'), 'products');
                 Log::info('Hover image compressed and stored (update)', ['path' => $hoverImagePath]);
+
+                // Create mobile version (max 15KB)
+                $mobileHoverImagePath = $this->imageService->compressAndStoreForMobile($request->file('hover_image'), 'products/mobile');
+                Log::info('Mobile hover image created (update)', ['path' => $mobileHoverImagePath]);
             } else {
                 $hoverImagePath = $product->hover_image;
             }
 
             // Handle gallery images
             $galleryImages = $product->gallery_images ?? [];
+            $mobileGalleryImages = $product->mobile_gallery_images ?? [];
 
             // Remove deleted images
             if ($request->filled('removed_images')) {
                 $removedImages = explode(',', $request->removed_images);
-                foreach ($removedImages as $removedImage) {
+                foreach ($removedImages as $index => $removedImage) {
                     if (($key = array_search($removedImage, $galleryImages)) !== false) {
                         unset($galleryImages[$key]);
                         Storage::disk('public')->delete($removedImage);
+
+                        // Also remove corresponding mobile image if exists
+                        if (isset($mobileGalleryImages[$key])) {
+                            Storage::disk('public')->delete($mobileGalleryImages[$key]);
+                            unset($mobileGalleryImages[$key]);
+                        }
                     }
                 }
                 $galleryImages = array_values($galleryImages);
+                $mobileGalleryImages = array_values($mobileGalleryImages);
             }
 
             // Add new gallery images - check for pre-compressed images first
@@ -523,6 +600,13 @@ class ProductController extends Controller
                         Storage::disk('public')->move($tempPath, $newPath);
                         $galleryImages[] = $newPath;
                         Log::info('Gallery image moved from temp (update)', ['from' => $tempPath, 'to' => $newPath]);
+
+                        // Create mobile version (max 15KB)
+                        $mobilePath = $this->imageService->createMobileVersionFromExisting($newPath, 'products/mobile/gallery');
+                        if ($mobilePath) {
+                            $mobileGalleryImages[] = $mobilePath;
+                            Log::info('Mobile gallery image created (update)', ['path' => $mobilePath]);
+                        }
                     }
                 }
             } elseif ($request->hasFile('gallery_images')) {
@@ -538,6 +622,17 @@ class ProductController extends Controller
                 Log::info('Gallery images after update:', [
                     'total_count' => count($galleryImages),
                     'paths' => $galleryImages
+                ]);
+
+                // Create mobile versions (max 15KB each)
+                $newMobileGalleryImages = $this->imageService->compressAndStoreMultipleForMobile(
+                    $request->file('gallery_images'),
+                    'products/mobile/gallery'
+                );
+                $mobileGalleryImages = array_merge($mobileGalleryImages, $newMobileGalleryImages);
+                Log::info('Mobile gallery images after update:', [
+                    'total_count' => count($mobileGalleryImages),
+                    'paths' => $mobileGalleryImages
                 ]);
             }
 
@@ -573,8 +668,11 @@ class ProductController extends Controller
                 'stock_status' => $validated['stock_status'],
                 'low_stock_threshold' => $validated['low_stock_threshold'] ?? null,
                 'main_image' => $mainImagePath,
+                'mobile_main_image' => $mobileMainImagePath,
                 'hover_image' => $hoverImagePath,
+                'mobile_hover_image' => $mobileHoverImagePath,
                 'gallery_images' => $galleryImages,
+                'mobile_gallery_images' => $mobileGalleryImages,
                 'brand_id' => $request->brand_id ?? null,
                 'brand' => $validated['brand'] ?? null,
                 'manufacturer' => $validated['manufacturer'] ?? null,
@@ -749,14 +847,32 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        // Delete product image
+        // Delete product main images (desktop and mobile)
         if ($product->main_image) {
             Storage::disk('public')->delete($product->main_image);
         }
+        if ($product->mobile_main_image) {
+            Storage::disk('public')->delete($product->mobile_main_image);
+        }
 
-        // Delete gallery images if any
+        // Delete hover images (desktop and mobile)
+        if ($product->hover_image) {
+            Storage::disk('public')->delete($product->hover_image);
+        }
+        if ($product->mobile_hover_image) {
+            Storage::disk('public')->delete($product->mobile_hover_image);
+        }
+
+        // Delete gallery images if any (desktop)
         if ($product->gallery_images) {
             foreach ($product->gallery_images as $image) {
+                Storage::disk('public')->delete($image);
+            }
+        }
+
+        // Delete mobile gallery images if any
+        if ($product->mobile_gallery_images) {
+            foreach ($product->mobile_gallery_images as $image) {
                 Storage::disk('public')->delete($image);
             }
         }

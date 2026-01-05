@@ -1,8 +1,17 @@
 @forelse($products as $product)
+@php
+    // Detect if user is on mobile device
+    $isMobile = request()->header('User-Agent') && (stripos(request()->header('User-Agent'), 'mobile') !== false || stripos(request()->header('User-Agent'), 'tablet') !== false || stripos(request()->header('User-Agent'), 'android') !== false || stripos(request()->header('User-Agent'), 'iphone') !== false || stripos(request()->header('User-Agent'), 'ipad') !== false);
+
+    // Use mobile images if available and on mobile device, otherwise use desktop images
+    $mainImage = $isMobile && $product->mobile_main_image
+        ? asset('storage/' . $product->mobile_main_image)
+        : ($product->main_image ? asset('storage/' . $product->main_image) : asset('assets/images/placeholder.jpg'));
+@endphp
 <div class="product-card" data-product-url="{{ route('product.details', $product->getSlug()) }}" style="cursor: pointer;">
     <div class="product-image-wrapper" style="position: relative;">
         <a href="{{ route('product.details', $product->getSlug()) }}" style="display: block;" class="product-main-link" data-product-id="{{ $product->id }}">
-            <img src="{{ $product->main_image ? asset('storage/' . $product->main_image) : asset('assets/images/placeholder.jpg') }}"
+            <img src="{{ $mainImage }}"
                 alt="{{ $product->getName() }}" class="product-image-primary">
             <!-- Secondary image will be loaded on hover via AJAX -->
         </a>
@@ -31,9 +40,6 @@
         @endif
 
         <!-- Hover Content: Colors, Gallery, Sizes - Hidden on Mobile/Tablet -->
-        @php
-            $isMobile = request()->header('User-Agent') && (stripos(request()->header('User-Agent'), 'mobile') !== false || stripos(request()->header('User-Agent'), 'tablet') !== false || stripos(request()->header('User-Agent'), 'android') !== false || stripos(request()->header('User-Agent'), 'iphone') !== false || stripos(request()->header('User-Agent'), 'ipad') !== false);
-        @endphp
         @if(!$isMobile)
         @include('frontend.partials.product-hover-skeleton', ['product' => $product])
         @endif
