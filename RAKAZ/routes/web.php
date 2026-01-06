@@ -7,6 +7,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\MyFatoorahController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\AboutPageController;
 use App\Http\Controllers\Admin\PrivacyPolicyController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\Admin\FeaturedSectionController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\CustomerManagementController;
 use App\Http\Controllers\Admin\AdministratorController;
+use App\Http\Controllers\Admin\FooterController;
 
 /*
 |--------------------------------------------------------------------------
@@ -81,6 +83,10 @@ Route::get('/api/cart/count', [CartController::class, 'apiCount'])->name('cart.a
 // Checkout Routes
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
 Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
+
+// MyFatoorah Payment Routes
+Route::post('/checkout/pay', [MyFatoorahController::class, 'pay'])->name('myfatoorah.pay');
+Route::get('/payment/callback', [MyFatoorahController::class, 'callback'])->name('myfatoorah.callback');
 
 // Order Routes (Frontend)
 Route::get('/orders', [FrontendController::class, 'orders'])->name('orders.index')->middleware(['auth', \App\Http\Middleware\SaveIntendedUrl::class]);
@@ -252,6 +258,36 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     // 🛡️ Administrator Management - إدارة المسؤولين
     Route::resource('administrators', AdministratorController::class);
     Route::post('administrators/{id}/toggle-verification', [AdministratorController::class, 'toggleVerification'])->name('administrators.toggle-verification');
+
+    // ⚙️ General Settings - الإعدادات العامة
+    Route::get('settings/general', [\App\Http\Controllers\Admin\GeneralSettingsController::class, 'index'])->name('settings.general');
+    Route::post('settings/general', [\App\Http\Controllers\Admin\GeneralSettingsController::class, 'update'])->name('settings.general.update');
+
+    // 📋 Footer Management - إدارة الفوتر
+    Route::get('footer', [FooterController::class, 'index'])->name('footer.index');
+
+    // Footer Sections
+    Route::post('footer/sections', [FooterController::class, 'storeSection'])->name('footer.sections.store');
+    Route::put('footer/sections/{id}', [FooterController::class, 'updateSection'])->name('footer.sections.update');
+    Route::delete('footer/sections/{id}', [FooterController::class, 'destroySection'])->name('footer.sections.destroy');
+    Route::post('footer/sections/{id}/toggle', [FooterController::class, 'toggleSection'])->name('footer.sections.toggle');
+    Route::post('footer/sections/reorder', [FooterController::class, 'reorderSections'])->name('footer.sections.reorder');
+
+    // Footer Items
+    Route::post('footer/items', [FooterController::class, 'storeItem'])->name('footer.items.store');
+    Route::put('footer/items/{id}', [FooterController::class, 'updateItem'])->name('footer.items.update');
+    Route::delete('footer/items/{id}', [FooterController::class, 'destroyItem'])->name('footer.items.destroy');
+    Route::post('footer/items/{id}/toggle', [FooterController::class, 'toggleItem'])->name('footer.items.toggle');
+    Route::post('footer/items/reorder', [FooterController::class, 'reorderItems'])->name('footer.items.reorder');
+
+    // Footer Social Links
+    Route::post('footer/social-links', [FooterController::class, 'storeSocialLink'])->name('footer.social-links.store');
+    Route::put('footer/social-links/{id}', [FooterController::class, 'updateSocialLink'])->name('footer.social-links.update');
+    Route::delete('footer/social-links/{id}', [FooterController::class, 'destroySocialLink'])->name('footer.social-links.destroy');
+    Route::post('footer/social-links/{id}/toggle', [FooterController::class, 'toggleSocialLink'])->name('footer.social-links.toggle');
+
+    // Footer Settings
+    Route::post('footer/settings', [FooterController::class, 'updateSettings'])->name('footer.settings.update');
 });
 
 require __DIR__.'/auth.php';

@@ -244,6 +244,12 @@
             font-size: 14px;
         }
 
+        .payment-desc {
+            font-size: 11px;
+            color: #888;
+            margin-top: 5px;
+        }
+
         .order-summary {
             background: white;
             padding: 30px;
@@ -534,12 +540,18 @@
                         <h2 class="form-section-title">{{ app()->getLocale() == 'ar' ? 'طريقة الدفع' : 'Payment Method' }}</h2>
                         <div class="payment-methods">
                             <label class="payment-option selected">
-                                <input type="radio" name="payment_method" value="cash" checked>
+                                <input type="radio" name="payment_method" value="myfatoorah" checked>
+                                <div class="payment-icon">💳</div>
+                                <div class="payment-name">{{ app()->getLocale() == 'ar' ? 'الدفع الإلكتروني' : 'Online Payment' }}</div>
+                                <div class="payment-desc">{{ app()->getLocale() == 'ar' ? 'بطاقة ائتمان / Apple Pay / Google Pay' : 'Credit Card / Apple Pay / Google Pay' }}</div>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="payment_method" value="cash">
                                 <div class="payment-icon">💵</div>
                                 <div class="payment-name">{{ app()->getLocale() == 'ar' ? 'الدفع عند الاستلام' : 'Cash on Delivery' }}</div>
+                                <div class="payment-desc">{{ app()->getLocale() == 'ar' ? 'ادفع نقداً عند التسليم' : 'Pay cash when delivered' }}</div>
                             </label>
                         </div>
-                        <p style="margin-top: 15px; font-size: 13px; color: #666;">{{ app()->getLocale() == 'ar' ? 'حالياً متاح فقط الدفع عند الاستلام. طرق دفع إضافية قريباً.' : 'Currently only cash on delivery is available. More payment methods coming soon.' }}</p>
                     </div>
 
                     <!-- Additional Notes -->
@@ -587,7 +599,7 @@
                         <span id="shippingDisplay">{{ app()->getLocale() == 'ar' ? 'مجاني' : 'Free' }}</span>
                     </div>
                     <div class="summary-row">
-                        <span>{{ app()->getLocale() == 'ar' ? 'الضريبة (5%)' : 'Tax (5%)' }}</span>
+                        <span>{{ app()->getLocale() == 'ar' ? 'الضريبة (' . $taxPercentage . '%)' : 'Tax (' . $taxPercentage . '%)' }}</span>
                         <span id="taxDisplay">{{ number_format($tax, 2) }} {{ app()->getLocale() == 'ar' ? 'د.إ' : 'AED' }}</span>
                     </div>
                     <div class="summary-total">
@@ -614,7 +626,8 @@
 
     <script>
         const subtotal = {{ $cartTotal }};
-        const taxRate = 0.05;
+        const taxRate = {{ $taxPercentage / 100 }};
+        const taxPercentage = {{ $taxPercentage }};
         let shippingCost = 0;
         const isArabic = '{{ app()->getLocale() }}' === 'ar';
         const currency = isArabic ? 'د.إ' : 'AED';
@@ -651,8 +664,23 @@
                     opt.classList.remove('selected');
                 });
                 this.classList.add('selected');
+
+                // Update form action based on payment method
+                updateFormAction();
             });
         });
+
+        // Update form action based on selected payment method
+        function updateFormAction() {
+            const form = document.getElementById('checkoutForm');
+            const selectedPayment = document.querySelector('input[name="payment_method"]:checked').value;
+
+            if (selectedPayment === 'myfatoorah') {
+                form.action = '{{ route('myfatoorah.pay') }}';
+            } else {
+                form.action = '{{ route('checkout.process') }}';
+            }
+        }
 
         // Form validation and submission
         document.getElementById('checkoutForm').addEventListener('submit', function(e) {
@@ -665,15 +693,36 @@
                 return;
             }
 
+            // Get selected payment method
+            const selectedPayment = document.querySelector('input[name="payment_method"]:checked').value;
+            const isOnlinePayment = selectedPayment === 'myfatoorah';
+
+            // Build confirmation message based on payment method
+            let confirmTitle, confirmHtml, confirmButton, loadingTitle;
+
+            if (isOnlinePayment) {
+                confirmTitle = isArabic ? 'تأكيد الدفع الإلكتروني' : 'Confirm Online Payment';
+                confirmHtml = isArabic
+                    ? 'سيتم توجيهك إلى بوابة الدفع الآمنة لإتمام عملية الشراء.<br><small>المجموع الكلي: ' + document.getElementById('totalDisplay').textContent + '</small>'
+                    : 'You will be redirected to the secure payment gateway to complete your purchase.<br><small>Total: ' + document.getElementById('totalDisplay').textContent + '</small>';
+                confirmButton = isArabic ? 'متابعة للدفع' : 'Proceed to Payment';
+                loadingTitle = isArabic ? 'جاري التوجيه لبوابة الدفع...' : 'Redirecting to payment gateway...';
+            } else {
+                confirmTitle = isArabic ? 'تأكيد الطلب' : 'Confirm Order';
+                confirmHtml = isArabic
+                    ? 'هل أنت متأكد من رغبتك في إتمام الطلب؟<br><small>المجموع الكلي: ' + document.getElementById('totalDisplay').textContent + '</small>'
+                    : 'Are you sure you want to place this order?<br><small>Total: ' + document.getElementById('totalDisplay').textContent + '</small>';
+                confirmButton = isArabic ? 'نعم، أكمل الطلب' : 'Yes, Place Order';
+                loadingTitle = isArabic ? 'جاري معالجة الطلب...' : 'Processing your order...';
+            }
+
             // Show confirmation dialog
             Swal.fire({
-                title: isArabic ? 'تأكيد الطلب' : 'Confirm Order',
-                html: isArabic
-                    ? 'هل أنت متأكد من رغبتك في إتمام الطلب؟<br><small>المجموع الكلي: ' + document.getElementById('totalDisplay').textContent + '</small>'
-                    : 'Are you sure you want to place this order?<br><small>Total: ' + document.getElementById('totalDisplay').textContent + '</small>',
-                icon: 'question',
+                title: confirmTitle,
+                html: confirmHtml,
+                icon: isOnlinePayment ? 'info' : 'question',
                 showCancelButton: true,
-                confirmButtonText: isArabic ? 'نعم، أكمل الطلب' : 'Yes, Place Order',
+                confirmButtonText: confirmButton,
                 cancelButtonText: isArabic ? 'المراجعة' : 'Review',
                 confirmButtonColor: '#000',
                 cancelButtonColor: '#666',
@@ -682,7 +731,7 @@
                 if (result.isConfirmed) {
                     // Show loading
                     Swal.fire({
-                        title: isArabic ? 'جاري معالجة الطلب...' : 'Processing your order...',
+                        title: loadingTitle,
                         allowOutsideClick: false,
                         allowEscapeKey: false,
                         didOpen: () => {
@@ -698,6 +747,9 @@
 
         // Initialize totals
         updateTotals();
+
+        // Initialize form action based on default payment method
+        updateFormAction();
     </script>
 
 @endpush

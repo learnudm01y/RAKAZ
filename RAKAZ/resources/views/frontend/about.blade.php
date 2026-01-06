@@ -163,11 +163,11 @@
         <!-- CTA Section -->
         <section class="about-cta">
             <div class="cta-content">
-                <h2>ابدأ تجربة التسوق الآن</h2>
-                <p>اكتشف مجموعتنا الواسعة من الكنادر والأزياء الإماراتية الفاخرة</p>
+                <h2>{{ app()->getLocale() == 'ar' ? 'ابدأ تجربة التسوق الآن' : 'Start Your Shopping Experience Now' }}</h2>
+                <p>{{ app()->getLocale() == 'ar' ? 'اكتشف مجموعتنا الواسعة من الكنادر والأزياء الإماراتية الفاخرة' : 'Discover our wide collection of Emirati kanduras and luxury fashion' }}</p>
                 <div class="cta-buttons">
-                    <a href="shop.html" class="btn-primary">تصفح المنتجات</a>
-                    <a href="contact.html" class="btn-secondary">اتصل بنا</a>
+                    <a href="{{ route('shop') }}" class="btn-primary">{{ app()->getLocale() == 'ar' ? 'تصفح المنتجات' : 'Browse Products' }}</a>
+                    <a href="{{ route('contact') }}" class="btn-secondary">{{ app()->getLocale() == 'ar' ? 'اتصل بنا' : 'Contact Us' }}</a>
                 </div>
             </div>
         </section>

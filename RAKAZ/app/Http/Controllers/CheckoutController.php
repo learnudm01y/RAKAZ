@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Http\Controllers\Admin\GeneralSettingsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -35,10 +36,12 @@ class CheckoutController extends Controller
 
         $cartTotal = Cart::getCartTotal($identifier['user_id'], $identifier['session_id']);
         $shippingCost = 0; // Free shipping or calculate based on rules
-        $tax = 0; // Calculate if needed
+        $taxRate = GeneralSettingsController::getTaxRate();
+        $taxPercentage = GeneralSettingsController::getTaxRatePercentage();
+        $tax = $cartTotal * $taxRate;
         $total = $cartTotal + $shippingCost + $tax;
 
-        return view('frontend.checkout', compact('cartItems', 'cartTotal', 'shippingCost', 'tax', 'total'));
+        return view('frontend.checkout', compact('cartItems', 'cartTotal', 'shippingCost', 'tax', 'total', 'taxPercentage'));
     }
 
     public function process(Request $request)
@@ -64,7 +67,23 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', app()->getLocale() == 'ar' ? 'السلة فارغة' : 'Cart is empty');
         }
 
-        $cartTotal = Cart::getCartTotal($identifier['user_id'], $identifier['session_id']);
+        // SECURITY: Recalculate cart total from product prices in database (not from cart table)
+        // This prevents price manipulation by hackers
+        $cartTotal = 0;
+        foreach ($cartItems as $cartItem) {
+            $product = $cartItem->product;
+            // Get fresh price from product
+            $productPrice = $product->sale_price && $product->sale_price < $product->price
+                ? $product->sale_price
+                : $product->price;
+            $cartTotal += $productPrice * $cartItem->quantity;
+
+            // Update cart item price if different (for display consistency)
+            if ($cartItem->price != $productPrice) {
+                $cartItem->price = $productPrice;
+                $cartItem->save();
+            }
+        }
 
         // Calculate shipping cost based on method
         $shippingCost = 0;
@@ -79,8 +98,9 @@ class CheckoutController extends Controller
                 $shippingCost = 0;
         }
 
-        // Calculate tax (5% VAT)
-        $tax = ($cartTotal + $shippingCost) * 0.05;
+        // Calculate tax from settings
+        $taxRate = GeneralSettingsController::getTaxRate();
+        $tax = ($cartTotal + $shippingCost) * $taxRate;
         $total = $cartTotal + $shippingCost + $tax;
 
         DB::beginTransaction();
@@ -134,24 +154,31 @@ class CheckoutController extends Controller
                 'notes' => $request->notes,
             ]);
 
-            // Create order items
+            // Create order items with VERIFIED prices from products
             foreach ($cartItems as $cartItem) {
+                $product = $cartItem->product;
+
+                // SECURITY: Get fresh price from product, not from cart
+                $verifiedPrice = $product->sale_price && $product->sale_price < $product->price
+                    ? $product->sale_price
+                    : $product->price;
+                $verifiedSubtotal = $verifiedPrice * $cartItem->quantity;
+
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $cartItem->product_id,
-                    'product_name' => $cartItem->product->getName(),
-                    'product_sku' => $cartItem->product->sku,
-                    'product_image' => $cartItem->product->main_image,
+                    'product_name' => $product->getName(),
+                    'product_sku' => $product->sku,
+                    'product_image' => $product->main_image,
                     'size' => $cartItem->size,
                     'shoe_size' => $cartItem->shoe_size,
                     'color' => $cartItem->color,
                     'quantity' => $cartItem->quantity,
-                    'price' => $cartItem->price,
-                    'subtotal' => $cartItem->subtotal,
+                    'price' => $verifiedPrice,
+                    'subtotal' => $verifiedSubtotal,
                 ]);
 
                 // Decrease stock quantity for the product
-                $product = $cartItem->product;
                 $product->decreaseStock($cartItem->quantity);
 
                 // Increment sales count

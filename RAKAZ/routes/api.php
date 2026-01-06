@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\LazyLoadController;
 use App\Http\Controllers\FrontendController;
+use App\Http\Controllers\MyFatoorahController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -17,6 +18,9 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+// MyFatoorah Webhook (server-to-server notification)
+Route::post('/myfatoorah/webhook', [MyFatoorahController::class, 'webhook'])->name('myfatoorah.webhook');
 
 // Search Suggestions API for Mobile
 Route::get('/search-suggestions', function (Request $request) {

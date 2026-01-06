@@ -682,12 +682,12 @@
                     <span>{{ $isAr ? 'مجاني' : 'Free' }}</span>
                 </div>
                 <div class="summary-row">
-                    <span>{{ $isAr ? 'الضريبة (5%)' : 'Tax (5%)' }}</span>
-                    <span id="tax">{{ number_format($cartTotal * 0.05, 2) }} {{ $currencyLabel }}</span>
+                    <span>{{ $isAr ? 'الضريبة (' . $taxPercentage . '%)' : 'Tax (' . $taxPercentage . '%)' }}</span>
+                    <span id="tax">{{ number_format($cartTotal * $taxRate, 2) }} {{ $currencyLabel }}</span>
                 </div>
                 <div class="summary-total">
                     <span>{{ $isAr ? 'المجموع الكلي' : 'Total' }}</span>
-                    <span id="total">{{ number_format($cartTotal * 1.05, 2) }} {{ $currencyLabel }}</span>
+                    <span id="total">{{ number_format($cartTotal * (1 + $taxRate), 2) }} {{ $currencyLabel }}</span>
                 </div>
                 <button class="checkout-btn" onclick="window.location.href='{{ route('checkout.index') }}'">{{ $isAr ? 'إتمام الطلب' : 'Checkout' }}</button>
                 <a href="{{ route('home') }}" class="continue-shopping">{{ $isAr ? 'متابعة التسوق' : 'Continue shopping' }}</a>

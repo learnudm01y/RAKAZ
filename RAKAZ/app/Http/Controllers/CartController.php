@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use App\Models\Product;
+use App\Http\Controllers\Admin\GeneralSettingsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
@@ -27,8 +28,10 @@ class CartController extends Controller
         $identifier = $this->getIdentifier();
         $cartItems = Cart::getCartItems($identifier['user_id'], $identifier['session_id']);
         $cartTotal = Cart::getCartTotal($identifier['user_id'], $identifier['session_id']);
+        $taxPercentage = GeneralSettingsController::getTaxRatePercentage();
+        $taxRate = GeneralSettingsController::getTaxRate();
 
-        return view('frontend.cart', compact('cartItems', 'cartTotal'));
+        return view('frontend.cart', compact('cartItems', 'cartTotal', 'taxPercentage', 'taxRate'));
     }
 
     public function add(Request $request)

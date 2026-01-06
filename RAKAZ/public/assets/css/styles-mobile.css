@@ -1301,11 +1301,11 @@
     }
 
     .social-icons {
-        gap: 15px;
+        gap: 12px;
     }
 
     .footer-content {
-        padding: 0 20px 20px;
+        padding: 0 20px 15px;
         display: block !important;
     }
 
@@ -1315,10 +1315,31 @@
         margin: 0;
     }
 
-    .footer-title {
+    .footer-apps-column {
+        border-bottom: none !important;
+        padding-top: 12px !important;
+    }
+
+    .footer-apps-column .apps-title {
         font-size: 13px !important;
+        font-weight: 600 !important;
+        color: #ffffff !important;
+        margin-bottom: 10px !important;
+    }
+
+    .footer-apps-column .app-badges {
+        flex-direction: row !important;
+        gap: 8px !important;
+    }
+
+    .footer-apps-column .app-badge-small img {
+        height: 32px !important;
+    }
+
+    .footer-title {
+        font-size: 12px !important;
         margin: 0 !important;
-        padding: 18px 0;
+        padding: 15px 0;
         cursor: pointer;
         position: relative;
         display: flex;
@@ -1352,36 +1373,36 @@
 
     .footer-column.active .footer-links {
         max-height: 500px;
-        padding: 10px 0 20px 0;
+        padding: 8px 0 15px 0;
     }
 
     .footer-links li {
-        padding: 8px 0;
+        padding: 6px 0;
     }
 
     .footer-links a {
-        font-size: 13px !important;
+        font-size: 12px !important;
         color: #cccccc;
         text-decoration: none;
         display: block;
     }
 
     .footer-bottom {
-        padding: 25px 20px;
+        padding: 15px 20px;
         flex-direction: column;
-        gap: 20px;
+        gap: 15px;
         align-items: flex-start;
     }
 
     .footer-links-inline {
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
     }
 
     .footer-info {
-        padding: 25px 20px;
+        padding: 15px 20px;
         flex-direction: column;
-        gap: 20px;
+        gap: 15px;
         text-align: center;
     }
 
@@ -1391,7 +1412,7 @@
 
     .footer-copyright {
         flex-direction: column;
-        gap: 15px;
+        gap: 12px;
         font-size: 11px;
     }
 }
@@ -1721,21 +1742,21 @@
     }
 
     .footer-content {
-        padding: 25px 15px;
+        padding: 15px 15px;
         grid-template-columns: 1fr;
-        gap: 25px;
+        gap: 0;
     }
 
     .footer-bottom {
-        padding: 20px 15px;
+        padding: 15px 15px;
     }
 
     .footer-info {
-        padding: 20px 15px;
+        padding: 15px 15px;
     }
 
     .app-badge-small img {
-        height: 30px;
+        height: 28px;
     }
 
     .tayer-logo {

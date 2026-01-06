@@ -34,6 +34,8 @@ class Order extends Model
         'total',
         'payment_method',
         'payment_status',
+        'payment_reference',
+        'paid_at',
         'status',
         'notes',
         'confirmed_at',
@@ -50,6 +52,7 @@ class Order extends Model
         'confirmed_at' => 'datetime',
         'shipped_at' => 'datetime',
         'delivered_at' => 'datetime',
+        'paid_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

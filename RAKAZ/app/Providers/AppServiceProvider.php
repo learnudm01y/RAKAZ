@@ -23,6 +23,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Set SSL certificate path for cURL (fixes SSL issues on Windows/Laragon)
+        $cacertPath = 'C:\laragon\bin\php\php-8.3.26-Win32-vs16-x64\extras\ssl\cacert.pem';
+        if (file_exists($cacertPath)) {
+            ini_set('curl.cainfo', $cacertPath);
+            ini_set('openssl.cafile', $cacertPath);
+        }
+
         View::composer('layouts.app', MenuComposer::class);
 
         // Register Order Observer
