@@ -1,0 +1,357 @@
+/* ========================================
+   Capacitor App Specific Styles
+   هذه الأنماط تطبق فقط عند تشغيل التطبيق من داخل Capacitor
+   ======================================== */
+
+/* متغيرات CSS للمسافات الآمنة */
+:root {
+    --capacitor-safe-area-top: 45px;
+    --capacitor-safe-area-bottom: 70px;
+    --capacitor-bottom-nav-height: 60px;
+}
+
+/* ========================================
+   1. إخفاء Header الأصلي وعرض Header Capacitor
+   ======================================== */
+body.capacitor-app .main-header {
+    display: none !important;
+}
+
+body.capacitor-app .capacitor-header {
+    display: flex !important;
+}
+
+/* ========================================
+   2. Header الجديد لـ Capacitor
+   ======================================== */
+.capacitor-header {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100% !important;
+    z-index: 9990;
+    background: #ffffff;
+    padding-top: var(--capacitor-safe-area-top);
+    box-sizing: border-box;
+}
+
+.capacitor-header-inner {
+    display: block;
+    padding: 10px 12px 14px 12px;
+    width: 100% !important;
+    box-sizing: border-box;
+    margin: 0;
+}
+
+/* حقل البحث الرئيسي - يملأ العرض بالكامل */
+.capacitor-search-box {
+    display: flex !important;
+    align-items: center;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #f8f9fa;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.capacitor-search-box:active {
+    border-color: #ccc;
+    background: #f0f0f0;
+}
+
+/* أيقونة البحث على اليمين (RTL) أو اليسار (LTR) */
+.capacitor-search-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 16px;
+    flex-shrink: 0;
+}
+
+.capacitor-search-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: #666;
+    stroke-width: 2;
+}
+
+/* النص في المنتصف */
+.capacitor-search-text {
+    flex: 1;
+    padding: 14px 0;
+    font-size: 15px;
+    font-weight: 400;
+    color: #888;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body[dir="rtl"] .capacitor-search-text {
+    text-align: right;
+    padding-right: 4px;
+}
+
+body[dir="ltr"] .capacitor-search-text {
+    text-align: left;
+    padding-left: 4px;
+}
+
+/* الفاصل العمودي */
+.capacitor-search-divider {
+    width: 1px;
+    height: 28px;
+    background: #ddd;
+    flex-shrink: 0;
+}
+
+/* أيقونة المفضلة داخل حقل البحث */
+.capacitor-search-wishlist {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 16px;
+    flex-shrink: 0;
+    text-decoration: none;
+    color: #1a1a1a;
+    position: relative;
+}
+
+.capacitor-search-wishlist svg {
+    width: 24px;
+    height: 24px;
+    stroke: #1a1a1a;
+    stroke-width: 1.8;
+    fill: none;
+}
+
+/* Badge للمفضلة */
+.capacitor-search-wishlist .wishlist-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    min-width: 16px;
+    height: 16px;
+    background: #e53935;
+    color: white;
+    font-size: 9px;
+    font-weight: 600;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+}
+
+body[dir="ltr"] .capacitor-search-wishlist .wishlist-badge {
+    right: auto;
+    left: 8px;
+}
+
+.capacitor-search-wishlist .wishlist-badge:empty,
+.capacitor-search-wishlist .wishlist-badge[data-count="0"] {
+    display: none;
+}
+
+/* ========================================
+   3. شريط التنقل السفلي
+   ======================================== */
+.capacitor-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9990;
+    background: #ffffff;
+    border-top: 1px solid #eee;
+    padding-bottom: calc(var(--capacitor-safe-area-bottom) + env(safe-area-inset-bottom, 10px));
+}
+
+body.capacitor-app .capacitor-bottom-nav {
+    display: block !important;
+}
+
+.capacitor-bottom-nav-inner {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: var(--capacitor-bottom-nav-height);
+    padding: 8px 10px 12px 10px;
+}
+
+.capacitor-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 100%;
+    text-decoration: none;
+    color: #666;
+    transition: color 0.2s ease;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    gap: 4px;
+    position: relative;
+}
+
+.capacitor-nav-item:active {
+    color: #1a1a1a;
+}
+
+.capacitor-nav-item.active {
+    color: #1a1a1a;
+}
+
+.capacitor-nav-item svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 1.8;
+    transition: transform 0.2s ease;
+}
+
+.capacitor-nav-item:active svg {
+    transform: scale(0.9);
+}
+
+.capacitor-nav-item span {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Badge للحقيبة */
+.capacitor-nav-item .nav-badge {
+    position: absolute;
+    top: 4px;
+    right: 50%;
+    transform: translateX(12px);
+    min-width: 16px;
+    height: 16px;
+    background: #e53935;
+    color: white;
+    font-size: 9px;
+    font-weight: 600;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+}
+
+.capacitor-nav-item .nav-badge:empty,
+.capacitor-nav-item .nav-badge[data-count="0"] {
+    display: none;
+}
+
+/* ========================================
+   4. إصلاح Sidebars - إضافة padding علوي
+   ======================================== */
+
+/* Mobile Sidebar Header */
+body.capacitor-app .mobile-sidebar-header {
+    padding-top: calc(var(--capacitor-safe-area-top) + 15px) !important;
+}
+
+/* Cart Sidebar */
+body.capacitor-app .cart-sidebar-content {
+    padding-top: var(--capacitor-safe-area-top) !important;
+}
+
+body.capacitor-app .cart-sidebar-header {
+    padding-top: 15px !important;
+}
+
+/* Mobile Search Overlay */
+body.capacitor-app .mobile-search-overlay .mobile-search-header {
+    padding-top: calc(var(--capacitor-safe-area-top) + 15px) !important;
+}
+
+/* ========================================
+   5. إصلاح زر تسجيل الخروج في Mobile Menu
+   ======================================== */
+body.capacitor-app .mobile-sidebar {
+    padding-bottom: calc(var(--capacitor-safe-area-bottom) + 20px) !important;
+}
+
+body.capacitor-app .mobile-settings {
+    margin-bottom: 30px !important;
+}
+
+/* ========================================
+   6. إضافة مساحة للمحتوى
+   ======================================== */
+body.capacitor-app {
+    padding-top: calc(var(--capacitor-safe-area-top) + 60px) !important;
+    padding-bottom: calc(var(--capacitor-bottom-nav-height) + env(safe-area-inset-bottom, 20px)) !important;
+}
+
+/* ========================================
+   7. أنيميشن النص المتحرك في حقل البحث
+   ======================================== */
+@keyframes capacitorSearchPlaceholder {
+    0%, 20% { opacity: 1; }
+    25%, 45% { opacity: 0; }
+    50%, 70% { opacity: 1; }
+    75%, 95% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+.capacitor-search-placeholder-text {
+    animation: capacitorSearchPlaceholder 8s infinite;
+}
+
+/* ========================================
+   8. RTL Support
+   ======================================== */
+body[dir="rtl"].capacitor-app .capacitor-wishlist-badge {
+    right: auto;
+    left: 4px;
+}
+
+body[dir="rtl"].capacitor-app .capacitor-nav-item .nav-badge {
+    right: auto;
+    left: 50%;
+    transform: translateX(-12px);
+}
+
+/* ========================================
+   9. تحسينات إضافية للـ Capacitor
+   ======================================== */
+
+/* تعطيل التحديد في عناصر التنقل */
+body.capacitor-app .capacitor-bottom-nav,
+body.capacitor-app .capacitor-header {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* تحسين الـ scrolling */
+body.capacitor-app {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* إخفاء scrollbar في الـ sidebars */
+body.capacitor-app .mobile-sidebar::-webkit-scrollbar,
+body.capacitor-app .cart-sidebar-items::-webkit-scrollbar {
+    width: 4px;
+}
+
+body.capacitor-app .mobile-sidebar::-webkit-scrollbar-thumb,
+body.capacitor-app .cart-sidebar-items::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 2px;
+}

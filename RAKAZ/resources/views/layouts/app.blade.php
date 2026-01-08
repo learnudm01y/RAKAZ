@@ -27,6 +27,11 @@
     <link rel="stylesheet" href="/assets/css/styles-mobile.css">
     <link rel="stylesheet" href="/assets/css/styles-tablet.css">
 
+    <!-- Capacitor App Specific Styles -->
+    @if(view()->shared('isCapacitor'))
+    <link rel="stylesheet" href="/assets/css/capacitor-app.css">
+    @endif
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -54,6 +59,11 @@
     <script src="/assets/js/script-mobile.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- Capacitor App Specific JavaScript -->
+    @if(view()->shared('isCapacitor'))
+    <script src="/assets/js/capacitor-app.js" defer></script>
+    @endif
+
     <!-- CRITICAL: Force SweetAlert above cart sidebar -->
     <style>
         .swal2-container {
@@ -64,7 +74,7 @@
     @stack('styles')
 </head>
 
-<body dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}">
+<body dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}"@if(view()->shared('isCapacitor')) class="capacitor-app"@endif>
     <!-- Cart Sidebar -->
     @php $isAr = app()->getLocale() == 'ar'; @endphp
     <div class="cart-sidebar" id="cartSidebar">
