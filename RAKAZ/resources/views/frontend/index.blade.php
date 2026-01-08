@@ -1,6 +1,34 @@
 @extends('layouts.app')
 
 @section('content')
+    {{-- Capacitor App Handshake - Shows confirmation when accessed from Android App --}}
+    @if(view()->shared('isCapacitor'))
+    <script>
+        // Capacitor Handshake - Show confirmation only on home page
+        window.addEventListener('DOMContentLoaded', function() {
+            if (window.location.pathname === '/' || window.location.pathname === '/home' || window.location.pathname === '') {
+                // Check if handshake was already shown in this session
+                if (!sessionStorage.getItem('capacitorHandshakeShown')) {
+                    // Use SweetAlert2 if available, otherwise use regular alert
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'تم التعرف على التطبيق',
+                            text: '✅ عملية المصافحة نجحت: تم التعرف على تطبيق ركاز (Android Native)',
+                            confirmButtonText: 'موافق',
+                            confirmButtonColor: '#3085d6'
+                        });
+                    } else {
+                        alert("✅ عملية المصافحة نجحت: تم التعرف على تطبيق ركاز (Android Native)");
+                    }
+                    sessionStorage.setItem('capacitorHandshakeShown', 'true');
+                    console.log("Capacitor Handshake Verified: User-Agent Match Found (RakazApp-Android-Capacitor)");
+                }
+            }
+        });
+    </script>
+    @endif
+
     <!-- Hero Banner Slider - Loaded via AJAX -->
     <div id="hero-banner-wrapper">
         @include('frontend.partials.hero-banner-skeleton')
