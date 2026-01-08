@@ -6,8 +6,8 @@
 /* متغيرات CSS للمسافات الآمنة */
 :root {
     --capacitor-safe-area-top: 45px;
-    --capacitor-safe-area-bottom: 70px;
-    --capacitor-bottom-nav-height: 60px;
+    --capacitor-safe-area-bottom: 25px;
+    --capacitor-bottom-nav-height: 56px;
 }
 
 /* ========================================
@@ -173,7 +173,7 @@ body[dir="ltr"] .capacitor-search-wishlist .wishlist-badge {
     z-index: 9990;
     background: #ffffff;
     border-top: 1px solid #eee;
-    padding-bottom: calc(var(--capacitor-safe-area-bottom) + env(safe-area-inset-bottom, 10px));
+    padding-bottom: var(--capacitor-safe-area-bottom);
 }
 
 body.capacitor-app .capacitor-bottom-nav {
@@ -185,7 +185,7 @@ body.capacitor-app .capacitor-bottom-nav {
     justify-content: space-around;
     align-items: center;
     height: var(--capacitor-bottom-nav-height);
-    padding: 8px 10px 12px 10px;
+    padding: 6px 8px 4px 8px;
 }
 
 .capacitor-nav-item {
@@ -354,4 +354,61 @@ body.capacitor-app .mobile-sidebar::-webkit-scrollbar-thumb,
 body.capacitor-app .cart-sidebar-items::-webkit-scrollbar-thumb {
     background: #ddd;
     border-radius: 2px;
+}
+
+/* ========================================
+   10. تحسين أزرار حقيبة التسوق للـ Capacitor
+   ======================================== */
+
+/* جعل cart-sidebar تحت الشريط السفلي */
+body.capacitor-app .cart-sidebar {
+    z-index: 9980 !important;
+}
+
+body.capacitor-app .cart-sidebar-overlay {
+    z-index: 9980 !important;
+}
+
+body.capacitor-app .cart-sidebar-content {
+    z-index: 9981 !important;
+}
+
+body.capacitor-app .cart-sidebar-footer {
+    padding: 15px !important;
+    padding-bottom: calc(var(--capacitor-safe-area-bottom) + 80px) !important;
+    background: #fff !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+body.capacitor-app .cart-sidebar-footer.show {
+    display: block !important;
+}
+
+body.capacitor-app .cart-sidebar-footer .cart-subtotal {
+    margin-bottom: 8px !important;
+}
+
+body.capacitor-app .cart-sidebar-footer .cart-shipping-note {
+    margin-bottom: 12px !important;
+    font-size: 11px !important;
+}
+
+/* Container للأزرار */
+body.capacitor-app .cart-sidebar-footer .cart-buttons-wrapper {
+    display: flex !important;
+    gap: 8px !important;
+}
+
+/* وضع الأزرار بجانب بعضهم */
+body.capacitor-app .cart-sidebar-footer .cart-checkout-btn,
+body.capacitor-app .cart-sidebar-footer .cart-view-btn {
+    flex: 1 !important;
+    width: 50% !important;
+    padding: 14px 10px !important;
+    font-size: 13px !important;
+    margin: 0 !important;
+    display: inline-block !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
 }

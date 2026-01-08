@@ -295,6 +295,37 @@
     }
 
     /**
+     * تعديل أزرار حقيبة التسوق
+     */
+    function modifyCartButtons() {
+        const cartFooter = document.getElementById('cartFooter');
+        if (!cartFooter) return;
+
+        const checkoutBtn = cartFooter.querySelector('.cart-checkout-btn');
+        const viewBtn = cartFooter.querySelector('.cart-view-btn');
+
+        if (checkoutBtn && viewBtn) {
+            // إنشاء wrapper للأزرار
+            const wrapper = document.createElement('div');
+            wrapper.className = 'cart-buttons-wrapper';
+            wrapper.style.cssText = 'display: flex !important; gap: 8px !important; width: 100% !important;';
+
+            // نقل الأزرار للـ wrapper
+            wrapper.appendChild(checkoutBtn.cloneNode(true));
+            wrapper.appendChild(viewBtn.cloneNode(true));
+
+            // حذف الأزرار القديمة
+            checkoutBtn.remove();
+            viewBtn.remove();
+
+            // إضافة الـ wrapper
+            cartFooter.appendChild(wrapper);
+
+            console.log('✅ Cart buttons modified for Capacitor');
+        }
+    }
+
+    /**
      * تهيئة التطبيق
      */
     function init() {
@@ -307,6 +338,9 @@
 
         // مزامنة الـ badges
         syncBadges();
+
+        // تعديل أزرار الحقيبة
+        modifyCartButtons();
 
         // تسجيل نجاح المصافحة
         console.log('✅ Capacitor Handshake Verified: All components initialized');

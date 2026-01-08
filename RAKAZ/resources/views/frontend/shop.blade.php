@@ -3317,7 +3317,10 @@
                     const selectedSize = modalSizeSelect ? modalSizeSelect.value : null;
                     const productName = document.getElementById('modalProductName').textContent;
 
-                    if (modalSizeSelect && !selectedSize) {
+                    // التحقق من وجود مقاسات - فقط إذا كان هناك خيارات في القائمة المنسدلة
+                    const hasSizes = modalSizeSelect && modalSizeSelect.options.length > 1;
+
+                    if (hasSizes && !selectedSize) {
                         Swal.fire({
                             icon: 'warning',
                             title: t('اختر المقاس', 'Select size'),
