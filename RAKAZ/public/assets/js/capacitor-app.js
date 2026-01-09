@@ -235,33 +235,49 @@
      */
     function initNavProgressBar() {
         const progressBar = document.getElementById('capacitorNavProgress');
-        if (!progressBar) return;
+        console.log('📊 Progress Bar Element:', progressBar);
+
+        if (!progressBar) {
+            console.warn('⚠️ Progress bar not found!');
+            return;
+        }
 
         // الروابط في شريط التنقل السفلي فقط
         const navLinks = document.querySelectorAll('.capacitor-bottom-nav a.capacitor-nav-item');
+        console.log('🔗 Nav Links found:', navLinks.length);
 
         navLinks.forEach(link => {
             link.addEventListener('click', function(e) {
                 const href = this.getAttribute('href');
                 const currentPath = window.location.pathname;
 
+                console.log('👆 Link clicked:', href, 'Current:', currentPath);
+
                 // تجاهل إذا كان نفس الصفحة
-                if (href === currentPath) return;
+                if (href === currentPath) {
+                    console.log('⏭️ Same page, skipping progress');
+                    return;
+                }
 
                 // إظهار شريط التقدم
+                console.log('🚀 Showing progress bar...');
                 showNavProgress();
             });
         });
 
         // إخفاء شريط التقدم عند اكتمال تحميل الصفحة
         window.addEventListener('load', function() {
+            console.log('✅ Page loaded, hiding progress');
             hideNavProgress();
         });
 
         // إخفاء عند الرجوع/التقدم في التاريخ
         window.addEventListener('popstate', function() {
+            console.log('🔙 Popstate event, showing progress');
             showNavProgress();
         });
+
+        console.log('✅ Progress bar initialized successfully');
     }
 
     /**
@@ -269,9 +285,11 @@
      */
     function showNavProgress() {
         const progressBar = document.getElementById('capacitorNavProgress');
+        console.log('📊 showNavProgress called, element:', progressBar);
         if (progressBar) {
             progressBar.classList.remove('completing');
             progressBar.classList.add('active');
+            console.log('✅ Progress bar is now active, classes:', progressBar.className);
         }
     }
 
@@ -280,10 +298,12 @@
      */
     function hideNavProgress() {
         const progressBar = document.getElementById('capacitorNavProgress');
+        console.log('📊 hideNavProgress called');
         if (progressBar && progressBar.classList.contains('active')) {
             progressBar.classList.add('completing');
             setTimeout(() => {
                 progressBar.classList.remove('active', 'completing');
+                console.log('✅ Progress bar hidden');
             }, 300);
         }
     }

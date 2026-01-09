@@ -171,18 +171,19 @@ body[dir="ltr"] .capacitor-search-wishlist .wishlist-badge {
     top: 0;
     left: 0;
     right: 0;
-    height: 2px;
+    height: 3px;
     background: #e0e0e0;
     overflow: hidden;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease, visibility 0.2s ease;
-    z-index: 10;
+    z-index: 10000;
 }
 
-.capacitor-nav-progress.active {
-    opacity: 1;
-    visibility: visible;
+body.capacitor-app .capacitor-nav-progress.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
 }
 
 .capacitor-nav-progress-bar {

@@ -29,7 +29,7 @@
 
     <!-- Capacitor App Specific Styles -->
     @if(view()->shared('isCapacitor'))
-    <link rel="stylesheet" href="/assets/css/capacitor-app.css">
+    <link rel="stylesheet" href="/assets/css/capacitor-app.css?v={{ time() }}">
     @endif
 
     <!-- Fonts -->
@@ -61,7 +61,7 @@
 
     <!-- Capacitor App Specific JavaScript -->
     @if(view()->shared('isCapacitor'))
-    <script src="/assets/js/capacitor-app.js" defer></script>
+    <script src="/assets/js/capacitor-app.js?v={{ time() }}" defer></script>
     @endif
 
     <!-- CRITICAL: Force SweetAlert above cart sidebar -->
