@@ -384,3 +384,62 @@ Route::prefix('jeebly')->group(function () {
 Route::prefix('v1/Courier')->group(function () {
     Route::post('/UpdateCourierStatus', [\App\Http\Controllers\Api\JeeblyController::class, 'webhookStatusUpdate']);
 });
+
+// Capacitor Real-time Order Status API
+Route::get('/orders/status', function (\Illuminate\Http\Request $request) {
+    $orderIdsInput = $request->input('order_ids', '');
+
+    // تحويل الـ string إلى array
+    $orderIds = [];
+    if (is_string($orderIdsInput) && !empty($orderIdsInput)) {
+        $orderIds = array_map('intval', explode(',', $orderIdsInput));
+    } elseif (is_array($orderIdsInput)) {
+        $orderIds = array_map('intval', $orderIdsInput);
+    }
+
+    // إذا لم يتم تمرير IDs، إرجاع خطأ
+    if (empty($orderIds)) {
+        return response()->json(['error' => 'No order IDs provided', 'success' => false], 400);
+    }
+
+    // جلب الطلبات المحددة فقط
+    $orders = \App\Models\Order::whereIn('id', $orderIds)
+        ->get(['id', 'order_number', 'status', 'updated_at']);
+
+    $locale = $request->input('locale', app()->getLocale());
+    $isAr = $locale === 'ar';
+
+    $statusLabels = [
+        'pending' => $isAr ? 'قيد الانتظار' : 'Pending',
+        'confirmed' => $isAr ? 'قيد التحضير' : 'Confirmed',
+        'processing' => $isAr ? 'قيد المعالجة' : 'Processing',
+        'shipped' => $isAr ? 'تم الشحن' : 'Shipped',
+        'delivered' => $isAr ? 'تم التوصيل' : 'Delivered',
+        'cancelled' => $isAr ? 'ملغي' : 'Cancelled'
+    ];
+
+    $statusOrder = ['pending' => 0, 'confirmed' => 1, 'processing' => 2, 'shipped' => 3, 'delivered' => 4, 'cancelled' => -1];
+
+    $ordersData = $orders->map(function($order) use ($statusLabels, $statusOrder) {
+        $isCancelled = $order->status === 'cancelled';
+        $currentStatusIndex = $statusOrder[$order->status] ?? 0;
+        $progress = $isCancelled ? 0 : (($currentStatusIndex / 4) * 100);
+
+        return [
+            'id' => $order->id,
+            'order_number' => $order->order_number,
+            'status' => $order->status,
+            'status_label' => $statusLabels[$order->status] ?? $order->status,
+            'status_index' => $currentStatusIndex,
+            'progress' => $progress,
+            'is_cancelled' => $isCancelled,
+            'updated_at' => $order->updated_at->toISOString()
+        ];
+    });
+
+    return response()->json([
+        'success' => true,
+        'orders' => $ordersData,
+        'timestamp' => now()->toISOString()
+    ]);
+});

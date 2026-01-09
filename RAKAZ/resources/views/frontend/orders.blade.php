@@ -887,7 +887,7 @@
         @if($currentOrders->count() > 0)
             <div class="orders-grid">
             @foreach($currentOrders as $order)
-                <div class="order-card">
+                <div class="order-card" data-order-id="{{ $order->id }}">
                     <!-- Order Header -->
                     @php
                         // توحيد عرض الحالات مع لوحة الإدارة
@@ -1439,6 +1439,254 @@
             }, 100);
         });
     });
+
+    // ========================================
+    // Capacitor Real-time Order Status Updates
+    // ========================================
+    (function() {
+        // يعمل في جميع الأوضاع (Capacitor والمتصفح العادي)
+        const isCapacitor = document.body.classList.contains('capacitor-app');
+
+        console.log('📱 Real-time Order Status: Initializing...');
+        console.log('📱 Is Capacitor Mode:', isCapacitor);
+
+        const isArabic = document.documentElement.getAttribute('dir') === 'rtl';
+        const UPDATE_INTERVAL = isCapacitor ? 10000 : 20000; // تحديث كل 10 ثواني في Capacitor، 20 ثانية في المتصفح
+        let updateTimer = null;
+        let lastUpdateHash = ''; // لتجنب التحديثات غير الضرورية
+        let retryCount = 0;
+        const MAX_RETRIES = 3;
+
+        // خريطة الحالات
+        const statusOrder = {
+            'pending': 0,
+            'confirmed': 1,
+            'processing': 2,
+            'shipped': 3,
+            'delivered': 4
+        };
+
+        const statusLabels = {
+            'pending': isArabic ? 'قيد الانتظار' : 'Pending',
+            'confirmed': isArabic ? 'قيد التحضير' : 'Confirmed',
+            'processing': isArabic ? 'قيد المعالجة' : 'Processing',
+            'shipped': isArabic ? 'تم الشحن' : 'Shipped',
+            'delivered': isArabic ? 'تم التوصيل' : 'Delivered',
+            'cancelled': isArabic ? 'ملغي' : 'Cancelled'
+        };
+
+        const statusClasses = {
+            'pending': 'pending',
+            'confirmed': 'processing',
+            'processing': 'processing',
+            'shipped': 'shipped',
+            'delivered': 'delivered',
+            'cancelled': 'cancelled'
+        };
+
+        // جلب جميع IDs الطلبات من الصفحة
+        function getOrderIds() {
+            const orderCards = document.querySelectorAll('.order-card[data-order-id]');
+            return Array.from(orderCards).map(card => card.getAttribute('data-order-id'));
+        }
+
+        // تحديث Timeline لطلب معين
+        function updateOrderTimeline(orderId, statusData) {
+            // تحويل orderId إلى string للمقارنة
+            const orderIdStr = String(orderId);
+            const orderCard = document.querySelector(`.order-card[data-order-id="${orderIdStr}"]`);
+
+            if (!orderCard) {
+                console.warn(`⚠️ Order card not found for ID: ${orderIdStr}`);
+                return;
+            }
+
+            const timeline = orderCard.querySelector('.order-timeline');
+            if (!timeline) {
+                console.warn(`⚠️ Timeline not found for order: ${orderIdStr}`);
+                return;
+            }
+
+            console.log(`🔧 Updating order ${orderIdStr}: status=${statusData.status}, progress=${statusData.progress}%`);
+
+            const currentStatusIndex = statusData.status_index;
+            const progress = statusData.progress;
+            const isCancelled = statusData.is_cancelled || statusData.status === 'cancelled';
+
+            // تحديث شريط التقدم مع تأثير بصري
+            const progressBar = timeline.querySelector('.timeline-progress');
+            if (progressBar) {
+                const currentWidth = parseFloat(progressBar.style.width) || 0;
+                if (currentWidth !== progress) {
+                    progressBar.style.transition = 'width 0.5s ease-in-out';
+                    progressBar.style.width = progress + '%';
+
+                    // تغيير لون الشريط للأحمر في حالة الإلغاء
+                    if (isCancelled) {
+                        progressBar.style.backgroundColor = '#ef4444';
+                    } else {
+                        progressBar.style.backgroundColor = '';
+                    }
+
+                    // إضافة تأثير وميض للإشارة للتحديث
+                    orderCard.style.transition = 'box-shadow 0.3s ease';
+                    const glowColor = isCancelled ? 'rgba(239, 68, 68, 0.5)' : 'rgba(0, 200, 83, 0.5)';
+                    orderCard.style.boxShadow = `0 0 15px ${glowColor}`;
+                    setTimeout(() => {
+                        orderCard.style.boxShadow = '';
+                    }, 1000);
+                }
+            }
+
+            // تحديث حالة كل خطوة
+            const steps = timeline.querySelectorAll('.timeline-step');
+            if (!isCancelled) {
+                steps.forEach((step, index) => {
+                    step.classList.remove('completed', 'active');
+                    if (index <= currentStatusIndex) {
+                        step.classList.add('completed');
+                    }
+                    if (index === currentStatusIndex) {
+                        step.classList.add('active');
+                    }
+                });
+            } else {
+                // في حالة الإلغاء، إزالة كل الحالات
+                steps.forEach(step => {
+                    step.classList.remove('completed', 'active');
+                });
+            }
+
+            // تحديث Badge الحالة
+            const badge = orderCard.querySelector('.order-badge');
+            if (badge) {
+                // إزالة جميع classes الحالة
+                Object.values(statusClasses).forEach(cls => badge.classList.remove(cls));
+                // إضافة class الحالة الجديدة
+                badge.classList.add(statusClasses[statusData.status] || 'pending');
+                // تحديث النص - البحث عن النص داخل الـ span
+                const badgeSpan = badge.querySelector('span') || badge;
+                const textNodes = Array.from(badgeSpan.childNodes).filter(n => n.nodeType === Node.TEXT_NODE);
+                if (textNodes.length > 0) {
+                    textNodes[textNodes.length - 1].textContent = statusData.status_label;
+                } else {
+                    // إذا لم يوجد نص، ابحث عن آخر text node
+                    const allTextNodes = Array.from(badge.childNodes).filter(n => n.nodeType === Node.TEXT_NODE);
+                    if (allTextNodes.length > 0) {
+                        allTextNodes[allTextNodes.length - 1].textContent = ' ' + statusData.status_label;
+                    }
+                }
+            }
+
+            console.log(`✅ Updated order ${orderId}: ${statusData.status}`);
+        }
+
+        // جلب حالات الطلبات من الخادم
+        async function fetchOrderStatuses() {
+            try {
+                const orderIds = getOrderIds();
+                if (orderIds.length === 0) {
+                    console.log('⚠️ No orders found on page');
+                    return;
+                }
+
+                console.log('📡 Fetching status for orders:', orderIds);
+
+                const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                const headers = {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                };
+                if (csrfToken) {
+                    headers['X-CSRF-TOKEN'] = csrfToken.content;
+                }
+
+                const apiUrl = '/api/orders/status?order_ids=' + orderIds.join(',') + '&locale=' + (isArabic ? 'ar' : 'en') + '&_t=' + Date.now();
+                console.log('📡 Calling API:', apiUrl);
+
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: headers,
+                    credentials: 'include',
+                    cache: 'no-store'
+                });
+
+                console.log('📥 Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ API Error:', errorText);
+                    retryCount++;
+                    if (retryCount >= MAX_RETRIES) {
+                        console.error('❌ Max retries reached, will try again on next interval');
+                        retryCount = 0;
+                    }
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+
+                // إعادة تعيين عداد المحاولات عند النجاح
+                retryCount = 0;
+
+                const data = await response.json();
+                console.log('📦 Received data:', data);
+
+                if (data.success && data.orders) {
+                    data.orders.forEach(order => {
+                        updateOrderTimeline(order.id, order);
+                    });
+                    console.log(`🔄 Real-time update completed at ${new Date().toLocaleTimeString()}`);
+                }
+            } catch (error) {
+                console.error('❌ Error fetching order statuses:', error);
+            }
+        }
+
+        // بدء التحديث التلقائي
+        function startRealTimeUpdates() {
+            // تحديث فوري عند التحميل
+            console.log('🚀 Starting real-time updates...');
+            const orderIds = getOrderIds();
+            console.log('📋 Found orders on page:', orderIds);
+
+            if (orderIds.length === 0) {
+                console.log('⚠️ No orders found, skipping real-time updates');
+                return;
+            }
+
+            // تحديث أول مباشرة
+            fetchOrderStatuses();
+
+            // تحديث دوري
+            updateTimer = setInterval(fetchOrderStatuses, UPDATE_INTERVAL);
+            console.log(`⏱️ Real-time updates started (every ${UPDATE_INTERVAL / 1000}s)`);
+        }
+
+        // إيقاف التحديث عند مغادرة الصفحة
+        function stopRealTimeUpdates() {
+            if (updateTimer) {
+                clearInterval(updateTimer);
+                updateTimer = null;
+                console.log('⏹️ Real-time updates stopped');
+            }
+        }
+
+        // الاستماع لأحداث الصفحة
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                stopRealTimeUpdates();
+            } else {
+                startRealTimeUpdates();
+            }
+        });
+
+        // بدء التحديثات
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', startRealTimeUpdates);
+        } else {
+            startRealTimeUpdates();
+        }
+    })();
 </script>
 @endpush
 
