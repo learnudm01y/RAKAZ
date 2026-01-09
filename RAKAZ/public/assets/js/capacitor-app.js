@@ -113,6 +113,10 @@
         }
 
         bottomNav.innerHTML = `
+            <!-- شريط التقدم -->
+            <div class="capacitor-nav-progress" id="capacitorNavProgress">
+                <div class="capacitor-nav-progress-bar"></div>
+            </div>
             <div class="capacitor-bottom-nav-inner">
                 <!-- الصفحة الرئيسية -->
                 <a href="/" class="capacitor-nav-item ${currentPath === '/' || currentPath === '/home' ? 'active' : ''}" data-nav="home">
@@ -221,7 +225,74 @@
                 }
             });
         }
+
+        // تفعيل شريط التقدم للروابط في شريط التنقل
+        initNavProgressBar();
     }
+
+    /**
+     * تفعيل شريط التقدم عند النقر على الروابط
+     */
+    function initNavProgressBar() {
+        const progressBar = document.getElementById('capacitorNavProgress');
+        if (!progressBar) return;
+
+        // الروابط في شريط التنقل السفلي فقط
+        const navLinks = document.querySelectorAll('.capacitor-bottom-nav a.capacitor-nav-item');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                const currentPath = window.location.pathname;
+
+                // تجاهل إذا كان نفس الصفحة
+                if (href === currentPath) return;
+
+                // إظهار شريط التقدم
+                showNavProgress();
+            });
+        });
+
+        // إخفاء شريط التقدم عند اكتمال تحميل الصفحة
+        window.addEventListener('load', function() {
+            hideNavProgress();
+        });
+
+        // إخفاء عند الرجوع/التقدم في التاريخ
+        window.addEventListener('popstate', function() {
+            showNavProgress();
+        });
+    }
+
+    /**
+     * إظهار شريط التقدم
+     */
+    function showNavProgress() {
+        const progressBar = document.getElementById('capacitorNavProgress');
+        if (progressBar) {
+            progressBar.classList.remove('completing');
+            progressBar.classList.add('active');
+        }
+    }
+
+    /**
+     * إخفاء شريط التقدم
+     */
+    function hideNavProgress() {
+        const progressBar = document.getElementById('capacitorNavProgress');
+        if (progressBar && progressBar.classList.contains('active')) {
+            progressBar.classList.add('completing');
+            setTimeout(() => {
+                progressBar.classList.remove('active', 'completing');
+            }, 300);
+        }
+    }
+
+    // تصدير الدوال للاستخدام الخارجي
+    window.CapacitorProgress = {
+        show: showNavProgress,
+        hide: hideNavProgress
+    };
 
     /**
      * تحريك نص البحث

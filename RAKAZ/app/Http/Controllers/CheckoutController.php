@@ -19,7 +19,7 @@ class CheckoutController extends Controller
         }
 
         if (!Session::has('cart_session_id')) {
-            return redirect()->route('cart.index')->with('error', app()->getLocale() == 'ar' ? 'السلة فارغة' : 'Cart is empty');
+            return null;
         }
 
         return ['user_id' => null, 'session_id' => Session::get('cart_session_id')];
@@ -28,6 +28,11 @@ class CheckoutController extends Controller
     public function index()
     {
         $identifier = $this->getIdentifier();
+
+        if ($identifier === null) {
+            return redirect()->route('cart.index')->with('error', app()->getLocale() == 'ar' ? 'السلة فارغة' : 'Cart is empty');
+        }
+
         $cartItems = Cart::getCartItems($identifier['user_id'], $identifier['session_id']);
 
         if ($cartItems->isEmpty()) {
@@ -61,6 +66,11 @@ class CheckoutController extends Controller
         ]);
 
         $identifier = $this->getIdentifier();
+
+        if ($identifier === null) {
+            return redirect()->route('cart.index')->with('error', app()->getLocale() == 'ar' ? 'السلة فارغة' : 'Cart is empty');
+        }
+
         $cartItems = Cart::getCartItems($identifier['user_id'], $identifier['session_id']);
 
         if ($cartItems->isEmpty()) {

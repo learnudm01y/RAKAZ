@@ -164,6 +164,73 @@ body[dir="ltr"] .capacitor-search-wishlist .wishlist-badge {
 /* ========================================
    3. شريط التنقل السفلي
    ======================================== */
+
+/* شريط التقدم فوق شريط التنقل السفلي */
+.capacitor-nav-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e0e0e0;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 10;
+}
+
+.capacitor-nav-progress.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.capacitor-nav-progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #333 0%, #666 50%, #333 100%);
+    background-size: 200% 100%;
+    animation: capacitor-progress-shimmer 1.5s ease-in-out infinite;
+    transition: width 0.3s ease;
+}
+
+.capacitor-nav-progress.active .capacitor-nav-progress-bar {
+    width: 30%;
+    animation: capacitor-progress-loading 2s ease-in-out infinite, capacitor-progress-shimmer 1.5s ease-in-out infinite;
+}
+
+.capacitor-nav-progress.completing .capacitor-nav-progress-bar {
+    width: 100% !important;
+    transition: width 0.3s ease;
+}
+
+@keyframes capacitor-progress-loading {
+    0% {
+        width: 0%;
+        left: 0;
+    }
+    50% {
+        width: 70%;
+        left: 0;
+    }
+    100% {
+        width: 30%;
+        left: 70%;
+    }
+}
+
+@keyframes capacitor-progress-shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
 .capacitor-bottom-nav {
     display: none;
     position: fixed;

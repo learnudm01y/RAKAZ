@@ -1,6 +1,5 @@
 @extends('layouts.app')
 
-@section('content')
 @push('styles')
   <style>
         * {
@@ -109,6 +108,7 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 20px;
+            overflow: visible;
         }
 
         .form-grid.full {
@@ -119,6 +119,8 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            overflow: visible;
+            position: relative;
         }
 
         .form-label {
@@ -145,7 +147,94 @@
             border-color: #333;
         }
 
-        /* تم إزالة .form-select - نستخدم المكتبة المخصصة فقط */
+        /* Custom Select Styles */
+        .custom-select-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .custom-select-trigger {
+            padding: 12px 15px;
+            border: 2px solid #e5e5e5;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Lora', serif;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.3s ease;
+        }
+
+        .custom-select-trigger:hover,
+        .custom-select-wrapper.active .custom-select-trigger {
+            border-color: #333;
+        }
+
+        .custom-select-trigger .arrow {
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 6px solid #333;
+            transition: transform 0.3s ease;
+        }
+
+        .custom-select-wrapper.active .custom-select-trigger .arrow {
+            transform: rotate(180deg);
+        }
+
+        #countrySelect .custom-select-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 4px;
+            margin-top: 5px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 9999;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: none !important;
+        }
+
+        #countrySelect.active .custom-select-options {
+            display: block !important;
+            max-height: 250px !important;
+        }
+
+        .custom-select-option {
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .custom-select-option:hover {
+            background: #f5f5f5;
+        }
+
+        .custom-select-option.selected {
+            background: #333;
+            color: white;
+        }
+
+        .custom-select-option .country-flag {
+            font-size: 18px;
+        }
+
+        .custom-select-trigger .selected-flag {
+            margin-left: 8px;
+            font-size: 18px;
+        }
 
         .form-textarea {
             padding: 12px 15px;
@@ -406,6 +495,8 @@
         }
     </style>
 @endpush
+
+@section('content')
     <div class="checkout-container">
         <!-- Header -->
         <div class="checkout-header">
@@ -462,7 +553,7 @@
                             </div>
                             <div class="form-group">
                                 <label class="form-label">{{ app()->getLocale() == 'ar' ? 'رقم الهاتف' : 'Phone Number' }} <span class="required">*</span></label>
-                                <input type="tel" name="customer_phone" class="form-input" value="{{ old('customer_phone') }}" required>
+                                <input type="tel" name="customer_phone" class="form-input" value="{{ old('customer_phone', auth()->user()->phone ?? '') }}" required>
                             </div>
                         </div>
                     </div>
@@ -473,33 +564,58 @@
                         <div class="form-grid">
                             <div class="form-group">
                                 <label class="form-label">{{ app()->getLocale() == 'ar' ? 'الدولة' : 'Country' }} <span class="required">*</span></label>
-                                <select name="shipping_country" class="form-input" required>
-                                    <option value="">{{ app()->getLocale() == 'ar' ? 'اختر الدولة' : 'Select Country' }}</option>
-                                    <option value="UAE" {{ old('shipping_country') == 'UAE' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'الإمارات العربية المتحدة' : 'United Arab Emirates' }}</option>
-                                    <option value="Saudi Arabia" {{ old('shipping_country') == 'Saudi Arabia' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'المملكة العربية السعودية' : 'Saudi Arabia' }}</option>
-                                    <option value="Kuwait" {{ old('shipping_country') == 'Kuwait' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'الكويت' : 'Kuwait' }}</option>
-                                    <option value="Bahrain" {{ old('shipping_country') == 'Bahrain' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'البحرين' : 'Bahrain' }}</option>
-                                    <option value="Qatar" {{ old('shipping_country') == 'Qatar' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'قطر' : 'Qatar' }}</option>
-                                    <option value="Oman" {{ old('shipping_country') == 'Oman' ? 'selected' : '' }}>{{ app()->getLocale() == 'ar' ? 'عُمان' : 'Oman' }}</option>
-                                </select>
+                                @php
+                                    $userCountry = old('shipping_country', auth()->user()->country ?? '');
+                                    $countries = [
+                                        ['value' => 'AE', 'flag' => '🇦🇪', 'name_ar' => 'الإمارات العربية المتحدة', 'name_en' => 'United Arab Emirates'],
+                                        ['value' => 'SA', 'flag' => '🇸🇦', 'name_ar' => 'المملكة العربية السعودية', 'name_en' => 'Saudi Arabia'],
+                                        ['value' => 'KW', 'flag' => '🇰🇼', 'name_ar' => 'الكويت', 'name_en' => 'Kuwait'],
+                                        ['value' => 'BH', 'flag' => '🇧🇭', 'name_ar' => 'البحرين', 'name_en' => 'Bahrain'],
+                                        ['value' => 'QA', 'flag' => '🇶🇦', 'name_ar' => 'قطر', 'name_en' => 'Qatar'],
+                                        ['value' => 'OM', 'flag' => '🇴🇲', 'name_ar' => 'عُمان', 'name_en' => 'Oman'],
+                                    ];
+                                    $selectedCountry = collect($countries)->firstWhere('value', $userCountry);
+                                @endphp
+                                <input type="hidden" name="shipping_country" id="shipping_country_input" value="{{ $userCountry }}">
+                                <div class="custom-select-wrapper" id="countrySelect">
+                                    <div class="custom-select-trigger">
+                                        <span class="selected-text">
+                                            @if($selectedCountry)
+                                                <span class="selected-flag">{{ $selectedCountry['flag'] }}</span>
+                                                {{ app()->getLocale() == 'ar' ? $selectedCountry['name_ar'] : $selectedCountry['name_en'] }}
+                                            @else
+                                                {{ app()->getLocale() == 'ar' ? 'اختر الدولة' : 'Select Country' }}
+                                            @endif
+                                        </span>
+                                        <span class="arrow"></span>
+                                    </div>
+                                    <div class="custom-select-options">
+                                        @foreach($countries as $country)
+                                            <div class="custom-select-option {{ $userCountry == $country['value'] ? 'selected' : '' }}" data-value="{{ $country['value'] }}" data-flag="{{ $country['flag'] }}">
+                                                <span class="country-flag">{{ $country['flag'] }}</span>
+                                                <span>{{ app()->getLocale() == 'ar' ? $country['name_ar'] : $country['name_en'] }}</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">{{ app()->getLocale() == 'ar' ? 'المدينة' : 'City' }} <span class="required">*</span></label>
-                                <input type="text" name="shipping_city" class="form-input" value="{{ old('shipping_city') }}" required>
+                                <input type="text" name="shipping_city" class="form-input" value="{{ old('shipping_city', auth()->user()->city ?? '') }}" required>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">{{ app()->getLocale() == 'ar' ? 'المنطقة / الحي' : 'Area / District' }}</label>
-                                <input type="text" name="shipping_state" class="form-input" value="{{ old('shipping_state') }}">
+                                <input type="text" name="shipping_state" class="form-input" value="{{ old('shipping_state', auth()->user()->state ?? '') }}">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">{{ app()->getLocale() == 'ar' ? 'الرمز البريدي' : 'Postal Code' }}</label>
-                                <input type="text" name="shipping_postal_code" class="form-input" value="{{ old('shipping_postal_code') }}">
+                                <input type="text" name="shipping_postal_code" class="form-input" value="{{ old('shipping_postal_code', auth()->user()->postal_code ?? '') }}">
                             </div>
                         </div>
                         <div class="form-grid full">
                             <div class="form-group">
                                 <label class="form-label">{{ app()->getLocale() == 'ar' ? 'العنوان بالتفصيل' : 'Detailed Address' }} <span class="required">*</span></label>
-                                <textarea name="shipping_address" class="form-textarea" placeholder="{{ app()->getLocale() == 'ar' ? 'الشارع، رقم المبنى، الطابق، رقم الشقة...' : 'Street, Building number, Floor, Apartment number...' }}" required>{{ old('shipping_address') }}</textarea>
+                                <textarea name="shipping_address" class="form-textarea" placeholder="{{ app()->getLocale() == 'ar' ? 'الشارع، رقم المبنى، الطابق، رقم الشقة...' : 'Street, Building number, Floor, Apartment number...' }}" required>{{ old('shipping_address', auth()->user()->address ?? '') }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -621,7 +737,8 @@
         </div>
         </form>
     </div>
-    @endsection
+@endsection
+
 @push('scripts')
 
     <script>
@@ -641,6 +758,64 @@
             document.getElementById('shippingDisplay').textContent = shippingCost > 0 ? shippingCost.toFixed(2) + ' ' + currency : freeText;
             document.getElementById('taxDisplay').textContent = tax.toFixed(2) + ' ' + currency;
             document.getElementById('totalDisplay').textContent = total.toFixed(2) + ' ' + currency;
+        }
+
+        // Custom Country Select
+        const countrySelectWrapper = document.getElementById('countrySelect');
+        console.log('countrySelectWrapper:', countrySelectWrapper);
+
+        if (countrySelectWrapper) {
+            const countryTrigger = countrySelectWrapper.querySelector('.custom-select-trigger');
+            const countryOptionsContainer = countrySelectWrapper.querySelector('.custom-select-options');
+            const countryOptions = countrySelectWrapper.querySelectorAll('.custom-select-option');
+            const countryInput = document.getElementById('shipping_country_input');
+
+            console.log('countryTrigger:', countryTrigger);
+            console.log('countryOptions:', countryOptions.length);
+
+            countryTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Trigger clicked!');
+                countrySelectWrapper.classList.toggle('active');
+                countryTrigger.classList.toggle('active');
+                countryOptionsContainer.classList.toggle('active');
+                console.log('Is active:', countrySelectWrapper.classList.contains('active'));
+            });
+
+            countryOptions.forEach(option => {
+                option.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const value = this.getAttribute('data-value');
+                    const flag = this.getAttribute('data-flag');
+                    const text = this.querySelector('span:last-child').textContent;
+
+                    // Update hidden input
+                    countryInput.value = value;
+
+                    // Update trigger text
+                    countryTrigger.querySelector('.selected-text').innerHTML =
+                        '<span class="selected-flag">' + flag + '</span> ' + text;
+
+                    // Update selected state
+                    countryOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+
+                    // Close dropdown
+                    countrySelectWrapper.classList.remove('active');
+                    countryTrigger.classList.remove('active');
+                    countryOptionsContainer.classList.remove('active');
+                });
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!countrySelectWrapper.contains(e.target)) {
+                    countrySelectWrapper.classList.remove('active');
+                    countryTrigger.classList.remove('active');
+                    countryOptionsContainer.classList.remove('active');
+                }
+            });
         }
 
         // Shipping method selection
