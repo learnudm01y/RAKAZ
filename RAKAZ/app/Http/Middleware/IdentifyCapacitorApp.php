@@ -23,6 +23,13 @@ class IdentifyCapacitorApp
         // Check if the request comes from Rakaz Capacitor Android App
         $isCapacitor = str_contains($userAgent, 'RakazApp-Android-Capacitor');
 
+        // Log the detection for debugging
+        \Log::info('Capacitor Detection', [
+            'user_agent' => $userAgent,
+            'isCapacitor' => $isCapacitor,
+            'ip' => $request->ip(),
+        ]);
+
         // Share the variable with all views
         view()->share('isCapacitor', $isCapacitor);
 

@@ -66,9 +66,13 @@ class MyFatoorahController extends Controller
     /**
      * Initiate payment with MyFatoorah
      * This method creates the order and redirects to payment gateway
+     * For AJAX requests (Capacitor), returns JSON with payment URL
      */
     public function pay(Request $request)
     {
+        // Check if this is an AJAX request from Capacitor
+        $isAjax = $request->ajax() || $request->wantsJson();
+
         // Validate checkout form data
         $request->validate([
             'customer_name' => 'required|string|max:255',
@@ -286,7 +290,17 @@ class MyFatoorahController extends Controller
                 $order->update(['payment_reference' => $response['invoiceId']]);
             }
 
-            // Redirect to MyFatoorah payment page
+            // For AJAX requests (Capacitor), return JSON with payment URL
+            if ($isAjax) {
+                return response()->json([
+                    'success' => true,
+                    'payment_url' => $response['invoiceURL'],
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                ]);
+            }
+
+            // For regular requests, redirect to MyFatoorah payment page
             return redirect()->away($response['invoiceURL']);
 
         } catch (\Exception $e) {
@@ -296,6 +310,16 @@ class MyFatoorahController extends Controller
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
+            // For AJAX requests, return JSON error
+            if ($isAjax) {
+                return response()->json([
+                    'success' => false,
+                    'message' => app()->getLocale() == 'ar'
+                        ? 'حدث خطأ أثناء معالجة الدفع: ' . $e->getMessage()
+                        : 'Error processing payment: ' . $e->getMessage()
+                ], 500);
+            }
 
             return back()
                 ->with('error', app()->getLocale() == 'ar'
