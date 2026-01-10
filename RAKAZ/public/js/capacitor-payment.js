@@ -7,6 +7,52 @@
     'use strict';
 
     /**
+     * Handle Deep Link callback from payment
+     * This function should be called when the app receives a deep link
+     */
+    window.handlePaymentDeepLink = function(url) {
+        console.log('Payment Deep Link received:', url);
+        
+        try {
+            const urlObj = new URL(url);
+            const params = new URLSearchParams(urlObj.search);
+            
+            const status = params.get('status');
+            const orderId = params.get('order_id');
+            const orderNumber = params.get('order_number');
+            const paymentId = params.get('paymentId');
+            
+            if (status === 'success') {
+                // Payment successful
+                alert(document.documentElement.lang === 'ar'
+                    ? `تم الدفع بنجاح! رقم الطلب: ${orderNumber}`
+                    : `Payment successful! Order number: ${orderNumber}`);
+                
+                // Redirect to order details
+                if (orderId) {
+                    window.location.href = '/order/' + orderId;
+                } else {
+                    window.location.href = '/orders';
+                }
+            } else if (status === 'failed') {
+                // Payment failed
+                alert(document.documentElement.lang === 'ar'
+                    ? 'فشل الدفع. يرجى المحاولة مرة أخرى.'
+                    : 'Payment failed. Please try again.');
+                
+                window.location.href = '/checkout';
+            } else {
+                // Unknown status - check via API
+                if (orderId) {
+                    window.location.href = '/api/order/' + orderId + '/payment-status';
+                }
+            }
+        } catch (error) {
+            console.error('Error handling deep link:', error);
+        }
+    };
+
+    /**
      * Detect if running in Capacitor app
      */
     window.isCapacitorApp = function() {
@@ -141,6 +187,9 @@
         // Get form data
         const formData = new FormData(formElement);
         
+        // Add native app flag
+        formData.append('is_native_app', '1');
+        
         // Show loading indicator
         const submitButton = formElement.querySelector('button[type="submit"]');
         const originalButtonText = submitButton ? submitButton.textContent : '';
@@ -158,6 +207,7 @@
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
+                'X-Native-App': 'rakaz-capacitor',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         })

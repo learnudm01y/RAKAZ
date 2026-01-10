@@ -48,6 +48,34 @@ class MyFatoorahController extends Controller
     }
 
     /**
+     * Check if request is from Native app (Capacitor)
+     */
+    private function isNativeApp(Request $request)
+    {
+        // Check User-Agent header
+        $userAgent = $request->header('User-Agent', '');
+        
+        // Check for Capacitor or custom app identifier
+        if (str_contains($userAgent, 'RakazApp-Capacitor') || 
+            str_contains($userAgent, 'Capacitor') ||
+            str_contains($userAgent, 'RakazNative')) {
+            return true;
+        }
+        
+        // Check for custom header
+        if ($request->header('X-Native-App') === 'rakaz-capacitor') {
+            return true;
+        }
+        
+        // Check if AJAX request has native flag
+        if ($request->ajax() && $request->input('is_native_app')) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
      * Get cart identifier for user/guest
      */
     private function getIdentifier()
@@ -249,6 +277,15 @@ class MyFatoorahController extends Controller
                 ];
             }
 
+            // Detect if request is from Native app
+            $isNativeApp = $this->isNativeApp($request);
+            
+            // Build callback URL with Deep Link support for Native apps
+            $callbackUrl = route('myfatoorah.callback');
+            if ($isNativeApp) {
+                $callbackUrl .= '?app_redirect=rakaz-app://payment-callback&order_id=' . $order->id;
+            }
+
             // Build MyFatoorah payload
             $payloadData = [
                 'InvoiceValue' => round($total, 2),
@@ -257,8 +294,8 @@ class MyFatoorahController extends Controller
                 'CustomerMobile' => preg_replace('/[^0-9]/', '', $request->customer_phone),
                 'CustomerReference' => $order->order_number,
                 'DisplayCurrencyIso' => config('myfatoorah.display_currency', 'KWD'),
-                'CallBackUrl' => route('myfatoorah.callback'),
-                'ErrorUrl' => route('myfatoorah.callback'),
+                'CallBackUrl' => $callbackUrl,
+                'ErrorUrl' => $callbackUrl,
                 'Language' => app()->getLocale() == 'ar' ? 'AR' : 'EN',
                 'InvoiceItems' => $invoiceItems,
                 'CustomerAddress' => [
@@ -428,6 +465,14 @@ class MyFatoorahController extends Controller
                         'amount' => $order->total,
                     ]);
 
+                    // Check if this is a Native app callback (Deep Link)
+                    if ($request->has('app_redirect')) {
+                        $appRedirect = $request->input('app_redirect');
+                        $redirectUrl = $appRedirect . '?paymentId=' . $paymentId . '&status=success&order_id=' . $order->id . '&order_number=' . $order->order_number;
+                        Log::info('Redirecting to Native app', ['url' => $redirectUrl]);
+                        return redirect()->away($redirectUrl);
+                    }
+
                     return redirect()->route('orders.show', $order->id)
                         ->with('success', app()->getLocale() == 'ar'
                             ? 'تم الدفع بنجاح! رقم الطلب: ' . $order->order_number
@@ -464,6 +509,14 @@ class MyFatoorahController extends Controller
                     'invoice_status' => $invoiceStatus,
                     'invoice_id' => $paymentData->InvoiceId ?? null,
                 ]);
+
+                // Check if this is a Native app callback (Deep Link)
+                if ($request->has('app_redirect')) {
+                    $appRedirect = $request->input('app_redirect');
+                    $redirectUrl = $appRedirect . '?paymentId=' . $paymentId . '&status=failed&order_id=' . $order->id;
+                    Log::info('Redirecting to Native app (failed)', ['url' => $redirectUrl]);
+                    return redirect()->away($redirectUrl);
+                }
 
                 return redirect()->route('checkout.index')
                     ->with('error', app()->getLocale() == 'ar'
