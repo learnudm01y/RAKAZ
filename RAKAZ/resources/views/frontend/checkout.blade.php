@@ -740,6 +740,8 @@
 @endsection
 
 @push('scripts')
+    <!-- Capacitor Payment Handler -->
+    <script src="{{ asset('js/capacitor-payment.js') }}"></script>
 
     <script>
         const subtotal = {{ $cartTotal }};
@@ -904,65 +906,33 @@
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Show loading
-                    Swal.fire({
-                        title: loadingTitle,
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    // Check if we're in Capacitor app and using online payment
-                    const isCapacitor = document.body.classList.contains('capacitor-app');
+                    // Check if we're in Capacitor app
+                    const isCapacitor = typeof window.isCapacitorApp === 'function' && window.isCapacitorApp();
 
                     if (isCapacitor && isOnlinePayment) {
-                        // For Capacitor + online payment, use AJAX to get payment URL and open in new window
-                        const formData = new FormData(form);
-
-                        fetch(form.action, {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                // Open payment URL in new window (system browser in Capacitor)
-                                window.open(data.payment_url, '_blank');
-                                // Close loading and show success message
-                                Swal.close();
-                                Swal.fire({
-                                    title: isArabic ? 'تم إنشاء الطلب' : 'Order Created',
-                                    html: isArabic
-                                        ? 'تم إنشاء طلبك بنجاح. يرجى إتمام الدفع في النافذة الجديدة.<br><small>رقم الطلب: ' + data.order_number + '</small>'
-                                        : 'Your order has been created successfully. Please complete payment in the new window.<br><small>Order Number: ' + data.order_number + '</small>',
-                                    icon: 'success',
-                                    confirmButtonText: isArabic ? 'موافق' : 'OK'
-                                }).then(() => {
-                                    // Redirect to order details or home
-                                    window.location.href = '{{ route('orders.index') }}';
-                                });
-                            } else {
-                                throw new Error(data.message || 'Payment initiation failed');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Payment error:', error);
-                            Swal.close();
-                            Swal.fire({
-                                title: isArabic ? 'خطأ في الدفع' : 'Payment Error',
-                                text: error.message || (isArabic ? 'حدث خطأ أثناء بدء عملية الدفع' : 'An error occurred while initiating payment'),
-                                icon: 'error',
-                                confirmButtonText: isArabic ? 'موافق' : 'OK'
-                            });
-                        });
+                        // For Capacitor + online payment, use the new payment handler
+                        Swal.close();
+                        
+                        if (typeof window.handleCapacitorCheckout === 'function') {
+                            window.handleCapacitorCheckout(form);
+                        } else {
+                            console.error('Capacitor payment handler not loaded');
+                            alert(isArabic 
+                                ? 'حدث خطأ في تحميل نظام الدفع'
+                                : 'Payment system loading error');
+                        }
                     } else {
                         // Normal form submission for regular browser or cash payment
+                        // Show loading
+                        Swal.fire({
+                            title: loadingTitle,
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                        
                         form.submit();
                     }
                 }

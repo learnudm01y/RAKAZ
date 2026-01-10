@@ -485,6 +485,78 @@ class MyFatoorahController extends Controller
     }
 
     /**
+     * AJAX payment endpoint for Capacitor app
+     * Returns JSON with payment URL instead of redirecting
+     */
+    public function payAjax(Request $request)
+    {
+        // Force JSON response
+        $request->headers->set('Accept', 'application/json');
+        
+        // Call the main pay method which now handles AJAX requests
+        return $this->pay($request);
+    }
+
+    /**
+     * Get payment status for an order (for polling from Capacitor app)
+     */
+    public function getPaymentStatus($orderId)
+    {
+        try {
+            $order = Order::find($orderId);
+
+            if (!$order) {
+                return response()->json([
+                    'success' => false,
+                    'message' => app()->getLocale() == 'ar' ? 'الطلب غير موجود' : 'Order not found'
+                ], 404);
+            }
+
+            // Check if user has access to this order
+            if (auth()->check()) {
+                if ($order->user_id != auth()->id()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => app()->getLocale() == 'ar' ? 'غير مصرح لك بالوصول لهذا الطلب' : 'Unauthorized'
+                    ], 403);
+                }
+            } else {
+                // Guest user - check session
+                $guestOrderIds = session('guest_order_ids', []);
+                if (!in_array($order->id, $guestOrderIds)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => app()->getLocale() == 'ar' ? 'غير مصرح لك بالوصول لهذا الطلب' : 'Unauthorized'
+                    ], 403);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'payment_status' => $order->payment_status,
+                'order_status' => $order->status,
+                'order_number' => $order->order_number,
+                'redirect_url' => $order->payment_status === 'paid' 
+                    ? route('orders.show', $order->id) 
+                    : null
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Payment Status Check Error', [
+                'order_id' => $orderId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => app()->getLocale() == 'ar' 
+                    ? 'حدث خطأ أثناء التحقق من حالة الدفع' 
+                    : 'Error checking payment status'
+            ], 500);
+        }
+    }
+
+    /**
      * Webhook handler for MyFatoorah server-to-server notifications
      */
     public function webhook(Request $request)

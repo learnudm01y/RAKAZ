@@ -86,6 +86,8 @@ Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('
 
 // MyFatoorah Payment Routes
 Route::post('/checkout/pay', [MyFatoorahController::class, 'pay'])->name('myfatoorah.pay');
+Route::post('/checkout/pay/ajax', [MyFatoorahController::class, 'payAjax'])->name('myfatoorah.pay.ajax');
+Route::get('/api/order/{orderId}/payment-status', [MyFatoorahController::class, 'getPaymentStatus'])->name('myfatoorah.payment.status');
 Route::get('/payment/callback', [MyFatoorahController::class, 'callback'])->name('myfatoorah.callback');
 
 // Order Routes (Frontend)
