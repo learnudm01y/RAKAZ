@@ -54,24 +54,24 @@ class MyFatoorahController extends Controller
     {
         // Check User-Agent header
         $userAgent = $request->header('User-Agent', '');
-        
+
         // Check for Capacitor or custom app identifier
-        if (str_contains($userAgent, 'RakazApp-Capacitor') || 
+        if (str_contains($userAgent, 'RakazApp-Capacitor') ||
             str_contains($userAgent, 'Capacitor') ||
             str_contains($userAgent, 'RakazNative')) {
             return true;
         }
-        
+
         // Check for custom header
         if ($request->header('X-Native-App') === 'rakaz-capacitor') {
             return true;
         }
-        
+
         // Check if AJAX request has native flag
         if ($request->ajax() && $request->input('is_native_app')) {
             return true;
         }
-        
+
         return false;
     }
 
@@ -279,7 +279,7 @@ class MyFatoorahController extends Controller
 
             // Detect if request is from Native app
             $isNativeApp = $this->isNativeApp($request);
-            
+
             // Build callback URL with Deep Link support for Native apps
             $callbackUrl = route('myfatoorah.callback');
             if ($isNativeApp) {
@@ -545,7 +545,7 @@ class MyFatoorahController extends Controller
     {
         // Force JSON response
         $request->headers->set('Accept', 'application/json');
-        
+
         // Call the main pay method which now handles AJAX requests
         return $this->pay($request);
     }
@@ -589,8 +589,8 @@ class MyFatoorahController extends Controller
                 'payment_status' => $order->payment_status,
                 'order_status' => $order->status,
                 'order_number' => $order->order_number,
-                'redirect_url' => $order->payment_status === 'paid' 
-                    ? route('orders.show', $order->id) 
+                'redirect_url' => $order->payment_status === 'paid'
+                    ? route('orders.show', $order->id)
                     : null
             ]);
 
@@ -602,8 +602,8 @@ class MyFatoorahController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => app()->getLocale() == 'ar' 
-                    ? 'حدث خطأ أثناء التحقق من حالة الدفع' 
+                'message' => app()->getLocale() == 'ar'
+                    ? 'حدث خطأ أثناء التحقق من حالة الدفع'
                     : 'Error checking payment status'
             ], 500);
         }

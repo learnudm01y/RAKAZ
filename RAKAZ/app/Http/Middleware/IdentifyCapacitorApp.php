@@ -20,8 +20,16 @@ class IdentifyCapacitorApp
     {
         $userAgent = $request->header('User-Agent', '');
 
-        // Check if the request comes from Rakaz Capacitor Android App
-        $isCapacitor = str_contains($userAgent, 'RakazApp-Android-Capacitor');
+        // Check if the request comes from Rakaz Capacitor App (Android or iOS)
+        // Support multiple User-Agent formats:
+        // - RakazApp-Capacitor-Android (Android app)
+        // - RakazApp-Android-Capacitor (old format)
+        // - RakazApp-Capacitor (general Capacitor)
+        // - Capacitor (any Capacitor app)
+        $isCapacitor = str_contains($userAgent, 'RakazApp-Capacitor-Android') ||
+                       str_contains($userAgent, 'RakazApp-Android-Capacitor') ||
+                       str_contains($userAgent, 'RakazApp-Capacitor') ||
+                       str_contains($userAgent, 'Capacitor');
 
         // Log the detection for debugging
         \Log::info('Capacitor Detection', [

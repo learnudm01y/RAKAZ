@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار كشف Capacitor</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+            direction: rtl;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-right: 4px solid #28a745;
+        }
+        .test-section h2 {
+            color: #28a745;
+            margin-top: 0;
+        }
+        .result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .btn {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 اختبار كشف تطبيق Capacitor</h1>
+        
+        <div class="test-section">
+            <h2>📱 User-Agent الحالي</h2>
+            <div class="result info">
+                <code id="userAgent"></code>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>✅ نتائج الكشف</h2>
+            <div id="detectionResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎨 حالة التصميم</h2>
+            <div id="styleStatus"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔧 أدوات الاختبار</h2>
+            <p>جرب محاكاة User-Agents مختلفة:</p>
+            <button class="btn" onclick="simulateAndroid()">محاكاة Android App</button>
+            <button class="btn" onclick="simulateNormal()">محاكاة متصفح عادي</button>
+            <button class="btn" onclick="checkCapacitorClass()">فحص Class</button>
+        </div>
+
+        <div class="test-section">
+            <h2>📋 معلومات الجلسة</h2>
+            <div id="sessionInfo"></div>
+        </div>
+    </div>
+
+    <script>
+        // عرض User-Agent
+        document.getElementById('userAgent').textContent = navigator.userAgent;
+
+        // فحص الكشف
+        function checkDetection() {
+            const userAgent = navigator.userAgent;
+            const hasCapacitorClass = document.body.classList.contains('capacitor-app');
+            const hasCapacitorObject = typeof window.Capacitor !== 'undefined';
+            
+            const checks = [
+                {
+                    name: 'RakazApp-Capacitor-Android',
+                    result: userAgent.includes('RakazApp-Capacitor-Android')
+                },
+                {
+                    name: 'RakazApp-Android-Capacitor',
+                    result: userAgent.includes('RakazApp-Android-Capacitor')
+                },
+                {
+                    name: 'RakazApp-Capacitor',
+                    result: userAgent.includes('RakazApp-Capacitor')
+                },
+                {
+                    name: 'Capacitor',
+                    result: userAgent.includes('Capacitor')
+                },
+                {
+                    name: 'Body Class: capacitor-app',
+                    result: hasCapacitorClass
+                },
+                {
+                    name: 'Window.Capacitor Object',
+                    result: hasCapacitorObject
+                }
+            ];
+
+            let html = '';
+            checks.forEach(check => {
+                const resultClass = check.result ? 'success' : 'error';
+                const icon = check.result ? '✅' : '❌';
+                html += `<div class="result ${resultClass}">${icon} ${check.name}</div>`;
+            });
+
+            document.getElementById('detectionResults').innerHTML = html;
+
+            // فحص التصميم
+            checkStyles();
+        }
+
+        function checkStyles() {
+            const hasCapacitorClass = document.body.classList.contains('capacitor-app');
+            const capacitorCSS = document.querySelector('link[href*="capacitor-app.css"]');
+            const capacitorJS = document.querySelector('script[src*="capacitor-app.js"]');
+
+            let html = '';
+            
+            if (hasCapacitorClass) {
+                html += '<div class="result success">✅ Body يحتوي على class "capacitor-app"</div>';
+            } else {
+                html += '<div class="result error">❌ Body لا يحتوي على class "capacitor-app"</div>';
+            }
+
+            if (capacitorCSS) {
+                html += '<div class="result success">✅ تم تحميل capacitor-app.css</div>';
+            } else {
+                html += '<div class="result error">❌ لم يتم تحميل capacitor-app.css</div>';
+            }
+
+            if (capacitorJS) {
+                html += '<div class="result success">✅ تم تحميل capacitor-app.js</div>';
+            } else {
+                html += '<div class="result error">❌ لم يتم تحميل capacitor-app.js</div>';
+            }
+
+            document.getElementById('styleStatus').innerHTML = html;
+        }
+
+        function checkCapacitorClass() {
+            if (typeof window.isCapacitorApp === 'function') {
+                const result = window.isCapacitorApp();
+                alert('isCapacitorApp() = ' + result);
+            } else {
+                alert('وظيفة isCapacitorApp() غير موجودة');
+            }
+            checkDetection();
+        }
+
+        function simulateAndroid() {
+            alert('⚠️ لا يمكن تغيير User-Agent من JavaScript\n\nلمحاكاة Android App:\n1. افتح Developer Tools (F12)\n2. اذهب إلى Settings (⚙️) → More Tools → Network Conditions\n3. ألغِ تحديد "Use browser default"\n4. أدخل: RakazApp-Capacitor-Android/1.0\n5. أعد تحميل الصفحة');
+        }
+
+        function simulateNormal() {
+            alert('أعد تحميل الصفحة بدون تغيير User-Agent للعودة للوضع الطبيعي');
+        }
+
+        // فحص معلومات الجلسة
+        async function checkSession() {
+            try {
+                const response = await fetch('/api/session-info', {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('sessionInfo').innerHTML = 
+                        `<div class="result info">
+                            <strong>isCapacitor في الجلسة:</strong> ${data.isCapacitor ? 'نعم' : 'لا'}
+                        </div>`;
+                } else {
+                    document.getElementById('sessionInfo').innerHTML = 
+                        '<div class="result error">لم يتم إنشاء API endpoint للجلسة</div>';
+                }
+            } catch (error) {
+                document.getElementById('sessionInfo').innerHTML = 
+                    '<div class="result error">خطأ في الاتصال بالـ API</div>';
+            }
+        }
+
+        // تشغيل الفحص عند التحميل
+        checkDetection();
+        checkSession();
+
+        // فحص دوري كل 3 ثواني
+        setInterval(checkDetection, 3000);
+    </script>
+</body>
+</html>

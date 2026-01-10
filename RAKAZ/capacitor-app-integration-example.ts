@@ -17,7 +17,7 @@ export function initializePaymentDeepLinks() {
     App.addListener('appUrlOpen', (event) => {
         const url = event.url;
         console.log('App opened with URL:', url);
-        
+
         // Check if this is a payment callback
         if (url.startsWith('rakaz-app://payment-callback')) {
             handlePaymentCallback(url);
@@ -32,40 +32,40 @@ function handlePaymentCallback(url: string) {
     try {
         const urlObj = new URL(url);
         const params = new URLSearchParams(urlObj.search);
-        
+
         const status = params.get('status');
         const orderId = params.get('order_id');
         const orderNumber = params.get('order_number');
         const paymentId = params.get('paymentId');
-        
+
         console.log('Payment callback received:', {
             status,
             orderId,
             orderNumber,
             paymentId
         });
-        
+
         if (status === 'success') {
             // Payment successful - show success message
             showSuccessMessage(orderNumber);
-            
+
             // Navigate to order details
             navigateToOrder(orderId);
-            
+
         } else if (status === 'failed') {
             // Payment failed - show error message
             showErrorMessage('فشل الدفع. يرجى المحاولة مرة أخرى.');
-            
+
             // Navigate back to checkout
             navigateToCheckout();
-            
+
         } else {
             // Unknown status - poll payment status
             if (orderId) {
                 pollPaymentStatus(orderId);
             }
         }
-        
+
     } catch (error) {
         console.error('Error handling payment callback:', error);
         showErrorMessage('حدث خطأ في معالجة نتيجة الدفع');
@@ -79,10 +79,10 @@ function handlePaymentCallback(url: string) {
 function navigateToOrder(orderId: string) {
     // React Router example
     // window.location.href = `/order/${orderId}`;
-    
+
     // Or use your router
     // router.push(`/order/${orderId}`);
-    
+
     // Capacitor WebView navigation
     window.location.href = `/order/${orderId}`;
 }
@@ -99,17 +99,17 @@ function showSuccessMessage(orderNumber: string) {
     // Use your app's notification system
     // Example with native alert
     const message = `تم الدفع بنجاح! رقم الطلب: ${orderNumber}`;
-    
+
     // Native alert
     alert(message);
-    
+
     // Or use Capacitor Dialog
     // import { Dialog } from '@capacitor/dialog';
     // Dialog.alert({
     //     title: 'نجح الدفع',
     //     message: message
     // });
-    
+
     // Or use your UI library (Ionic, etc.)
     // present toast, modal, etc.
 }
@@ -125,16 +125,16 @@ function showErrorMessage(message: string) {
 async function pollPaymentStatus(orderId: string) {
     let attempts = 0;
     const maxAttempts = 60; // 5 minutes
-    
+
     const interval = setInterval(async () => {
         attempts++;
-        
+
         if (attempts > maxAttempts) {
             clearInterval(interval);
             showErrorMessage('انتهت مهلة التحقق من الدفع');
             return;
         }
-        
+
         try {
             const response = await fetch(`/api/order/${orderId}/payment-status`, {
                 headers: {
@@ -142,9 +142,9 @@ async function pollPaymentStatus(orderId: string) {
                     'X-Native-App': 'rakaz-capacitor'
                 }
             });
-            
+
             const data = await response.json();
-            
+
             if (data.success) {
                 if (data.payment_status === 'paid') {
                     clearInterval(interval);
@@ -156,11 +156,11 @@ async function pollPaymentStatus(orderId: string) {
                     navigateToCheckout();
                 }
             }
-            
+
         } catch (error) {
             console.error('Error polling payment status:', error);
         }
-        
+
     }, 5000); // Every 5 seconds
 }
 
@@ -175,7 +175,7 @@ async function pollPaymentStatus(orderId: string) {
 export function setCustomUserAgent() {
     // Using capacitor-plugin-user-agent or similar
     // UserAgent.set({ userAgent: 'RakazApp-Capacitor/1.0.0' });
-    
+
     // Or modify in capacitor.config.ts:
     // plugins: {
     //     CapacitorHttp: {
@@ -195,16 +195,16 @@ export function setCustomUserAgent() {
  */
 export function initializeApp() {
     console.log('Initializing Rakaz app...');
-    
+
     // Initialize Deep Links
     initializePaymentDeepLinks();
-    
+
     // Set custom User-Agent (optional)
     // setCustomUserAgent();
-    
+
     // Add global flag for web detection
     (window as any).isRakazNativeApp = () => true;
-    
+
     console.log('App initialized successfully');
 }
 
@@ -224,7 +224,7 @@ const App: React.FC = () => {
         // Initialize Capacitor integration
         initializeApp();
     }, []);
-    
+
     return (
         <IonApp>
             {/* Your app content *\/}
@@ -263,7 +263,7 @@ export function testDeepLink() {
     // Simulate successful payment
     const testUrl = 'rakaz-app://payment-callback?paymentId=test123&status=success&order_id=456&order_number=ORD-001';
     handlePaymentCallback(testUrl);
-    
+
     // Simulate failed payment
     // const testUrl = 'rakaz-app://payment-callback?paymentId=test123&status=failed&order_id=456';
     // handlePaymentCallback(testUrl);

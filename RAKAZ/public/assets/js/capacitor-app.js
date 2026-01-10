@@ -6,6 +6,36 @@
 (function() {
     'use strict';
 
+    // وظيفة للتحقق من Capacitor
+    function isCapacitorApp() {
+        // التحقق من User Agent
+        const userAgent = navigator.userAgent || '';
+        if (userAgent.includes('RakazApp-Capacitor-Android') || 
+            userAgent.includes('RakazApp-Android-Capacitor') ||
+            userAgent.includes('RakazApp-Capacitor') ||
+            userAgent.includes('Capacitor')) {
+            return true;
+        }
+        
+        // التحقق من Capacitor global object
+        if (typeof window.Capacitor !== 'undefined') {
+            return true;
+        }
+        
+        // التحقق من class
+        if (document.body && document.body.classList.contains('capacitor-app')) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    // إضافة class إذا كان تطبيق Capacitor
+    if (isCapacitorApp() && document.body && !document.body.classList.contains('capacitor-app')) {
+        console.log('⚡ Adding capacitor-app class to body');
+        document.body.classList.add('capacitor-app');
+    }
+
     // التحقق من أن التطبيق يعمل من داخل Capacitor
     if (!document.body.classList.contains('capacitor-app')) {
         return;

@@ -912,12 +912,12 @@
                     if (isCapacitor && isOnlinePayment) {
                         // For Capacitor + online payment, use the new payment handler
                         Swal.close();
-                        
+
                         if (typeof window.handleCapacitorCheckout === 'function') {
                             window.handleCapacitorCheckout(form);
                         } else {
                             console.error('Capacitor payment handler not loaded');
-                            alert(isArabic 
+                            alert(isArabic
                                 ? 'حدث خطأ في تحميل نظام الدفع'
                                 : 'Payment system loading error');
                         }
@@ -932,7 +932,7 @@
                                 Swal.showLoading();
                             }
                         });
-                        
+
                         form.submit();
                     }
                 }
