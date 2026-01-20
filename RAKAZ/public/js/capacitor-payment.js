@@ -68,7 +68,7 @@
 
         // Check user agent for Capacitor
         const userAgent = navigator.userAgent || '';
-        if (userAgent.includes('Capacitor') || 
+        if (userAgent.includes('Capacitor') ||
             userAgent.includes('RakazApp-Capacitor') ||
             userAgent.includes('RakazApp-Capacitor-Android') ||
             userAgent.includes('RakazApp-Android-Capacitor')) {
@@ -85,7 +85,7 @@
         if (window.isCapacitorApp() && document.body && !document.body.classList.contains('capacitor-app')) {
             console.log('Adding capacitor-app class to body');
             document.body.classList.add('capacitor-app');
-            
+
             // Also trigger a custom event for other scripts
             document.dispatchEvent(new CustomEvent('capacitor-detected'));
         }

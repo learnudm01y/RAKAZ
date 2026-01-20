@@ -709,33 +709,76 @@
     }
 
     /* Discover Grid Layout - Matching Frontend Design */
-    #discover-container {
+    #discover-grid-container {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 25px;
-        margin-bottom: 1.5rem;
+        margin-bottom: 25px;
     }
 
-    #discover-container .item-card {
+    #discover-grid-container .item-card {
         margin-bottom: 0;
         height: 100%;
         display: flex;
         flex-direction: column;
     }
 
-    #discover-container .image-preview-container {
-        aspect-ratio: 3 / 4.7;
+    #discover-grid-container .image-preview-container {
+        aspect-ratio: 3 / 4.5;
         width: 100%;
         height: auto;
         max-height: none;
     }
 
-    #discover-container .image-preview-container img {
+    #discover-grid-container .image-preview-container img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         object-position: center;
         display: block;
+    }
+
+    /* Discover Row Layout - Wide Cards (Items 4 & 5) */
+    #discover-row-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+        margin-bottom: 1.5rem;
+    }
+
+    #discover-row-container .item-card {
+        margin-bottom: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #discover-row-container .item-card.wide-card {
+        border-left: 4px solid #ff9800;
+    }
+
+    #discover-row-container .image-preview-container {
+        aspect-ratio: 16 / 9;
+        width: 100%;
+        height: auto;
+        max-height: none;
+    }
+
+    #discover-row-container .image-preview-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+    }
+
+    /* Wide Card Visual Styling */
+    #discover-row-container .item-card:nth-child(1) .image-preview-container {
+        background-color: #1a3d3d;
+    }
+
+    #discover-row-container .item-card:nth-child(2) .image-preview-container {
+        background-color: #f5f5dc;
     }
 
     @media (max-width: 768px) {
@@ -762,32 +805,72 @@
         }
 
         /* Mobile: 3 cards per row - matching frontend */
-        #gifts-container,
-        #discover-container {
+        #gifts-container {
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
             padding: 0 15px;
         }
 
-        #gifts-container .image-preview-container,
-        #discover-container .image-preview-container {
+        #gifts-container .image-preview-container {
             aspect-ratio: 3 / 5.64;
+            max-height: none;
+        }
+
+        #discover-grid-container {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 0 15px;
+        }
+
+        #discover-grid-container .image-preview-container {
+            aspect-ratio: 3 / 5.64;
+            max-height: none;
+        }
+
+        #discover-row-container {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            padding: 0 15px;
+        }
+
+        #discover-row-container .image-preview-container {
+            aspect-ratio: 16 / 9;
             max-height: none;
         }
     }
 
     @media (min-width: 769px) and (max-width: 1024px) {
         /* Tablet: 3 cards per row - matching frontend */
-        #gifts-container,
-        #discover-container {
+        #gifts-container {
             grid-template-columns: repeat(3, 1fr);
             gap: 15px;
             padding: 0 25px;
         }
 
-        #gifts-container .image-preview-container,
-        #discover-container .image-preview-container {
+        #gifts-container .image-preview-container {
             aspect-ratio: 3 / 4.7;
+            max-height: none;
+        }
+
+        #discover-grid-container {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            padding: 0 25px;
+        }
+
+        #discover-grid-container .image-preview-container {
+            aspect-ratio: 3 / 4.7;
+            max-height: none;
+        }
+
+        #discover-row-container {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 0 25px;
+        }
+
+        #discover-row-container .image-preview-container {
+            aspect-ratio: 16 / 9;
             max-height: none;
         }
     }
@@ -1966,92 +2049,188 @@
                     </label>
                 </div>
 
-                <div id="discover-container">
-                    @foreach($discoverItems ?? [] as $index => $item)
-                    @php
-                        $isWideCard = $index >= 3; // Items 4 and 5 (index 3, 4) are wide cards
-                        $cardTypeLabel = $index < 3 ?
-                            ($contentLang == 'ar' ? '(كرت صغير - Grid)' : '(Small Card - Grid)') :
-                            ($contentLang == 'ar' ? '(كرت عريض - Wide)' : '(Wide Card)');
-                        $cardTypeColor = $index < 3 ? '#4caf50' : '#ff9800';
-                    @endphp
-                    <div class="item-card discover-item" data-index="{{ $index }}" style="border-left: 4px solid {{ $cardTypeColor }};">
-                        <div class="item-card-header">
-                            <div class="item-card-title">
-                                <span class="item-number" style="background: {{ $cardTypeColor }};">{{ $index + 1 }}</span>
-                                <span class="ar-text">عنصر رقم {{ $index + 1 }} {{ $cardTypeLabel }}</span>
-                                <span class="en-text">Item #{{ $index + 1 }} {{ $cardTypeLabel }}</span>
+                @php
+                    $gridItems = collect($discoverItems ?? [])->take(3);
+                    $rowItems = collect($discoverItems ?? [])->slice(3);
+                @endphp
+
+                <!-- Grid Items (First 3) - Small Cards -->
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="margin-bottom: 1rem; color: #4caf50; display: flex; align-items: center; gap: 0.5rem;">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z"></path>
+                        </svg>
+                        <span class="ar-text">الصف الأول - كروت صغيرة (3:4.5)</span>
+                        <span class="en-text">First Row - Small Cards (3:4.5)</span>
+                    </h4>
+                    <div id="discover-grid-container">
+                        @foreach($gridItems as $index => $item)
+                        <div class="item-card discover-item" data-index="{{ $index }}" style="border-left: 4px solid #4caf50;">
+                            <div class="item-card-header">
+                                <div class="item-card-title">
+                                    <span class="item-number" style="background: #4caf50;">{{ $index + 1 }}</span>
+                                    <span class="ar-text">عنصر رقم {{ $index + 1 }} (كرت صغير - Grid)</span>
+                                    <span class="en-text">Item #{{ $index + 1 }} (Small Card - Grid)</span>
+                                </div>
+                                <button type="button" onclick="removeDiscoverItem({{ $item->id }})" class="btn btn-danger btn-sm">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    <span class="ar-text">حذف</span>
+                                    <span class="en-text">Delete</span>
+                                </button>
                             </div>
-                            <button type="button" onclick="removeDiscoverItem({{ $item->id }})" class="btn btn-danger btn-sm">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                                <span class="ar-text">حذف</span>
-                                <span class="en-text">Delete</span>
-                            </button>
-                        </div>
 
-                        <input type="hidden" name="discover_items[{{ $index }}][id]" value="{{ $item->id }}">
+                            <input type="hidden" name="discover_items[{{ $index }}][id]" value="{{ $item->id }}">
 
-                        <div class="form-group">
-                            <label class="form-label">
-                                <span class="ar-text">الصورة الحالية</span>
-                                <span class="en-text">Current Image</span>
-                            </label>
-                            <div class="image-preview-container" id="discover-preview-{{ $index }}" @if($item->image) style="display: block;" @else style="display: none;" @endif>
-                                <img src="{{ $item->image }}" alt="Discover {{ $index + 1 }}">
-                            </div>
-                            <input type="hidden" name="discover_items[{{ $index }}][image]" value="{{ $item->image }}">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">
-                                <span class="ar-text">{{ $item->image ? 'تغيير الصورة' : 'رفع الصورة' }}</span>
-                                <span class="en-text">{{ $item->image ? 'Change Image' : 'Upload Image' }}</span>
-                            </label>
-                            <div class="file-input-custom">
-                                <input type="file" name="discover_image[{{ $index }}]" class="form-control image-upload" accept="image/*" data-preview="discover-preview-{{ $index }}" onchange="previewImage(this)">
-                            </div>
-                            <p class="helper-text">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span class="ar-text">الحجم المثالي: 600x400 بكسل</span>
-                                <span class="en-text">Optimal size: 600x400px</span>
-                            </p>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">
-                                <span class="ar-text">الرابط</span>
-                                <span class="en-text">Link</span>
-                            </label>
-                            <input type="text" name="discover_items[{{ $index }}][link]" value="{{ $item->link }}" class="form-control" placeholder="https://...">
-                        </div>
-
-                        <div class="row">
                             <div class="form-group">
                                 <label class="form-label">
-                                    <span class="ar-text">العنوان (عربي)</span>
-                                    <span class="en-text">Title (Arabic)</span>
+                                    <span class="ar-text">الصورة الحالية</span>
+                                    <span class="en-text">Current Image</span>
                                 </label>
-                                <input type="text" name="discover_items[{{ $index }}][title][ar]" value="{{ $item->title['ar'] ?? '' }}" class="form-control">
+                                <div class="image-preview-container" id="discover-preview-{{ $index }}" @if($item->image) style="display: block;" @else style="display: none;" @endif>
+                                    <img src="{{ $item->image }}" alt="Discover {{ $index + 1 }}">
+                                </div>
+                                <input type="hidden" name="discover_items[{{ $index }}][image]" value="{{ $item->image }}">
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">
-                                    <span class="ar-text">العنوان (إنجليزي)</span>
-                                    <span class="en-text">Title (English)</span>
+                                    <span class="ar-text">{{ $item->image ? 'تغيير الصورة' : 'رفع الصورة' }}</span>
+                                    <span class="en-text">{{ $item->image ? 'Change Image' : 'Upload Image' }}</span>
                                 </label>
-                                <input type="text" name="discover_items[{{ $index }}][title][en]" value="{{ $item->title['en'] ?? '' }}" class="form-control">
+                                <div class="file-input-custom">
+                                    <input type="file" name="discover_image[{{ $index }}]" class="form-control image-upload" accept="image/*" data-preview="discover-preview-{{ $index }}" onchange="previewImage(this)">
+                                </div>
+                                <p class="helper-text">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span class="ar-text">الحجم المثالي: 600x900 بكسل (نسبة 3:4.5)</span>
+                                    <span class="en-text">Optimal size: 600x900px (Aspect ratio 3:4.5)</span>
+                                </p>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <span class="ar-text">الرابط</span>
+                                    <span class="en-text">Link</span>
+                                </label>
+                                <input type="text" name="discover_items[{{ $index }}][link]" value="{{ $item->link }}" class="form-control" placeholder="https://...">
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <span class="ar-text">العنوان (عربي)</span>
+                                        <span class="en-text">Title (Arabic)</span>
+                                    </label>
+                                    <input type="text" name="discover_items[{{ $index }}][title][ar]" value="{{ $item->title['ar'] ?? '' }}" class="form-control">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <span class="ar-text">العنوان (إنجليزي)</span>
+                                        <span class="en-text">Title (English)</span>
+                                    </label>
+                                    <input type="text" name="discover_items[{{ $index }}][title][en]" value="{{ $item->title['en'] ?? '' }}" class="form-control">
+                                </div>
                             </div>
                         </div>
+                        @endforeach
                     </div>
-                    @endforeach
+                </div>
+
+                <!-- Row Items (Last 2) - Wide Cards -->
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="margin-bottom: 1rem; color: #ff9800; display: flex; align-items: center; gap: 0.5rem;">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+                        </svg>
+                        <span class="ar-text">الصف الثاني - كروت عريضة (16:9)</span>
+                        <span class="en-text">Second Row - Wide Cards (16:9)</span>
+                    </h4>
+                    <div id="discover-row-container">
+                        @foreach($rowItems as $originalIndex => $item)
+                        @php $index = $originalIndex; @endphp
+                        <div class="item-card discover-item wide-card" data-index="{{ $index }}" style="border-left: 4px solid #ff9800;">
+                            <div class="item-card-header">
+                                <div class="item-card-title">
+                                    <span class="item-number" style="background: #ff9800;">{{ $index + 1 }}</span>
+                                    <span class="ar-text">عنصر رقم {{ $index + 1 }} (كرت عريض - Wide)</span>
+                                    <span class="en-text">Item #{{ $index + 1 }} (Wide Card)</span>
+                                </div>
+                                <button type="button" onclick="removeDiscoverItem({{ $item->id }})" class="btn btn-danger btn-sm">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    <span class="ar-text">حذف</span>
+                                    <span class="en-text">Delete</span>
+                                </button>
+                            </div>
+
+                            <input type="hidden" name="discover_items[{{ $index }}][id]" value="{{ $item->id }}">
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <span class="ar-text">الصورة الحالية</span>
+                                    <span class="en-text">Current Image</span>
+                                </label>
+                                <div class="image-preview-container" id="discover-preview-{{ $index }}" @if($item->image) style="display: block;" @else style="display: none;" @endif>
+                                    <img src="{{ $item->image }}" alt="Discover {{ $index + 1 }}">
+                                </div>
+                                <input type="hidden" name="discover_items[{{ $index }}][image]" value="{{ $item->image }}">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <span class="ar-text">{{ $item->image ? 'تغيير الصورة' : 'رفع الصورة' }}</span>
+                                    <span class="en-text">{{ $item->image ? 'Change Image' : 'Upload Image' }}</span>
+                                </label>
+                                <div class="file-input-custom">
+                                    <input type="file" name="discover_image[{{ $index }}]" class="form-control image-upload" accept="image/*" data-preview="discover-preview-{{ $index }}" onchange="previewImage(this)">
+                                </div>
+                                <p class="helper-text">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span class="ar-text">الحجم المثالي: 1600x900 بكسل (نسبة 16:9)</span>
+                                    <span class="en-text">Optimal size: 1600x900px (Aspect ratio 16:9)</span>
+                                </p>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <span class="ar-text">الرابط</span>
+                                    <span class="en-text">Link</span>
+                                </label>
+                                <input type="text" name="discover_items[{{ $index }}][link]" value="{{ $item->link }}" class="form-control" placeholder="https://...">
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <span class="ar-text">العنوان (عربي)</span>
+                                        <span class="en-text">Title (Arabic)</span>
+                                    </label>
+                                    <input type="text" name="discover_items[{{ $index }}][title][ar]" value="{{ $item->title['ar'] ?? '' }}" class="form-control">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <span class="ar-text">العنوان (إنجليزي)</span>
+                                        <span class="en-text">Title (English)</span>
+                                    </label>
+                                    <input type="text" name="discover_items[{{ $index }}][title][en]" value="{{ $item->title['en'] ?? '' }}" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
                 </div>
 
                 @if(count($discoverItems ?? []) == 0)
-                <div class="empty-state">
+                <div class="empty-state" id="discover-empty-state">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
@@ -2800,20 +2979,46 @@ function removeDiscoverItem(itemId) {
 }
 
 function addDiscover() {
-    const container = document.getElementById('discover-container');
+    const gridContainer = document.getElementById('discover-grid-container');
+    const rowContainer = document.getElementById('discover-row-container');
     const index = discoverCount++;
 
     // Remove empty state if exists
-    const emptyState = container.parentElement.querySelector('.empty-state');
+    const emptyState = document.getElementById('discover-empty-state');
     if (emptyState) emptyState.remove();
 
+    // Determine which container to add to
+    const gridItemsCount = gridContainer.querySelectorAll('.item-card').length;
+    const rowItemsCount = rowContainer.querySelectorAll('.item-card').length;
+
+    // First 3 items go to grid (small cards), next 2 go to row (wide cards)
+    const isWideCard = gridItemsCount >= 3 && rowItemsCount < 2;
+    const targetContainer = gridItemsCount < 3 ? gridContainer : rowContainer;
+
+    // Check if we already have 5 items
+    if (gridItemsCount >= 3 && rowItemsCount >= 2) {
+        const locale = document.querySelector('input[name="locale"]').value;
+        const maxTitle = locale === 'ar' ? 'تنبيه!' : 'Notice!';
+        const maxText = locale === 'ar' ? 'الحد الأقصى 5 عناصر فقط (3 كروت صغيرة + 2 كروت عريضة)' : 'Maximum 5 items allowed (3 small cards + 2 wide cards)';
+        Swal.fire(maxTitle, maxText, 'info');
+        discoverCount--; // Revert the increment
+        return;
+    }
+
+    const cardColor = isWideCard ? '#ff9800' : '#4caf50';
+    const cardTypeAr = isWideCard ? '(كرت عريض - Wide)' : '(كرت صغير - Grid)';
+    const cardTypeEn = isWideCard ? '(Wide Card)' : '(Small Card - Grid)';
+    const wideCardClass = isWideCard ? 'wide-card' : '';
+    const sizeHintAr = isWideCard ? 'الحجم المثالي: 1600x900 بكسل (نسبة 16:9)' : 'الحجم المثالي: 600x900 بكسل (نسبة 3:4.5)';
+    const sizeHintEn = isWideCard ? 'Optimal size: 1600x900px (Aspect ratio 16:9)' : 'Optimal size: 600x900px (Aspect ratio 3:4.5)';
+
     const html = `
-        <div class="item-card discover-item" data-index="${index}">
+        <div class="item-card discover-item ${wideCardClass}" data-index="${index}" style="border-left: 4px solid ${cardColor};">
             <div class="item-card-header">
                 <div class="item-card-title">
-                    <span class="item-number">${index + 1}</span>
-                    <span class="ar-text">عنصر رقم ${index + 1}</span>
-                    <span class="en-text">Item #${index + 1}</span>
+                    <span class="item-number" style="background: ${cardColor};">${index + 1}</span>
+                    <span class="ar-text">عنصر رقم ${index + 1} ${cardTypeAr}</span>
+                    <span class="en-text">Item #${index + 1} ${cardTypeEn}</span>
                 </div>
                 <button type="button" onclick="removeItem(this, 'discover')" class="btn btn-danger btn-sm">
                     <i class="fas fa-trash-alt"></i>
@@ -2835,8 +3040,8 @@ function addDiscover() {
                 </div>
                 <p class="helper-text">
                     <i class="fas fa-info-circle"></i>
-                    <span class="ar-text">الحجم المثالي: 600x400 بكسل</span>
-                    <span class="en-text">Optimal size: 600x400px</span>
+                    <span class="ar-text">${sizeHintAr}</span>
+                    <span class="en-text">${sizeHintEn}</span>
                 </p>
             </div>
 
@@ -2868,7 +3073,7 @@ function addDiscover() {
         </div>
     `;
 
-    container.insertAdjacentHTML('beforeend', html);
+    targetContainer.insertAdjacentHTML('beforeend', html);
 }
 
 function removeItem(button, type) {

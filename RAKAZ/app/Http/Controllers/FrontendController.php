@@ -961,4 +961,16 @@ class FrontendController extends Controller
             'data' => $desktopMenuData
         ]);
     }
+
+    /**
+     * Display a dynamic page by slug.
+     */
+    public function page($slug)
+    {
+        $page = Page::where('slug', $slug)
+            ->where('status', 'active')
+            ->firstOrFail();
+
+        return view('frontend.page', compact('page'));
+    }
 }

@@ -31,4 +31,30 @@ return [
 
     // Webhook Secret (optional - for webhook verification)
     'webhook_secret' => env('MYFATOORAH_WEBHOOK_SECRET', ''),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Apple Pay Configuration (iOS)
+    |--------------------------------------------------------------------------
+    */
+    'apple_pay' => [
+        'enabled' => env('APPLE_PAY_ENABLED', false),
+        'merchant_id' => env('APPLE_PAY_MERCHANT_ID', 'merchant.com.rakaz.store'),
+        'display_name' => env('APPLE_PAY_DISPLAY_NAME', 'RAKAZ Store'),
+        'country_code' => env('APPLE_PAY_COUNTRY_CODE', 'AE'),
+        'currency_code' => env('APPLE_PAY_CURRENCY_CODE', 'AED'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Google Pay Configuration (Android)
+    |--------------------------------------------------------------------------
+    */
+    'google_pay' => [
+        'enabled' => env('GOOGLE_PAY_ENABLED', false),
+        'merchant_id' => env('GOOGLE_PAY_MERCHANT_ID', ''),
+        'merchant_name' => env('GOOGLE_PAY_MERCHANT_NAME', 'RAKAZ Store'),
+        'country_code' => env('GOOGLE_PAY_COUNTRY_CODE', 'AE'),
+        'currency_code' => env('GOOGLE_PAY_CURRENCY_CODE', 'AED'),
+    ],
 ];

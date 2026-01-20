@@ -10,23 +10,23 @@
     function isCapacitorApp() {
         // التحقق من User Agent
         const userAgent = navigator.userAgent || '';
-        if (userAgent.includes('RakazApp-Capacitor-Android') || 
+        if (userAgent.includes('RakazApp-Capacitor-Android') ||
             userAgent.includes('RakazApp-Android-Capacitor') ||
             userAgent.includes('RakazApp-Capacitor') ||
             userAgent.includes('Capacitor')) {
             return true;
         }
-        
+
         // التحقق من Capacitor global object
         if (typeof window.Capacitor !== 'undefined') {
             return true;
         }
-        
+
         // التحقق من class
         if (document.body && document.body.classList.contains('capacitor-app')) {
             return true;
         }
-        
+
         return false;
     }
 

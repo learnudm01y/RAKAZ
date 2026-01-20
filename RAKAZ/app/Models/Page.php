@@ -15,6 +15,7 @@ class Page extends Model
         'title_en',
         'content_ar',
         'content_en',
+        'image',
         'meta_description_ar',
         'meta_description_en',
         'meta_keywords_ar',

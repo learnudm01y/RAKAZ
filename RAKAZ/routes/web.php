@@ -59,6 +59,7 @@ Route::post('/wishlist/save-pending', [WishlistController::class, 'savePending']
 Route::post('/wishlist/check', [WishlistController::class, 'check'])->name('wishlist.check');
 Route::delete('/wishlist/{id}', [WishlistController::class, 'remove'])->name('wishlist.remove');
 Route::get('/privacy-policy', [FrontendController::class, 'privacyPolicy'])->name('privacy.policy');
+Route::get('/page/{slug}', [FrontendController::class, 'page'])->name('page.show');
 
 // Test Wishlist Routes
 Route::get('/test-wishlist', function () {
@@ -291,5 +292,8 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     // Footer Settings
     Route::post('footer/settings', [FooterController::class, 'updateSettings'])->name('footer.settings.update');
 });
+
+// Dynamic Pages - This must be at the end to avoid conflicts with other routes
+Route::get('/{slug}', [FrontendController::class, 'page'])->name('page.dynamic')->where('slug', '[a-z0-9\-]+');
 
 require __DIR__.'/auth.php';

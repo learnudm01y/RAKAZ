@@ -1,0 +1,258 @@
+/**
+ * Native App Styles
+ *
+ * Styles for RAKAZ iOS and Android Capacitor apps
+ * These classes are applied by NativeAppHelper based on the detected platform
+ */
+
+/* ============================================
+   Base Native App Styles
+   ============================================ */
+
+.rakaz-native-app {
+    /* Adjust header height for native apps */
+    --header-height: 0px;
+    --native-app-padding-top: 0px;
+    --native-app-padding-bottom: 0px;
+}
+
+/* ============================================
+   iOS Specific Styles - Safe Area Handling
+   ============================================ */
+
+.rakaz-ios-app {
+    /* iOS Safe Area Insets */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+
+    /* CSS Variables for safe areas */
+    --safe-area-inset-top: env(safe-area-inset-top);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom);
+    --safe-area-inset-left: env(safe-area-inset-left);
+    --safe-area-inset-right: env(safe-area-inset-right);
+}
+
+/* iOS Header adjustment */
+.rakaz-ios-app .main-header,
+.rakaz-ios-app header {
+    padding-top: env(safe-area-inset-top);
+}
+
+/* iOS Fixed bottom elements */
+.rakaz-ios-app .fixed-bottom,
+.rakaz-ios-app .bottom-nav,
+.rakaz-ios-app .checkout-footer {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* iOS Modal adjustments */
+.rakaz-ios-app .modal-content {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ============================================
+   Android Specific Styles
+   ============================================ */
+
+.rakaz-android-app {
+    /* Android doesn't need safe-area-inset but may need status bar handling */
+    --status-bar-height: 24px;
+}
+
+/* Android Header adjustment */
+.rakaz-android-app .main-header,
+.rakaz-android-app header {
+    /* Android handles status bar differently */
+}
+
+/* ============================================
+   Hide App Download Elements in Native Apps
+   ============================================ */
+
+.rakaz-native-app .app-download-section,
+.rakaz-native-app .download-app-banner,
+.rakaz-native-app .app-store-links,
+.rakaz-native-app .app-download-prompt,
+.rakaz-native-app .install-app-banner,
+.rakaz-native-app .smart-app-banner,
+.rakaz-native-app [data-show-web-only],
+.rakaz-native-app .web-only {
+    display: none !important;
+}
+
+/* ============================================
+   Show Native-Only Elements
+   ============================================ */
+
+/* Elements only visible in native apps */
+.native-only {
+    display: none !important;
+}
+
+.rakaz-native-app .native-only {
+    display: block !important;
+}
+
+.rakaz-native-app .native-only-flex {
+    display: flex !important;
+}
+
+.rakaz-native-app .native-only-inline {
+    display: inline !important;
+}
+
+/* iOS-only elements */
+.ios-only {
+    display: none !important;
+}
+
+.rakaz-ios-app .ios-only {
+    display: block !important;
+}
+
+/* Android-only elements */
+.android-only {
+    display: none !important;
+}
+
+.rakaz-android-app .android-only {
+    display: block !important;
+}
+
+/* ============================================
+   Payment Method Styles
+   ============================================ */
+
+/* Apple Pay button container (iOS only) */
+.apple-pay-container {
+    display: none;
+}
+
+.rakaz-ios-app .apple-pay-container {
+    display: block;
+}
+
+/* Google Pay button container (Android only) */
+.google-pay-container {
+    display: none;
+}
+
+.rakaz-android-app .google-pay-container {
+    display: block;
+}
+
+/* ============================================
+   Touch Optimizations for Native Apps
+   ============================================ */
+
+.rakaz-native-app {
+    /* Improve touch response */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Allow text selection where needed */
+.rakaz-native-app input,
+.rakaz-native-app textarea,
+.rakaz-native-app .selectable {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+/* Prevent pull-to-refresh conflicts */
+.rakaz-native-app body {
+    overscroll-behavior-y: contain;
+}
+
+/* ============================================
+   iOS Specific Touch Fixes
+   ============================================ */
+
+.rakaz-ios-app {
+    /* Fix iOS momentum scrolling */
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Fix iOS input zoom */
+.rakaz-ios-app input[type="text"],
+.rakaz-ios-app input[type="email"],
+.rakaz-ios-app input[type="tel"],
+.rakaz-ios-app input[type="number"],
+.rakaz-ios-app input[type="password"],
+.rakaz-ios-app select,
+.rakaz-ios-app textarea {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+}
+
+/* ============================================
+   Navigation Adjustments
+   ============================================ */
+
+/* Bottom navigation padding for iOS home indicator */
+.rakaz-ios-app .bottom-navigation,
+.rakaz-ios-app .tab-bar,
+.rakaz-ios-app .bottom-actions {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
+}
+
+/* Fixed footer adjustments */
+.rakaz-native-app .sticky-footer,
+.rakaz-native-app .fixed-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.rakaz-ios-app .sticky-footer,
+.rakaz-ios-app .fixed-footer {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ============================================
+   Keyboard Handling
+   ============================================ */
+
+/* Adjust layout when keyboard is open */
+.rakaz-native-app.keyboard-open .sticky-footer,
+.rakaz-native-app.keyboard-open .fixed-footer,
+.rakaz-native-app.keyboard-open .bottom-navigation {
+    display: none;
+}
+
+/* ============================================
+   Dark Mode Support (iOS follows system)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+    .rakaz-ios-app {
+        /* iOS dark mode adjustments if needed */
+    }
+}
+
+/* ============================================
+   Landscape Orientation Handling
+   ============================================ */
+
+@media screen and (orientation: landscape) {
+    .rakaz-ios-app {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+}
+
+/* ============================================
+   Notch/Dynamic Island Handling (iPhone X+)
+   ============================================ */
+
+@supports (padding-top: env(safe-area-inset-top)) {
+    .rakaz-ios-app .fullscreen-modal {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}

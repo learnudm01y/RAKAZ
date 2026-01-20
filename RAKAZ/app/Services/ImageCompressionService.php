@@ -25,12 +25,12 @@ class ImageCompressionService
     protected int $thumbnailMaxWidth = 600;
     protected int $thumbnailMaxHeight = 600;
 
-    // Mobile-optimized settings for phones (max 15KB)
-    protected int $mobileMaxFileSize = 15 * 1024; // 15KB - strict limit for mobile devices
-    protected int $mobileInitialQuality = 65;
-    protected int $mobileMinQuality = 25;
-    protected int $mobileMaxWidth = 480;
-    protected int $mobileMaxHeight = 480;
+    // Mobile-optimized settings for phones (max 50KB)
+    protected int $mobileMaxFileSize = 50 * 1024; // 50KB - increased limit for better mobile quality
+    protected int $mobileInitialQuality = 75;
+    protected int $mobileMinQuality = 35;
+    protected int $mobileMaxWidth = 600;
+    protected int $mobileMaxHeight = 600;
 
     public function __construct()
     {

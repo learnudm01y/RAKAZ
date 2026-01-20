@@ -55,7 +55,7 @@
 
 .custom-select-options {
     position: absolute;
-    top: calc(100% + 2px);
+    top: 100%;
     right: 0;
     left: 0;
     min-width: auto;
@@ -65,7 +65,7 @@
     border-radius: 4px;
     max-height: 0;
     overflow: hidden;
-    z-index: 1050;
+    z-index: 99999 !important;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
