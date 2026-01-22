@@ -940,29 +940,19 @@
                     <span class="en-text">Cyber Sale</span>
                 </button>
                 <button type="button" class="tab-button" onclick="switchTab(event, 'gifts')">
-                    <i class="fas fa-gift"></i>
-                    <span class="ar-text">الهدايا</span>
-                    <span class="en-text">Gifts</span>
+                    <i class="fas fa-images"></i>
+                    <span class="ar-text">الصور الطولية</span>
+                    <span class="en-text">Vertical Images</span>
                 </button>
                 <button type="button" class="tab-button" onclick="switchTab(event, 'dg')">
                     <i class="fas fa-image"></i>
-                    <span class="ar-text">DG Banner</span>
-                    <span class="en-text">DG Banner</span>
+                    <span class="ar-text">البانر العرضي الأول</span>
+                    <span class="en-text">Horizontal Banner 1</span>
                 </button>
                 <button type="button" class="tab-button" onclick="switchTab(event, 'gucci')">
-                    <i class="fas fa-crown"></i>
-                    <span class="ar-text">Gucci Spotlight</span>
-                    <span class="en-text">Gucci Spotlight</span>
-                </button>
-                <button type="button" class="tab-button" onclick="switchTab(event, 'featured')">
-                    <i class="fas fa-star"></i>
-                    <span class="ar-text">البانر المميز</span>
-                    <span class="en-text">Featured</span>
-                </button>
-                <button type="button" class="tab-button" onclick="switchTab(event, 'spotlight')">
-                    <i class="fas fa-lightbulb"></i>
-                    <span class="ar-text">Spotlight</span>
-                    <span class="en-text">Spotlight</span>
+                    <i class="fas fa-image"></i>
+                    <span class="ar-text">البانر العرضي الثاني</span>
+                    <span class="en-text">Horizontal Banner 2</span>
                 </button>
                 <button type="button" class="tab-button" onclick="switchTab(event, 'discover')">
                     <i class="fas fa-search"></i>
@@ -1268,32 +1258,32 @@
                 </div>
             </div>
 
-            <!-- Gifts Tab -->
+            <!-- Vertical Images Tab -->
             <div id="gifts-tab" class="tab-content">
                 <div class="section-header">
                     <h2 class="section-title">
-                        <span class="ar-text">قسم الهدايا</span>
-                        <span class="en-text">Gifts Section</span>
+                        <span class="ar-text">الصور الطولية</span>
+                        <span class="en-text">Vertical Images</span>
                     </h2>
                     <p class="section-description">
-                        <span class="ar-text">عرض بطاقات الهدايا والمنتجات المميزة</span>
-                        <span class="en-text">Display gift cards and featured products</span>
+                        <span class="ar-text">عرض صور طولية بجانب بعضها البعض (3 صور)</span>
+                        <span class="en-text">Display vertical images side by side (3 images)</span>
                     </p>
                 </div>
 
                 <div class="checkbox-wrapper">
                     <input type="checkbox" name="gifts_section_active" value="1" id="gifts_section_active" {{ $homePage->gifts_section_active ? 'checked' : '' }}>
                     <label for="gifts_section_active">
-                        <span class="ar-text">✅ تفعيل قسم الهدايا</span>
-                        <span class="en-text">✅ Enable Gifts Section</span>
+                        <span class="ar-text">✅ تفعيل الصور الطولية</span>
+                        <span class="en-text">✅ Enable Vertical Images</span>
                     </label>
                 </div>
 
                 <div class="item-card" style="margin-bottom: 1.5rem;">
                     <h3 class="item-card-title" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border-color);">
                         <i class="fas fa-heading" style="color: var(--primary-color);"></i>
-                        <span class="ar-text">عنوان قسم الهدايا</span>
-                        <span class="en-text">Gifts Section Title</span>
+                        <span class="ar-text">عنوان قسم الصور الطولية</span>
+                        <span class="en-text">Vertical Images Section Title</span>
                     </h3>
 
                     <div class="row">
@@ -1420,20 +1410,20 @@
             <div id="dg-tab" class="tab-content">
                 <div class="section-header">
                     <h2 class="section-title">
-                        <span class="ar-text">بانر Dolce & Gabbana</span>
-                        <span class="en-text">Dolce & Gabbana Banner</span>
+                        <span class="ar-text">البانر العرضي الأول</span>
+                        <span class="en-text">Horizontal Banner 1</span>
                     </h2>
                     <p class="section-description">
-                        <span class="ar-text">بانر كبير للعلامة التجارية Dolce & Gabbana Casa</span>
-                        <span class="en-text">Large banner for Dolce & Gabbana Casa brand</span>
+                        <span class="ar-text">بانر عرضي كبير يظهر بعد السلايدر الرئيسي (1920x600 بكسل)</span>
+                        <span class="en-text">Large horizontal banner shown after hero slider (1920x600px)</span>
                     </p>
                 </div>
 
                 <div class="checkbox-wrapper">
                     <input type="checkbox" name="dg_banner_active" id="dg_banner_active" value="1" {{ $homePage->dg_banner_active ? 'checked' : '' }}>
                     <label for="dg_banner_active">
-                        <span class="ar-text">تفعيل بانر DG</span>
-                        <span class="en-text">Activate DG Banner</span>
+                        <span class="ar-text">تفعيل البانر العرضي الأول</span>
+                        <span class="en-text">Activate Horizontal Banner 1</span>
                     </label>
                 </div>
 
@@ -1623,24 +1613,24 @@
                 </div>
             </div>
 
-            <!-- Gucci Spotlight Tab -->
+            <!-- Horizontal Banner 2 Tab -->
             <div id="gucci-tab" class="tab-content">
                 <div class="section-header">
                     <h2 class="section-title">
-                        <span class="ar-text">بانر Gucci Spotlight</span>
-                        <span class="en-text">Gucci Spotlight Banner</span>
+                        <span class="ar-text">البانر العرضي الثاني</span>
+                        <span class="en-text">Horizontal Banner 2</span>
                     </h2>
                     <p class="section-description">
-                        <span class="ar-text">بانر تسليط الضوء على المنتجات المميزة</span>
-                        <span class="en-text">Spotlight banner for featured products</span>
+                        <span class="ar-text">بانر عرضي يظهر بعد قسم المنتجات المميزة (1920x600 بكسل)</span>
+                        <span class="en-text">Horizontal banner shown after featured products section (1920x600px)</span>
                     </p>
                 </div>
 
                 <div class="checkbox-wrapper">
                     <input type="checkbox" name="gucci_spotlight_active" id="gucci_spotlight_active" value="1" {{ $homePage->gucci_spotlight_active ? 'checked' : '' }}>
                     <label for="gucci_spotlight_active">
-                        <span class="ar-text">تفعيل بانر Gucci Spotlight</span>
-                        <span class="en-text">Activate Gucci Spotlight Banner</span>
+                        <span class="ar-text">تفعيل البانر العرضي الثاني</span>
+                        <span class="en-text">Activate Horizontal Banner 2</span>
                     </label>
                 </div>
 
@@ -1827,178 +1817,6 @@
                         @endif
                     </div>
                     @endif
-                </div>
-            </div>
-
-            <!-- Featured Banner Tab -->
-            <div id="featured-tab" class="tab-content">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <span class="ar-text">البانر المميز</span>
-                        <span class="en-text">Featured Banner</span>
-                    </h2>
-                    <p class="section-description">
-                        <span class="ar-text">بانر عرض كبير في منتصف الصفحة</span>
-                        <span class="en-text">Large promotional banner in the middle of the page</span>
-                    </p>
-                </div>
-
-                <div class="checkbox-wrapper">
-                    <input type="checkbox" name="featured_banner_active" value="1" id="featured_banner_active" {{ $homePage->featured_banner_active ? 'checked' : '' }}>
-                    <label for="featured_banner_active">
-                        <span class="ar-text">✅ تفعيل البانر المميز</span>
-                        <span class="en-text">✅ Enable Featured Banner</span>
-                    </label>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <span class="ar-text">💻 صورة البانر (للحاسوب)</span>
-                        <span class="en-text">💻 Banner Image (Desktop)</span>
-                    </label>
-                    <div class="image-preview-container" id="featured-preview" @if($homePage->featured_banner_image) style="display: block;" @else style="display: none;" @endif>
-                        <img src="{{ $homePage->featured_banner_image ?? '' }}" alt="Featured Banner">
-                    </div>
-                    <input type="hidden" name="featured_banner_image_current" value="{{ $homePage->featured_banner_image ?? '' }}">
-                    <div class="file-input-custom">
-                        <input type="file" name="featured_banner_image" class="form-control image-upload" accept="image/*" data-preview="featured-preview" onchange="previewImage(this)">
-                    </div>
-                    <p class="helper-text">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="ar-text">الحجم المثالي: 1920x600 بكسل</span>
-                        <span class="en-text">Optimal size: 1920x600px</span>
-                    </p>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <span class="ar-text">📱 صورة التابلت (اختياري)</span>
-                        <span class="en-text">📱 Tablet Image (Optional)</span>
-                    </label>
-                    <div class="image-preview-container" id="featured-tablet-preview" @if($homePage->featured_banner_image_tablet) style="display: block;" @else style="display: none;" @endif>
-                        <img src="{{ $homePage->featured_banner_image_tablet ?? '' }}" alt="Featured Banner Tablet">
-                    </div>
-                    <input type="hidden" name="featured_banner_image_tablet_current" value="{{ $homePage->featured_banner_image_tablet ?? '' }}">
-                    <div class="file-input-custom">
-                        <input type="file" name="featured_banner_image_tablet" class="form-control image-upload" accept="image/*" data-preview="featured-tablet-preview" onchange="previewImage(this)">
-                    </div>
-                    <p class="helper-text">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="ar-text">الحجم المثالي: 1024x400 بكسل | سيتم عرضها على التابلت</span>
-                        <span class="en-text">Optimal size: 1024x400px | Will be shown on tablets</span>
-                    </p>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <span class="ar-text">📱 صورة الموبايل (اختياري)</span>
-                        <span class="en-text">📱 Mobile Image (Optional)</span>
-                    </label>
-                    <div class="image-preview-container" id="featured-mobile-preview" @if($homePage->featured_banner_image_mobile) style="display: block;" @else style="display: none;" @endif>
-                        <img src="{{ $homePage->featured_banner_image_mobile ?? '' }}" alt="Featured Banner Mobile">
-                    </div>
-                    <input type="hidden" name="featured_banner_image_mobile_current" value="{{ $homePage->featured_banner_image_mobile ?? '' }}">
-                    <div class="file-input-custom">
-                        <input type="file" name="featured_banner_image_mobile" class="form-control image-upload" accept="image/*" data-preview="featured-mobile-preview" onchange="previewImage(this)">
-                    </div>
-                    <p class="helper-text">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="ar-text">الحجم المثالي: 768x400 بكسل | سيتم عرضها على الهواتف</span>
-                        <span class="en-text">Optimal size: 768x400px | Will be shown on mobile phones</span>
-                    </p>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <span class="ar-text">رابط البانر</span>
-                        <span class="en-text">Banner Link</span>
-                    </label>
-                    <input type="text" name="featured_banner_link" value="{{ $homePage->featured_banner_link ?? '#' }}" class="form-control" placeholder="https://...">
-                </div>
-
-                <div class="row">
-                    <div class="form-group">
-                        <label class="form-label">
-                            <span class="ar-text">العنوان (عربي)</span>
-                            <span class="en-text">Title (Arabic)</span>
-                        </label>
-                        <input type="text" name="featured_banner_title_ar" value="{{ $homePage->featured_banner_title['ar'] ?? '' }}" class="form-control">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">
-                            <span class="ar-text">العنوان (إنجليزي)</span>
-                            <span class="en-text">Title (English)</span>
-                        </label>
-                        <input type="text" name="featured_banner_title_en" value="{{ $homePage->featured_banner_title['en'] ?? '' }}" class="form-control">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Spotlight Banner Tab -->
-            <div id="spotlight-tab" class="tab-content">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <span class="ar-text">بانر Spotlight</span>
-                        <span class="en-text">Spotlight Banner</span>
-                    </h2>
-                    <p class="section-description">
-                        <span class="ar-text">بانر الإضاءة الخاص بالمنتجات المميزة</span>
-                        <span class="en-text">Spotlight banner for featured products</span>
-                    </p>
-                </div>
-
-                <div class="checkbox-wrapper">
-                    <input type="checkbox" name="spotlight_banner_active" value="1" id="spotlight_banner_active" {{ $homePage->spotlight_banner_active ? 'checked' : '' }}>
-                    <label for="spotlight_banner_active">
-                        <span class="ar-text">✅ تفعيل بانر Spotlight</span>
-                        <span class="en-text">✅ Enable Spotlight Banner</span>
-                    </label>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <span class="ar-text">صورة البانر</span>
-                        <span class="en-text">Banner Image</span>
-                    </label>
-                    <div class="image-preview-container" id="spotlight-preview" @if($homePage->spotlight_banner_image) style="display: block;" @else style="display: none;" @endif>
-                        <img src="{{ $homePage->spotlight_banner_image ?? '' }}" alt="Spotlight Banner">
-                    </div>
-                    <input type="hidden" name="spotlight_banner_image_current" value="{{ $homePage->spotlight_banner_image ?? '' }}">
-                    <div class="file-input-custom">
-                        <input type="file" name="spotlight_banner_image" class="form-control image-upload" accept="image/*" data-preview="spotlight-preview" onchange="previewImage(this)">
-                    </div>
-                    <p class="helper-text">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="ar-text">الحجم المثالي: 1920x600 بكسل</span>
-                        <span class="en-text">Optimal size: 1920x600px</span>
-                    </p>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <span class="ar-text">رابط البانر</span>
-                        <span class="en-text">Banner Link</span>
-                    </label>
-                    <input type="text" name="spotlight_banner_link" value="{{ $homePage->spotlight_banner_link ?? '#' }}" class="form-control" placeholder="https://...">
-                </div>
-
-                <div class="row">
-                    <div class="form-group">
-                        <label class="form-label">
-                            <span class="ar-text">العنوان (عربي)</span>
-                            <span class="en-text">Title (Arabic)</span>
-                        </label>
-                        <input type="text" name="spotlight_banner_title_ar" value="{{ $homePage->spotlight_banner_title['ar'] ?? '' }}" class="form-control">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">
-                            <span class="ar-text">العنوان (إنجليزي)</span>
-                            <span class="en-text">Title (English)</span>
-                        </label>
-                        <input type="text" name="spotlight_banner_title_en" value="{{ $homePage->spotlight_banner_title['en'] ?? '' }}" class="form-control">
-                    </div>
                 </div>
             </div>
 
@@ -2928,7 +2746,7 @@ function addGift() {
 
 // Remove Discover Item from Database
 function removeDiscoverItem(itemId) {
-    const locale = document.querySelector('input[name="locale"]').value;
+    const locale = document.querySelector('input[name="content_lang"]')?.value || 'ar';
     const confirmTitle = locale === 'ar' ? 'هل أنت متأكد؟' : 'Are you sure?';
     const confirmText = locale === 'ar' ? 'سيتم حذف هذا العنصر نهائياً!' : 'This item will be permanently deleted!';
     const confirmButton = locale === 'ar' ? 'نعم، احذف!' : 'Yes, delete it!';
@@ -2997,7 +2815,7 @@ function addDiscover() {
 
     // Check if we already have 5 items
     if (gridItemsCount >= 3 && rowItemsCount >= 2) {
-        const locale = document.querySelector('input[name="locale"]').value;
+        const locale = document.querySelector('input[name="content_lang"]')?.value || 'ar';
         const maxTitle = locale === 'ar' ? 'تنبيه!' : 'Notice!';
         const maxText = locale === 'ar' ? 'الحد الأقصى 5 عناصر فقط (3 كروت صغيرة + 2 كروت عريضة)' : 'Maximum 5 items allowed (3 small cards + 2 wide cards)';
         Swal.fire(maxTitle, maxText, 'info');
@@ -3077,7 +2895,7 @@ function addDiscover() {
 }
 
 function removeItem(button, type) {
-    const locale = document.querySelector('input[name="locale"]').value;
+    const locale = document.querySelector('input[name="content_lang"]')?.value || 'ar';
     const confirmTitle = locale === 'ar' ? 'هل أنت متأكد؟' : 'Are you sure?';
     const confirmText = locale === 'ar' ? 'لن تتمكن من التراجع عن هذا!' : 'You won\'t be able to revert this!';
     const confirmButton = locale === 'ar' ? 'نعم، احذف!' : 'Yes, delete it!';
@@ -3199,7 +3017,7 @@ document.getElementById('homePageForm').addEventListener('input', function() {
     if (saveBarInfo && !saveBarInfo.classList.contains('has-changes')) {
         saveBarInfo.classList.add('has-changes');
         saveBarInfo.style.color = '#f59e0b';
-        const locale = document.querySelector('input[name="locale"]').value;
+        const locale = document.querySelector('input[name="content_lang"]')?.value || 'ar';
         const warningIcon = saveBarInfo.querySelector('svg, i');
         if (warningIcon) {
             warningIcon.style.color = '#f59e0b';
@@ -3269,29 +3087,6 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
-
-// SweetAlert for success/error messages
-@if(session('success'))
-Swal.fire({
-    icon: 'success',
-    title: '<span class="ar-text">نجح!</span><span class="en-text">Success!</span>',
-    html: '{{ session("success") }}',
-    confirmButtonText: '<span class="ar-text">حسناً</span><span class="en-text">OK</span>',
-    confirmButtonColor: '#48bb78',
-    timer: 3000,
-    timerProgressBar: true
-});
-@endif
-
-@if($errors->any())
-Swal.fire({
-    icon: 'error',
-    title: '<span class="ar-text">خطأ!</span><span class="en-text">Error!</span>',
-    html: '<ul style="text-align: right; list-style: none; padding: 0;">@foreach($errors->all() as $error)<li style="margin: 0.5rem 0;">• {{ $error }}</li>@endforeach</ul>',
-    confirmButtonText: '<span class="ar-text">حسناً</span><span class="en-text">OK</span>',
-    confirmButtonColor: '#f56565'
-});
-@endif
 
 // ====================================
 // Image Compression System (WebP)

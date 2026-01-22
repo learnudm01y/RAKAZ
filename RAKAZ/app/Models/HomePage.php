@@ -141,10 +141,25 @@ class HomePage extends Model
      */
     public static function getActive()
     {
-        return static::where('locale', app()->getLocale())
-            ->where('is_active', true)
-            ->first() ?? static::where('locale', 'ar')
+        // First try to get by current locale
+        $page = static::where('locale', app()->getLocale())
             ->where('is_active', true)
             ->first();
+
+        if ($page) {
+            return $page;
+        }
+
+        // Then try Arabic as fallback
+        $page = static::where('locale', 'ar')
+            ->where('is_active', true)
+            ->first();
+
+        if ($page) {
+            return $page;
+        }
+
+        // Finally, just get any active home page
+        return static::where('is_active', true)->first();
     }
 }

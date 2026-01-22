@@ -967,12 +967,40 @@
     .must-have-section,
     .perfect-present-section,
     .discover-section,
+    .vertical-images-section,
     .promo-section {
         padding: 40px 0 !important;
     }
 
     .discover-section {
         padding: 40px 0 50px 0 !important;
+    }
+
+    /* Vertical Images Section - Mobile */
+    .vertical-images-section {
+        padding: 30px 0 !important;
+    }
+
+    .vertical-images-section .section-title {
+        font-size: 24px;
+        margin-bottom: 25px;
+        padding: 0 15px;
+    }
+
+    .vertical-images-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        padding: 0 15px;
+    }
+
+    .vertical-image-card {
+        aspect-ratio: 3/5.64 !important;
+    }
+
+    .vertical-image-title {
+        font-size: 12px;
+        bottom: 15px;
+        letter-spacing: 0.5px;
     }
 
     .section-title {

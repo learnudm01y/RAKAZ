@@ -799,8 +799,32 @@
     .must-have-section,
     .perfect-present-section,
     .discover-section,
+    .vertical-images-section,
     .promo-section {
         padding: 55px 0 !important;
+    }
+
+    /* Vertical Images Section - Tablet */
+    .vertical-images-section .section-title {
+        font-size: 28px !important;
+        margin-bottom: 30px !important;
+        padding: 0 25px !important;
+    }
+
+    .vertical-images-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 15px !important;
+        padding: 0 25px !important;
+    }
+
+    .vertical-image-card {
+        aspect-ratio: 3/4.7 !important;
+    }
+
+    .vertical-image-title {
+        font-size: 16px !important;
+        bottom: 20px !important;
     }
 
     .section-title {

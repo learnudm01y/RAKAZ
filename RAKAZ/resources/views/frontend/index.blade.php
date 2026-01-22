@@ -26,6 +26,9 @@
     </a>
     @endif
 
+    <!-- Vertical Images Section (after Cyber Sale) -->
+    @include('frontend.partials.vertical-images-section')
+
     <!-- Dolce & Gabbana Casa Banner -->
     @if($homePage && $homePage->dg_banner_active && $homePage->dg_banner_image)
     @php
